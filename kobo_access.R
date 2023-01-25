@@ -21,7 +21,10 @@ library(jsonlite)
 ## set variables
 kc_server_url<-"https://kf.kobotoolbox.org/" #https://kf.kobotoolbox.org/api/v2/assets/axhiGJQ8JzwkTYcgDTroJu/data.json
 form_id <- "axhiGJQ8JzwkTYcgDTroJu"
-url<-paste0(kc_server_url,"api/v2/assets/",form_id,"/data.json") #endpoint to use. include csv or no?
+url<-paste0(kc_server_url,"api/v2/assets/",form_id,"/data.json") #endpoint to use
+#when these data are made private you will need token to access 
+#token f8041726a8848144f1843520e0be4a8ae803ff41
+
 
 # ------------------------------------------------------------------------
 
