@@ -1,0 +1,56 @@
+"","size_class","Tree_type","Species","Timeframe","Plot_ID","Site_ID","num_regen_trees"
+"1","1-9.9cm","planted","Fedegoso","Y0","Parcela 1","#40 - TEST",50
+"2","1-9.9cm","planted","Ipê amarelo mirim","Y0","Parcela 1","#40 - TEST",50
+"3","<1cm","naturally_regenerating","Drypetes grandifolia","Y0","Plot No. 001","211",900
+"4","<1cm","planted","Intsia bijuga","Y0","Plot No. 002","211",900
+"5","<1cm","naturally_regenerating","Swietenia foxworthyi","Y0","Plot No. 003","211",900
+"6",">10cm","naturally_regenerating","Butea monosperma","Y0","273B1P1","273B1P1",11
+"7","1-9.9cm","planted","Butea monosperma","Y0","273B1P1","273B1P1",100
+"8","1-9.9cm","planted","D melonoxylon","Y0","273B1P1","273B1P1",100
+"9",">10cm","naturally_regenerating","Mangifera indica","Y0","273B1P1","273B1P1",18
+"10","1-9.9cm","naturally_regenerating","Populus","Y0","23","Chant-255-23",200
+"11","1-9.9cm","planted","Quercus robur","Y0","251-49","Chantilly",200
+"12","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","16","Chantilly-255-16",100
+"13","1-9.9cm","naturally_regenerating","Tibia cordata","Y0","16","Chantilly-255-16",500
+"14","1-9.9cm","naturally_regenerating","Talia cordata","Y0","17","Chantilly-255-17",400
+"15","1-9.9cm","naturally_regenerating","Quercus","Y0","18","Chantilly-255-18",200
+"16","1-9.9cm","naturally_regenerating","Quercus","Y0","19","Chantilly-255-19",400
+"17","1-9.9cm","naturally_regenerating","Sorbus aucuparia","Y0","19","Chantilly-255-19",200
+"18","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","20","Chantilly-255-20",200
+"19","1-9.9cm","naturally_regenerating","Quercus","Y0","20","Chantilly-255-20",300
+"20","1-9.9cm","naturally_regenerating","Talia cordata","Y0","20","Chantilly-255-20",200
+"21","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","22","Chantilly-255-22",200
+"22","1-9.9cm","naturally_regenerating","Quercus","Y0","22","Chantilly-255-22",200
+"23","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","24","Chantilly-255-24",400
+"24","1-9.9cm","naturally_regenerating","Quercus","Y0","25","Chantilly-255-25",200
+"25","1-9.9cm","naturally_regenerating","Carpinus","Y0","26","Chantilly-255-26",200
+"26","1-9.9cm","naturally_regenerating","Populus sp","Y0","26","Chantilly-255-26",200
+"27","1-9.9cm","planted","Quercus robur","Y0","41","Chantilly-451-40",300
+"28","1-9.9cm","planted","Quercus robur","Y0","41","Chantilly-451-41",200
+"29","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","42","Chantilly-451-42",200
+"30","1-9.9cm","planted","Quercus robur","Y0","42","Chantilly-451-42",200
+"31","1-9.9cm","planted","Sorbus torminalis","Y0","42","Chantilly-451-42",200
+"32","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","43","Chantilly-451-43",100
+"33","1-9.9cm","naturally_regenerating","Populus","Y0","43","Chantilly-451-43",300
+"34","1-9.9cm","naturally_regenerating","Quercus robur","Y0","43","Chantilly-451-43",100
+"35","1-9.9cm","planted","Quercus robur","Y0","43","Chantilly-451-43",200
+"36","1-9.9cm","naturally_regenerating","Populis","Y0","44","Chantilly-451-44",400
+"37","1-9.9cm","naturally_regenerating","Quercus robur","Y0","46","Chantilly-451-46",800
+"38","1-9.9cm","naturally_regenerating","Acer campestris","Y0","1","Chantilly-51-1",300
+"39","1-9.9cm","naturally_regenerating","Acer pseudoplatanus","Y0","3","Chantilly-51-3",600
+"40","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","3","Chantilly-51-3",300
+"41","1-9.9cm","naturally_regenerating","Prunus avium","Y0","3","Chantilly-51-3",200
+"42","1-9.9cm","naturally_regenerating","Quercus","Y0","3","Chantilly-51-3",100
+"43","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","4","Chantilly-51-4",100
+"44","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","7","Chantilly-51-7",100
+"45","1-9.9cm","naturally_regenerating","Quercus","Y0","28","Chantilly-523-28",400
+"46","1-9.9cm","naturally_regenerating","Quercus","Y0","29","Chantilly-523-29",400
+"47","1-9.9cm","planted","Larix decidua","Y0","30","Chantilly-523-30",200
+"48","1-9.9cm","naturally_regenerating","Quercus","Y0","32","Chantilly-523-32",300
+"49","1-9.9cm","planted","Douglas","Y0","34","Chantilly-523-34",200
+"50","1-9.9cm","naturally_regenerating","Quercus","Y0","34","Chantilly-523-34",100
+"51","1-9.9cm","naturally_regenerating","Quercus","Y0","35","Chantilly-523-35",300
+"52","1-9.9cm","naturally_regenerating","Azadirachta indica","Y0","Rr","Rr",100
+"53",">10cm","planted","Acacia auriculiformis","Y0","T5","Rr",2
+"54",">10cm","planted","Azadirachta indica","Y0","T5","Rr",1
+"55","1-9.9cm","planted","Tectona grandis","Y0","T5","Rr",500

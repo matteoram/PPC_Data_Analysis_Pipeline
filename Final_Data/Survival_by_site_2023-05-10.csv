@@ -1,0 +1,17 @@
+"","size_class","Tree_type","Species","Timeframe","Plot_ID","Site_ID","num_regen_trees","year","percent_survived"
+"1","1-9.9cm","planted","Fedegoso","Y0","Parcela 1","#40 - TEST",50,0,NA
+"2","1-9.9cm","planted","Ipê amarelo mirim","Y0","Parcela 1","#40 - TEST",50,0,NA
+"4","<1cm","planted","Intsia bijuga","Y0","Plot No. 002","211",900,0,NA
+"7","1-9.9cm","planted","Butea monosperma","Y0","273B1P1","273B1P1",100,0,NA
+"8","1-9.9cm","planted","D melonoxylon","Y0","273B1P1","273B1P1",100,0,NA
+"11","1-9.9cm","planted","Quercus robur","Y0","251-49","Chantilly",200,0,NA
+"27","1-9.9cm","planted","Quercus robur","Y0","41","Chantilly-451-40",300,0,NA
+"28","1-9.9cm","planted","Quercus robur","Y0","41","Chantilly-451-41",200,0,NA
+"30","1-9.9cm","planted","Quercus robur","Y0","42","Chantilly-451-42",200,0,NA
+"31","1-9.9cm","planted","Sorbus torminalis","Y0","42","Chantilly-451-42",200,0,NA
+"35","1-9.9cm","planted","Quercus robur","Y0","43","Chantilly-451-43",200,0,NA
+"47","1-9.9cm","planted","Larix decidua","Y0","30","Chantilly-523-30",200,0,NA
+"49","1-9.9cm","planted","Douglas","Y0","34","Chantilly-523-34",200,0,NA
+"53",">10cm","planted","Acacia auriculiformis","Y0","T5","Rr",2,0,NA
+"54",">10cm","planted","Azadirachta indica","Y0","T5","Rr",1,0,NA
+"55","1-9.9cm","planted","Tectona grandis","Y0","T5","Rr",500,0,NA
