@@ -105,25 +105,25 @@ date=Sys.Date()
 
 #Number of regeneratin trees by plot
 Restored_by_plot = paste(paste("Restored_by_plot", date, sep="_"), "csv", sep=".")
-write(Ntrees_regen_plot, Restored_by_plot)
+write.csv(Ntrees_regen_plot, Restored_by_plot)
 
 #Number of regenerating trees by site
 Restored_by_site = paste(paste("Restored_by_site", date, sep="_"), "csv", sep=".")
-write(Ntrees_regen_site, Restored_by_site)
+write.csv(Ntrees_regen_site, Restored_by_site)
 
 
 #Number of regeneratin trees by plot
 Regeneration_by_plot = paste(paste("Regeneration_by_plot", date, sep="_"), "csv", sep=".")
-write(Ntrees_natregen_plot, Regeneration_by_plot)
+write.csv(Ntrees_natregen_plot, Regeneration_by_plot)
 
 #Number of regenerating trees by site
 Regeneration_by_site = paste(paste("Regeneration_by_site", date, sep="_"), "csv", sep=".")
-write(Ntrees_natregen_site, Regeneration_by_site)
+write.csv(Ntrees_natregen_site, Regeneration_by_site)
 
 
 #Survival of planted trees:
 Survival_data = paste(paste("Survival_by_site", date, sep="_"), "csv", sep=".")
-write(sl_out_df, Survival_data)
+write.csv(sl_out_df, Survival_data)
 
 
 
