@@ -1,18 +1,36 @@
+#--------------------------------------------------------------------------------
+#Project: Priceless Planet Coalition
+#Author: Timothy Perez
+#Date Updated: May 30, 2023
+#Input: Kobo username and password. User will be prompted for these inputs.
+#Outputs: 7 .csv file stored in a "Raw_Data" folder
+
+#Description: This code is the 1st part of the analysis pipeline for key indicators for the Priceless 
+#Planet Coalition. This code allows an authorized user to access the Kobotools
+#website and download the data that has been input by users. This code unnests and
+#flattens the the data downloaded from Kobo. The outputs from this code are used
+#for the "Taxonomic_corrections_script.R" and "Generate_data_for_PPC_indicators.R
+#R scripts.
+#--------------------------------------------------------------------------------
+
+
 setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/")
 #remotes::install_gitlab("dickoa/robotoolbox")
 library(robotoolbox)
+library("dplyr")
 
-#Fix this so that the user can provide their own Username and Password:
-#This script would be ideal for a web-app:
-login_criteria=read.table("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/Kobo_API_token.txt")
-tkn=kobo_token(username = paste(login_criteria$V2),
-           password = paste(login_criteria$V3),
+#have user input kobo username and PW:
+UN <- readline(prompt="Enter Kobo username: ")
+PW <- readline(prompt="Enter Kobo password: ")
+
+#get kobot access token:
+tkn=kobo_token(username = UN,
+           password = PW,
            url = "kf.kobotoolbox.org")
 
-KOBOTOOLBOX_URL="kf.kobotoolbox.org/#/forms/axhiGJQ8JzwkTYcgDTroJu" #
-KOBOTOOLBOX_TOKEN=tkn
-library("dplyr")
-#library("dm")
+#define the URL for the PPC data:
+#KOBOTOOLBOX_URL="kf.kobotoolbox.org/#/forms/axhiGJQ8JzwkTYcgDTroJu" #
+#KOBOTOOLBOX_TOKEN=tkn
 
 kobo_settings()
 l <- kobo_asset_list()
@@ -25,30 +43,32 @@ uid <- l |>
 asset <- kobo_asset(uid)
 
 df <- kobo_submissions(asset) ## or df <-  kobo_data(asset)
-names(df) #100 columns, 165 rows, ncol(df$main); nrow(df$main) #Number of columns increased!
+
+#Check dimensions
+#names(df) #101 columns, 324 rows, ncol(df$main); nrow(df$main) #Number of columns increased!
 
 #The main data has retained some nested columns that need to be extracted and 
 #made into additional, external df's.
-#Cycle through the 'main' df and extract all lists then,  cycle through rows of
-#each list because there are dataframes stored within these rows. #Define parent index 
-# as row of the column  equal to the row number of higher-level list.
+
+#The code below cycle through the 'main' df and extract all lists then, cycles through rows of
+#each list because there are dataframes stored within these rows. #The output
+#is a "flattened" list of the listed dfs in "main"
 main_listed_cols = which(sapply(df$main, is.list))
 unlisted_from_maindf=lapply(1:length(main_listed_cols), FUN = function(x){
    
   listed_col_numx = main_listed_cols[x]
-  #listed_col_numx = main_listed_cols[7]
+  #listed_col_numx = main_listed_cols[19]
   #print(paste(x))
   
   #Get nested df within main
   listed_colx = df$main[listed_col_numx]
   listed_colx_name = names(df$main[listed_col_numx])
   
-  
   #Get which rows have dfs within them
   list_within_cols = sapply(listed_colx[[listed_colx_name]], is.list)
   
   #Here i need to cycle through all of the rows of the parent index
-  unnested_dfx=lapply(1:length(list_within_cols), FUN=function(y){
+  unnested_dfx = lapply(1:length(list_within_cols), FUN=function(y){
     parent_index = y
     #id=df$main$`_id`[parent_index]
     print(paste(x, y))
@@ -119,13 +139,14 @@ unlisted_from_maindf=lapply(1:length(main_listed_cols), FUN = function(x){
    
 })
 
-names(unlisted_from_maindf)=names(df$main[main_listed_cols]) #name list items
+#name list items
+names(unlisted_from_maindf)=names(df$main[main_listed_cols]) 
 #table_names=names(unlisted_from_maindf)
 
 #Convert unlisted_from_maindf list into a list
 unlisted_from_maindf=as.list(unlisted_from_maindf)
 
-#I need to remove the main_listed_cols from the main df
+#Remove the main_listed_cols from the main df
 remove_cols=names(df$main)[main_listed_cols] #select column names to remove from df$main
 main=df$main %>% select(!remove_cols) #redefine main df with the main_listed_cols removed
 main=as.list(main) #make sure main df is a list

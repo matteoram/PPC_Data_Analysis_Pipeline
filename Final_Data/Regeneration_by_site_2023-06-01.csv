@@ -1,0 +1,90 @@
+"","size_class","Tree_type","Species","Timeframe","Site_ID","Tree_per_sq_30m","est_pl_dens"
+"1",">10cm","naturally_regenerating","Acacia polyacatha","Y0","180",1,225
+"2","1-9.9cm","naturally_regenerating","Bauhia","Y0","180",100,0
+"3",">10cm","naturally_regenerating","bauhinia","Y0","180",1.66666666666667,0
+"4","1-9.9cm","naturally_regenerating","bauhinia","Y0","180",100,225
+"5",">10cm","naturally_regenerating","Bauhinia","Y0","180",13.1666666666667,1350
+"6","1-9.9cm","naturally_regenerating","Bauhinia","Y0","180",10100,5400
+"7",">10cm","naturally_regenerating","Brachystigia","Y0","180",1,225
+"8",">10cm","naturally_regenerating","Chiombo","Y0","180",3.33333333333333,450
+"9","1-9.9cm","naturally_regenerating","Chisoyo","Y0","180",300,450
+"10","1-9.9cm","naturally_regenerating","Chitimbe","Y0","180",1800,225
+"11",">10cm","naturally_regenerating","Chiwombo","Y0","180",4,225
+"12","1-9.9cm","naturally_regenerating","Faidherb albida","Y0","180",100,0
+"13",">10cm","naturally_regenerating","Faidherbia albida","Y0","180",0.333333333333333,0
+"14","1-9.9cm","naturally_regenerating","Faidherbia albida","Y0","180",3800,450
+"15",">10cm","naturally_regenerating","Fidherbia albida","Y0","180",0.333333333333333,0
+"16","1-9.9cm","naturally_regenerating","Fidherbia albida","Y0","180",100,0
+"17","<1cm","naturally_regenerating","Fig","Y0","180",900,225
+"18",">10cm","naturally_regenerating","Fig","Y0","180",0.666666666666666,225
+"19","1-9.9cm","naturally_regenerating","Fig","Y0","180",600,675
+"20","1-9.9cm","naturally_regenerating","Katope","Y0","180",100,225
+"21","1-9.9cm","naturally_regenerating","Kaumbwe","Y0","180",100,0
+"22",">10cm","naturally_regenerating","Masuku","Y0","180",0.333333333333333,225
+"23","1-9.9cm","naturally_regenerating","Masuku","Y0","180",600,450
+"24","1-9.9cm","naturally_regenerating","Matowo","Y0","180",100,225
+"25","1-9.9cm","naturally_regenerating","Maula","Y0","180",100,0
+"26","1-9.9cm","naturally_regenerating","Maviro","Y0","180",100,0
+"27","1-9.9cm","naturally_regenerating","Maviru","Y0","180",100,225
+"28","1-9.9cm","naturally_regenerating","Mbawa","Y0","180",3700,225
+"29","1-9.9cm","naturally_regenerating","Mkalakati","Y0","180",150,450
+"30","1-9.9cm","naturally_regenerating","mkukhu","Y0","180",100,225
+"31","1-9.9cm","naturally_regenerating","mlama","Y0","180",100,0
+"32","1-9.9cm","naturally_regenerating","Mlama","Y0","180",100,225
+"33","1-9.9cm","naturally_regenerating","Mloro","Y0","180",200,0
+"34",">10cm","naturally_regenerating","Mphangala","Y0","180",0.333333333333333,0
+"35","1-9.9cm","naturally_regenerating","Mphangala","Y0","180",100,0
+"36","1-9.9cm","naturally_regenerating","Msambafumu","Y0","180",700,225
+"37",">10cm","naturally_regenerating","Msolo","Y0","180",0.333333333333333,225
+"38","1-9.9cm","naturally_regenerating","Msolo","Y0","180",200,225
+"39","1-9.9cm","naturally_regenerating","Msuku","Y0","180",1500,225
+"40","1-9.9cm","naturally_regenerating","Mtanthanyelere","Y0","180",100,225
+"41","1-9.9cm","naturally_regenerating","Muula","Y0","180",200,0
+"42","1-9.9cm","naturally_regenerating","Muwula","Y0","180",50,225
+"43",">10cm","naturally_regenerating","Nkhadzi","Y0","180",0.666666666666667,0
+"44",">10cm","naturally_regenerating","Uapaka kirkiana","Y0","180",5.33333333333333,450
+"45","1-9.9cm","naturally_regenerating","Uapaka kirkiana","Y0","180",150,450
+"46","1-9.9cm","naturally_regenerating","Uappaka kirkiana","Y0","180",50,225
+"47","1-9.9cm","naturally_regenerating","Vitex Doniana","Y0","180",200,0
+"48","<1cm","naturally_regenerating","Drypetes grandifolia","Y0","211",900,150
+"49","<1cm","naturally_regenerating","Goniocheton arborescens","Y0","211",900,150
+"50","<1cm","naturally_regenerating","Leucosyke capitellata","Y0","211",900,150
+"51","<1cm","naturally_regenerating","Swietenia foxworthyi","Y0","211",900,150
+"52",">10cm","naturally_regenerating","Butea monosperma","Y0","273B1P1",11,269.097760417743
+"53",">10cm","naturally_regenerating","Mangifera indica","Y0","273B1P1",18,0
+"54","1-9.9cm","naturally_regenerating","Populus","Y0","Chant-255-23",200,100
+"55","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","Chantilly-255-16",100,90
+"56","1-9.9cm","naturally_regenerating","Tibia cordata","Y0","Chantilly-255-16",500,90
+"57","1-9.9cm","naturally_regenerating","Talia cordata","Y0","Chantilly-255-17",400,100
+"58","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-255-18",200,100
+"59","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-255-19",400,100
+"60","1-9.9cm","naturally_regenerating","Sorbus aucuparia","Y0","Chantilly-255-19",200,100
+"61","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","Chantilly-255-20",200,100
+"62","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-255-20",300,100
+"63","1-9.9cm","naturally_regenerating","Talia cordata","Y0","Chantilly-255-20",200,100
+"64","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","Chantilly-255-22",200,100
+"65","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-255-22",200,100
+"66","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","Chantilly-255-24",400,100
+"67","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-255-25",200,100
+"68","1-9.9cm","naturally_regenerating","Carpinus","Y0","Chantilly-255-26",200,100
+"69","1-9.9cm","naturally_regenerating","Populus sp","Y0","Chantilly-255-26",200,100
+"70","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","Chantilly-451-42",200,0
+"71","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","Chantilly-451-43",100,0
+"72","1-9.9cm","naturally_regenerating","Populus","Y0","Chantilly-451-43",300,0
+"73","1-9.9cm","naturally_regenerating","Quercus robur","Y0","Chantilly-451-43",100,0
+"74","1-9.9cm","naturally_regenerating","Populis","Y0","Chantilly-451-44",400,0
+"75","1-9.9cm","naturally_regenerating","Quercus robur","Y0","Chantilly-451-46",800,60
+"76","1-9.9cm","naturally_regenerating","Acer campestris","Y0","Chantilly-51-1",300,90
+"77","1-9.9cm","naturally_regenerating","Acer pseudoplatanus","Y0","Chantilly-51-3",600,0
+"78","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","Chantilly-51-3",300,0
+"79","1-9.9cm","naturally_regenerating","Prunus avium","Y0","Chantilly-51-3",200,0
+"80","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-51-3",100,0
+"81","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","Chantilly-51-4",100,0
+"82","1-9.9cm","naturally_regenerating","Carpinus betulus","Y0","Chantilly-51-7",100,0
+"83","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-523-28",400,90
+"84","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-523-29",400,0
+"85","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-523-32",300,0
+"86","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-523-34",100,0
+"87","1-9.9cm","naturally_regenerating","Quercus","Y0","Chantilly-523-35",300,0
+"88","1-9.9cm","naturally_regenerating","Bauhinia","Y0","P35",100,225
+"89","1-9.9cm","naturally_regenerating","Azadirachta indica","Y0","Rr",100,0

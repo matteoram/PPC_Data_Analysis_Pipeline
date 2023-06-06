@@ -1,3 +1,17 @@
+#--------------------------------------------------------------------------------
+#Project: Priceless Planet Coalition
+#Author: Timothy Perez
+#Date Updated: May 31, 2023
+#Input: The most recent "main_data_PPC_Data__XXXX-XX_XX.csv", and the most recent 
+#"tree_data_taxonomy_corrections_XXXX-XX-XX.csv" .
+#Outputs: The final file is: Data_for_PPC_indicators_XXXX-XX-XX.
+
+#Description: This code is part 3 of the analysis pipeline for key indicators for the Priceless 
+#Planet Coalition. This code takes takes plot size information and tree abundance for all plots and formats
+#data from two data sources above to prep data to calculate 1) Number of trees restored
+#2) Number of of trees naturally regenerating, and 3) % survival of planted trees.
+#-----------------------------------------------------------------------
+
 #Get PPC site infor names for
 setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
 #get file names
@@ -9,12 +23,6 @@ tree_data=read.csv(ppc_data_files[grep("tree_data_taxonomy_corrections", ppc_dat
 unique(tree_data$tree_data.Tree_type)
 main_data[which(main_data$main_data.Timeframe=="Y2.5"),]
 
-#main_data[which(main_data$main_data.X_id== 163622967),]
-#unique(main_data$main_data.Plot_Type)
-#main_data$main_data.Resampling1
-
-#unique(tree_data$tree_data.plot_type)
-#unique(tree_data$tree_data.Tree_type)
 
 #Project metrics:
 #Project, plot, site
@@ -26,8 +34,9 @@ main_data[which(main_data$main_data.Timeframe=="Y2.5"),]
 #Within Plot Survival Rate = (# of living planted trees in 30 x 30 m plot at Y5** / # of planted trees in 30 x 30 m plot at Y0) * 100
 #main_data
 
+
 upi=na.omit(unique(tree_data$tree_data._id))
-trefreq_data=lapply(1:length(upi), FUN=function(x){
+treefreq_data=lapply(1:length(upi), FUN=function(x){
   maindf=main_data[which(main_data$main_data.X_id== upi[x]),]
   #print(x)
   #Select columns of interest main df
@@ -144,11 +153,107 @@ trefreq_data=lapply(1:length(upi), FUN=function(x){
     
   }
 })
-tree_freq_data_site=do.call("rbind", trefreq_data)
+tree_freq_data_site=do.call("rbind", treefreq_data)
+
+#-------------------------------------------------------------------------------
+#OK now, I need a function that: 
+#1) Subsets each unique site - plot
+#get unique site/plot combos
+uplot = unique(paste(tree_freq_data_site$main_data.X_id, tree_freq_data_site$main_data.Timeframe ))
+#get unique size classes
+U_sizes = unique(tree_freq_data_site$size_class)
+U_sizes = U_sizes[-which(is.na(U_sizes))]
+
+#get unique planting planting type
+U_treetype = unique(tree_freq_data_site$Tree_type)
+U_treetype = U_treetype[-which(U_treetype %in% c(NA, "don_t_know"))]
+
+#Add missing 
+tree_freq_data_site_v2 = lapply(1:length(uplot), FUN = function(x){
+ #get rows of interest 
+  #rows_oi = which( paste(tree_freq_data_site$main_data.Site_ID, tree_freq_data_site$main_data.Plot_ID) ==uplot[7] )
+  rows_oi = which( paste(tree_freq_data_site$main_data.X_id, tree_freq_data_site$main_data.Timeframe) == uplot[x] )
+  #print(paste("x=", x))
+  data = tree_freq_data_site[rows_oi,]
+  
+  data_tt_out = lapply( 1:length(U_treetype), FUN=function(y){
+      data_tt = data[which( data$Tree_type == U_treetype[y]),]
+      #print(paste("y=", y))
+      #If the length of this df is 0, it's empty, meaning that it has not size class data.
+      #In this case, wee need to add 3 rows with empty species & frequencies data
+      if( nrow(data_tt) ==0 ){
+        #add addtional rows
+        data_tt [ nrow(data_tt) + 3 , ] = NA
+        #fill-in rows with necessary data
+        data_tt$size_class = U_sizes
+        data_tt$Tree_type = U_treetype[y]
+        data_tt$Tree_per_sq_30m = 0
+        data_tt$main_data.Plot_ID = unique(data_tt$main_data.Plot_ID)
+        data_tt$main_data.Site_ID = unique(data_tt$main_data.Site_ID)
+        data_tt$main_data.Country = unique(data_tt$main_data.Country)
+        data_tt$main_data.X_id = unique(data_tt$main_data.X_id)
+        data_tt$main_data.Plot_Type = unique(data_tt$main_data.Plot_Type)
+        data_tt$main_data.Timeframe = unique(data_tt$main_data.Timeframe)
+        #colnames(data_tt)
+        #print("here")
+        return(data_tt)        
+      }else{
+        #determine which size classes are missing from the data
+        size_class_to_add = U_sizes[-which(U_sizes %in% unique(data_tt$size_class))]
+        #add addtional rows
+        nrow_add = length(size_class_to_add)
+          if(nrow_add>0){
+          data_tt2 = data_tt[-which(data_tt$size_class %in% U_sizes ),]
+          data_tt2[ nrow(data_tt2) + nrow_add,] = NA
+          #fill-in rows with necessary data
+          data_tt2$size_class = size_class_to_add
+          data_tt2$Tree_type = U_treetype[2]
+          data_tt2$Tree_per_sq_30m = 0
+          data_tt2$main_data.Plot_ID = unique(data_tt$main_data.Plot_ID)
+          data_tt2$main_data.Site_ID = unique(data_tt$main_data.Site_ID)
+          data_tt2$main_data.Country = unique(data_tt$main_data.Country)
+          data_tt2$main_data.X_id = unique(data_tt$main_data.X_id)
+          data_tt2$main_data.Plot_Type = unique(data_tt$main_data.Plot_Type)
+          data_tt2$main_data.Timeframe = unique(data_tt2$main_data.Timeframe)
+          data_tt3 = rbind(data_tt, data_tt2)
+          #colnames(data_tt)
+          #print("there")
+          return(data_tt3)
+        }else{
+          return(data_tt)
+        }
+      }
+    } )
+  
+  data_tt_out = do.call("rbind", data_tt_out)
+  return(data_tt_out)
+  
+})
+#Combine data into one dataframe:
+data_out = do.call("rbind", tree_freq_data_site_v2)
+
+#cycle through all of the different types of "main_data.PlantingPattern"s that were entered
+#and manually enter the area each planting was given. Divide 900m2 by this number
+# and save the output. This is the estimate number of plantings per 30m2.
+uplantpat = unique(data_out$main_data.PlantingPattern)
+planting_density_estimate = lapply(1:length(uplantpat), FUN=function(x){
+  print(uplantpat[x])
+   area_text = readline("Enter the two numbers to multiply (in meters) to calculate area for the entry above (e.g. 3*3: ")
+   planting_density = eval(parse(text=area_text))
+   planted_seedling_estimate = 900/planting_density
+   return(planted_seedling_estimate)
+})
+planting_density_estimate = do.call("rbind", planting_density_estimate)
+est_pl_dens_dat=data.frame(est_pl_dens = planting_density_estimate, PlantingPattern =uplantpat)
+
+
+tree_freq_data_site_F = merge(data_out, est_pl_dens_dat, by.x = "main_data.PlantingPattern", by.y = "PlantingPattern")
+tree_freq_data_site_F[which(is.na(tree_freq_data_site_F$est_pl_dens)),]$est_pl_dens = 0
+nrow(data_out)==nrow(tree_freq_data_site)
 
 date = Sys.Date()
 PPC_ind_file_name = paste(paste("Data_for_PPC_indicators", date, sep="_"), "csv", sep=".")
-write.csv(tree_freq_data_site, PPC_ind_file_name, row.names = F)
+write.csv(tree_freq_data_site_F, PPC_ind_file_name, row.names = F)
 
 
 #Notes from Starry & Isabel:
