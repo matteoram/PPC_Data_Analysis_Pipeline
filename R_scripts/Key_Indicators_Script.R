@@ -4,14 +4,15 @@
 #Date Updated: May 31, 2023
 #Input: The most recent "Data_for_PPC_indicators_XXXX-XX_XX.csv"
 #Outputs: The final data are located in the Final_Data Folder. There are 6 files:
-#Regeneration, restored, and survival data for plot-levels and site-levels. Currentl
+#Regeneration, restored, and survival data for plot-levels and site-levels. 
 
 #Description: This code is part 4 of the analysis pipeline for key indicators for the Priceless 
 #Planet Coalition. This code calculates regeneration, restored, and survival
 #-----------------------------------------------------------------------
 #Get data for PPC indicators:
-setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
-ppc_data_files= list.files(getwd())
+#setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
+path_to_raw_data = paste(getwd(), "Raw_Data", sep = "/")
+ppc_data_files= list.files(path_to_raw_data)
 
 #import main and tree data
 ind_data = read.csv(ppc_data_files[grep("Data_for_PPC_indicators", ppc_data_files)])
@@ -117,29 +118,34 @@ sl_out_df = do.call("rbind", sl_out)
 
 ################################################################################
 
-setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Final_Data")
+#setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Final_Data")
 #write results:
 date=Sys.Date()
 
 #Number of regeneratin trees by plot
 Restored_by_plot = paste(paste("Restored_by_plot", date, sep="_"), "csv", sep=".")
-write.csv(Ntrees_regen_plot, Restored_by_plot)
+Restored_by_plot_path = paste(path_to_raw_data, Restored_by_plot, sep = "/")
+write.csv(Ntrees_regen_plot, Restored_by_plot_path)
 
 #Number of regenerating trees by site
 Restored_by_site = paste(paste("Restored_by_site", date, sep="_"), "csv", sep=".")
-write.csv(Ntrees_regen_site, Restored_by_site)
+Restored_by_site_path = paste(path_to_raw_data, Restored_by_site, sep = "/")
+write.csv(Ntrees_regen_site, Restored_by_site_path)
 
 #Number of regeneratin trees by plot
 Regeneration_by_plot = paste(paste("Regeneration_by_plot", date, sep="_"), "csv", sep=".")
-write.csv(Ntrees_natregen_plot, Regeneration_by_plot)
+Regeneration_by_plot_path = paste(path_to_raw_data, Regeneration_by_plot, sep = "/")
+write.csv(Ntrees_natregen_plot, Regeneration_by_plot_path)
 
 #Number of regenerating trees by site
 Regeneration_by_site = paste(paste("Regeneration_by_site", date, sep="_"), "csv", sep=".")
-write.csv(Ntrees_natregen_site, Regeneration_by_site)
+Regeneration_by_site_path = paste(path_to_raw_data, Regeneration_by_site, sep = "/")
+write.csv(Ntrees_natregen_site, Regeneration_by_site_path)
 
 #Survival of planted trees:
 Survival_data = paste(paste("Survival_by_site", date, sep="_"), "csv", sep=".")
-write.csv(sl_out_df, Survival_data)
+Survival_data_path = paste(path_to_raw_data, Survival_data, sep = "/")
+write.csv(sl_out_df, Survival_data_path)
 
 
 

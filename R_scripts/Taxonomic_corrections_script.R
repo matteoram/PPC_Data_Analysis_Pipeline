@@ -1,9 +1,32 @@
+#--------------------------------------------------------------------------------
+#Project: Priceless Planet Coalition
+#Author: Timothy Perez
+#Date Updated: May 31, 2023
+#Input: The most recent "tree_data_PPC_Data_XXXX-XX_XX.csv", and the most recent 
+#"Taxonomy_updates_XXXX-XX-XX.csv" if the latter exists.
+#Outputs: The final file is: tree_data_taxonomy_corrections_XXXX-XX-XX, and updated
+#Taxonomy_updates_XXXX-XX-XX file is produced. 
+
+#Description: This code is part 2 of the analysis pipeline for key indicators for the Priceless 
+#Planet Coalition. This code takes all of the species names entered in Kobo and attempts
+#to resolve taxonomic information and adds family names. This script requires user input
+#to manually correct names or add correct family names when the functions from other libraries fail
+# to retrieve the data.
 #-----------------------------------------------------------------------
 #PPC Taxonomic names corrections
-setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
+library(taxize)
+library(taxizedb)
+library(plyr)
 
-#get data
-tree_data=read.csv("tree_data_PPC_Data_2023-04-19.csv")
+path_to_raw_data = paste(getwd(), "Raw_Data", sep = "/")
+#setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
+
+#Import the data most recent "tree_data_PPC_Data" data
+PPC_files=file.info(list.files(path_to_raw_data, full.names = T))
+recent_tree_data=PPC_files[grep("tree_data_PPC_Data", row.names(PPC_files)),]
+recent_tree_data_file=row.names(recent_tree_data[which(recent_tree_data$mtime == max(recent_tree_data$mtime)),])
+tree_data=read.csv(recent_tree_data_file) 
+
 #remove column labeled "X"
 tree_data = tree_data[,-which(colnames(tree_data)=="X")]
 tree_data$tree_data.Species = trimws(tree_data$tree_data.Species)
@@ -13,12 +36,9 @@ na_sp_tree_data = tree_data[which(is.na(tree_data$tree_data.Species)),]
 tree_data = tree_data[-which(is.na(tree_data$tree_data.Species)),]
 unique_species_original = sort(unique(tree_data$tree_data.Species))
 unique_species = data.frame(unique_species= unique_species_original)
-#unique_species$unique_species
-#table(unique(unique_species$unique_species))
 
 #-----------------------------------------------------------------------
 #Section 1 - import newest existing taxonomic corrections
-PPC_files=file.info(list.files(getwd(), full.names = T))
 corrected_tax_files=PPC_files[grep("Taxonomy_updates", row.names(PPC_files)),]
 taxlist=row.names(corrected_tax_files[which(corrected_tax_files$mtime == max(corrected_tax_files$mtime)),])
 full_tax_corrects=read.csv(taxlist) 
@@ -27,26 +47,27 @@ full_tax_corrects = full_tax_corrects[,-1]
 #-----------------------------------------------------------------------
 #Get rows of uncorrected species names already in corrected species names
 rows_to_remove=which(unique_species$unique_species %in% full_tax_corrects$submitted_name)
+
+#The following script can take a long time to run, esp. for "NA" data. 
 #Remove these rows from unique_species data
 #If the number unique_species is greater than one after removing correct names
 #there are still names that need to be corrected. Continue with script
 #Note: This could be zero
-if(length(unique_species[-rows_to_remove,]>0)) {
+if(length(unique_species[-rows_to_remove,])>0) {
   unique_species=unique_species[-rows_to_remove,]
   unique_species = data.frame(unique_species= unique_species)
 
   #-----------------------------------------------------------------------
   #Section 2:
-  #Correct species names Function:
+  #Correct species names function:
   #Get corrected taxonomic names from taxize package
   #Input: Dataframe of the unique species names
   #Output: Dataframe of taxize outputs
-  library(taxize)
-  library(taxizedb)
   Correct_taxonomy_fun=function(unique_species){
   
-  #Retrieve correct taxonmic names from tropics and ncbi databases.
+  #Retrieve correct taxonomic names from tropics and ncbi databases.
   #Note: you may have to oibtain an API acess key to do this.
+  print("1")
   result.long <-as.data.frame(gnr_resolve(sci=unique_species$unique_species, data_source_ids = c(165, 167), canonical=T)) #165= tropicos
   
   #Create a shortened version of results that selects highest score or first name return if scores are ambiguous:
@@ -87,11 +108,12 @@ if(length(unique_species[-rows_to_remove,]>0)) {
     method1_out=merged_taxon
     return(method1_out)    
   }
+  print("2")
   
 }
   method1_out=Correct_taxonomy_fun(unique_species)
   data_out1 = method1_out
-
+  print("3")
   #-------------------------------------------------------------------------------
   #Section 3:
   #Get family names for corrected species
@@ -109,11 +131,12 @@ if(length(unique_species[-rows_to_remove,]>0)) {
     specific_epithet=strsplit(x, " ")[[1]][2]
     return(data.frame(Genus, specific_epithet))
   } ))}
+  print("4")
 
   #Note 1: Function below will take some time as it requires user input.
-  #Taxize package will search for famiy names, and user will have to provide input;
+  #Taxize package will search for family names, and user will have to provide input;
   #so, far this is pretty unecessary bc the function returns erroneous names that
-  #the user will have to correct. So, just hit the ENTER buttom when prompted to select a
+  #the user will have to correct. So, just hit the ENTER button when prompted to select a
   #row number.
 
   #Note 2:Users will also be prompted to supply family names for any species where
@@ -151,7 +174,7 @@ if(length(unique_species[-rows_to_remove,]>0)) {
   #extract  ID's for species , then extract Family names for these species
   ids2 = name2taxid(method1_out$matched_name2, out_type="summary")
   
-  #There are some duplicate names that get passes to this function
+  #There are some duplicate names that get passed to this function
   #Extract family names from list of taxonomic ranks
   method2_out=do.call("rbind",lapply(classification(ids2$id), FUN=function(x){
     family_name=x[which(x$rank=='family'),]$name
@@ -242,9 +265,15 @@ if(length(unique_species[-rows_to_remove,]>0)) {
   
 }
 
-  #Probably need to remove "NA" etnries
-  fam_data_out = get_family_names_function(data_out1)
+  #Get rows with "NA" entries bc this takes forever
+  rows_with_NAs=which(data_out1$matched_name2=="NA")
+  #Get families for species wth names
+  fam_data_out = get_family_names_function(data_out1[-rows_with_NAs,])
   fam_data_out = unique(fam_data_out)
+  #add rows of data that have NA species names back into the data with family names
+  fam_data_out = rbind.fill( fam_data_out, data_out1[rows_with_NAs,])
+  
+  
   fam_data_out2 = rbind(fam_data_out, full_tax_corrects)
   #Name and save corrected taxonomy data
   date = Sys.Date()
@@ -255,7 +284,7 @@ if(length(unique_species[-rows_to_remove,]>0)) {
 }
 
 
-PPC_files=file.info(list.files(getwd(), full.names = T))
+PPC_files=file.info(list.files(path_to_raw_data, full.names = T))
 corrected_tax_files=PPC_files[grep("Taxonomy_updates", row.names(PPC_files)),]
 taxlist=row.names(corrected_tax_files[which(corrected_tax_files$mtime == max(corrected_tax_files$mtime)),])
 full_tax_corrects=read.csv(taxlist) 
@@ -266,26 +295,20 @@ full_tax_corrects=unique(full_tax_corrects)
 freq_df=as.data.frame(table(full_tax_corrects$submitted_name))
 dup_name=freq_df[which(freq_df$Freq>1),]$Var1
 
-#Add updated taxonomic infor back into main data
+#Add updated taxonomic infor back into main data, "tree_data" .csv
 #Check that the data have similar names
 setdiff(tree_data$tree_data.Species, full_tax_corrects$user_supplied_name)
 setdiff( full_tax_corrects$user_supplied_name, tree_data$tree_data.Species)
 setdiff(tree_data$tree_data.Species, full_tax_corrects$submitted_name)
 setdiff(full_tax_corrects$submitted_name, tree_data$tree_data.Species)
 
+length(tree_data$tree_data._index)
 tree_data_taxonomy_editted=merge(tree_data, full_tax_corrects, by.x=c("tree_data.Species"), by.y=c("user_supplied_name"), all.x=T)
+length(tree_data_taxonomy_editted$tree_data._index)
 tree_data_taxonomy_editted=data.table::rbindlist(list(tree_data_taxonomy_editted, na_sp_tree_data), fill = TRUE)
 date = Sys.Date()
 tree_file_name = paste(paste("tree_data_taxonomy_corrections", date, sep="_"), "csv", sep=".")
-setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
-write.csv(tree_data_taxonomy_editted, tree_file_name)
+#setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
+tree_file_name_path = paste(path_to_raw_data, tree_file_name, sep="/")
+write.csv(tree_data_taxonomy_editted, tree_file_name_path)
 
-
-
-#Trash below
-#lapply(1:length(dup_name), FUN=function(x){
-#  dup_check = dup_name[]
-#  rows_to_check=which(full_tax_corrects$submitted_name==dup_check)
-#  full_tax_corrects[rows_to_check,]
-#  print(whifull_tax_corrects$submitted_name==dup_check,])
-#})

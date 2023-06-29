@@ -14,7 +14,7 @@
 #--------------------------------------------------------------------------------
 
 
-setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/")
+#setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/")
 #remotes::install_gitlab("dickoa/robotoolbox")
 library(robotoolbox)
 library("dplyr")
@@ -357,13 +357,14 @@ main_data=as.data.frame(df7[-remove_from_df7])
 final_data=list(main_data, tree_data, attachments, geolocation, tags, notes, validation)
 names(final_data)=c("main_data", "tree_data", "attachments", "geolocation", "tags", "notes", "validation")
 
-setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
+#setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
 #Write final data to .csvs
 length(final_data)
 lapply(1:length(final_data), FUN=function(x){
   list_name=names(final_data)[x]
   date=Sys.Date()
   file_name=paste(paste(list_name, "PPC_Data", date, sep="_" ), "csv", sep=".")
+  file_name = paste("Raw_Data/", file_name, sep = "")
   write.csv(final_data[x], file_name)
 })
 

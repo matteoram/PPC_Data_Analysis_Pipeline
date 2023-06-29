@@ -13,9 +13,10 @@
 #-----------------------------------------------------------------------
 
 #Get PPC site infor names for
-setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
+#setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
 #get file names
-ppc_data_files=list.files(getwd())
+path_to_raw_data = paste(getwd(), "Raw_Data", sep = "/")
+ppc_data_files=list.files(path_to_raw_data)
 
 #import main and tree data
 main_data=read.csv(ppc_data_files[grep("main", ppc_data_files)])
