@@ -14,8 +14,9 @@
 path_to_raw_data = paste(getwd(), "Raw_Data", sep = "/")
 ppc_data_files= list.files(path_to_raw_data)
 
-#import main and tree data
-ind_data = read.csv(ppc_data_files[grep("Data_for_PPC_indicators", ppc_data_files)])
+#import data for ppc indicators
+path_to_main = paste(path_to_raw_data, ppc_data_files[grep("Data_for_PPC_indicators", ppc_data_files)], sep="/")
+ind_data = read.csv(path_to_main)
 
 #Number of trees restored: Plot, Site, country
 #For every plot that is missing data from a given size classes, it needs to be populated with a zero
@@ -80,10 +81,10 @@ planted_trees=planted_trees[order(planted_trees$year),]
 sl_out = lapply(unique(planted_trees$Site_ID), FUN=function(x){
   
   site_level = planted_trees[which(planted_trees$Site_ID==x),]
-  print(x)
+  #print(x)
   pl_out = lapply(unique(site_level$Plot_ID), FUN=function(y){
     plot_level = site_level[which(site_level$Plot_ID==y),]
-    print(y)
+    #print(y)
     
     sl_out = lapply(unique(plot_level$Species), FUN=function(z){
       species_level = plot_level[which(plot_level$Species==z),]
@@ -91,13 +92,13 @@ sl_out = lapply(unique(planted_trees$Site_ID), FUN=function(x){
       
      sc_out = lapply(unique(species_level$size_class), FUN=function(q){
         size_class = species_level[which(species_level$size_class==q),]
-        print(q)
+        #print(q)
         
         size_class = size_class[order(size_class$year),]
         num_survived = c(diff(c(size_class$Tree_per_sq_30m, NA)),NA)
         dl = nrow(size_class)
         size_class$num_survived2 = num_survived[1:dl]
-        size_class$percent_survived = (size_class$Tree_per_sq_30m-num_survived2)/size_class$Tree_per_sq_30m
+        size_class$percent_survived = (size_class$Tree_per_sq_30m-size_class$num_survived2)/size_class$Tree_per_sq_30m
         
         return(size_class)
       })
@@ -132,6 +133,7 @@ Restored_by_site = paste(paste("Restored_by_site", date, sep="_"), "csv", sep=".
 Restored_by_site_path = paste(path_to_raw_data, Restored_by_site, sep = "/")
 write.csv(Ntrees_regen_site, Restored_by_site_path)
 
+
 #Number of regeneratin trees by plot
 Regeneration_by_plot = paste(paste("Regeneration_by_plot", date, sep="_"), "csv", sep=".")
 Regeneration_by_plot_path = paste(path_to_raw_data, Regeneration_by_plot, sep = "/")
@@ -142,10 +144,13 @@ Regeneration_by_site = paste(paste("Regeneration_by_site", date, sep="_"), "csv"
 Regeneration_by_site_path = paste(path_to_raw_data, Regeneration_by_site, sep = "/")
 write.csv(Ntrees_natregen_site, Regeneration_by_site_path)
 
-#Survival of planted trees:
+
+#Survival of planted trees by plot:
 Survival_data = paste(paste("Survival_by_site", date, sep="_"), "csv", sep=".")
 Survival_data_path = paste(path_to_raw_data, Survival_data, sep = "/")
 write.csv(sl_out_df, Survival_data_path)
+
+
 
 
 

@@ -16,11 +16,14 @@
 #setwd("/Users/tperez/Library/CloudStorage/OneDrive-ConservationInternationalFoundation/Desktop/CI_git_projects/PPC/Raw_Data")
 #get file names
 path_to_raw_data = paste(getwd(), "Raw_Data", sep = "/")
-ppc_data_files=list.files(path_to_raw_data)
+ppc_data_files = list.files(path_to_raw_data)
 
 #import main and tree data
-main_data=read.csv(ppc_data_files[grep("main", ppc_data_files)])
-tree_data=read.csv(ppc_data_files[grep("tree_data_taxonomy_corrections", ppc_data_files)])
+path_to_main = paste(path_to_raw_data, ppc_data_files[grep("main", ppc_data_files)], sep="/")
+main_data = read.csv(path_to_main)
+
+path_to_tax_corrects = paste(path_to_raw_data, ppc_data_files[grep("tree_data_taxonomy_corrections", ppc_data_files)], sep="/")
+tree_data = read.csv(path_to_tax_corrects)
 unique(tree_data$tree_data.Tree_type)
 main_data[which(main_data$main_data.Timeframe=="Y2.5"),]
 
