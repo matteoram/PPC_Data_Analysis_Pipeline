@@ -53,8 +53,16 @@ df <- kobo_submissions(asset) ## or df <-  kobo_data(asset)
 #The code below cycle through the 'main' df and extract all lists then, cycles through rows of
 #each list because there are dataframes stored within these rows. #The output
 #is a "flattened" list of the listed dfs in "main"
+
+# This checks the "main" df for any columns that are stored as lists, and it 
+# should only identify the final column "_attachments", which has a list of 
+# links for downloading images of different sizes.
+
 main_listed_cols = which(sapply(df$main, is.list))
-unlisted_from_maindf=lapply(1:length(main_listed_cols), FUN = function(x){
+
+# This large function unpacks that final column (_attachments), which is itself
+# a column of lists
+unlisted_from_maindf = lapply(1:length(main_listed_cols), FUN = function(x){
    
   listed_col_numx = main_listed_cols[x]
   #listed_col_numx = main_listed_cols[19]
@@ -64,10 +72,10 @@ unlisted_from_maindf=lapply(1:length(main_listed_cols), FUN = function(x){
   listed_colx = df$main[listed_col_numx]
   listed_colx_name = names(df$main[listed_col_numx])
   
-  #Get which rows have dfs within them
+  # This returns a boolean for which rows have a nested list within them.
   list_within_cols = sapply(listed_colx[[listed_colx_name]], is.list)
   
-  #Here i need to cycle through all of the rows of the parent index
+  # Here I need to cycle through all of the rows of the parent index
   unnested_dfx = lapply(1:length(list_within_cols), FUN=function(y){
     parent_index = y
     #id=df$main$`_id`[parent_index]
@@ -153,6 +161,7 @@ main=as.list(main) #make sure main df is a list
 
 #Remove "main df from the list of df's
 df2=df[-which(names(df)=="main")] 
+
 #make sure df is a list
 df2=as.list(df2) 
 
