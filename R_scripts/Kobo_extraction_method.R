@@ -54,15 +54,9 @@ df <- kobo_submissions(asset) ## or df <-  kobo_data(asset)
 #each list because there are dataframes stored within these rows. #The output
 #is a "flattened" list of the listed dfs in "main"
 
-# This checks the "main" df for any columns that are stored as lists, and it 
-# should only identify the final column "_attachments", which has a list of 
-# links for downloading images of different sizes.
 
-main_listed_cols = which(sapply(df$main, is.list))
-
-# This large function unpacks that final column (_attachments), which is itself
-# a column of lists
-unlisted_from_maindf = lapply(1:length(main_listed_cols), FUN = function(x){
+main_listed_cols = which(sapply(df$main, is.list)) # creates indices for each element of df that is a list
+unlisted_from_maindf=lapply(1:length(main_listed_cols), FUN = function(x){
    
   listed_col_numx = main_listed_cols[x]
   #listed_col_numx = main_listed_cols[19]
@@ -72,10 +66,10 @@ unlisted_from_maindf = lapply(1:length(main_listed_cols), FUN = function(x){
   listed_colx = df$main[listed_col_numx]
   listed_colx_name = names(df$main[listed_col_numx])
   
-  # This returns a boolean for which rows have a nested list within them.
+  #Get which rows have dfs within them
   list_within_cols = sapply(listed_colx[[listed_colx_name]], is.list)
   
-  # Here I need to cycle through all of the rows of the parent index
+  #Here i need to cycle through all of the rows of the parent index
   unnested_dfx = lapply(1:length(list_within_cols), FUN=function(y){
     parent_index = y
     #id=df$main$`_id`[parent_index]
@@ -161,7 +155,6 @@ main=as.list(main) #make sure main df is a list
 
 #Remove "main df from the list of df's
 df2=df[-which(names(df)=="main")] 
-
 #make sure df is a list
 df2=as.list(df2) 
 
@@ -326,24 +319,30 @@ data12$`_id` = df6$main$`_id`
 data12$`_parent_table` = "main"
 
 #data_0012_1
-data0012_1=data.frame(Species = df6$main$Tree_Species_0012_1,
-                  Number_of_trees = df6$main$Number_of_Trees_of_this_Species_0012_1,
-                  Tree_type=as.character(df6$main$Tree_Type_0012_1 ),
-                  plot_type = "Unk")
-data0012_1$`_index` = 1
-data0012_1$`_parent_index` = 1:length(data0012_1[,1])
-data0012_1$`_parent_table_name` = rep("Tree_Species_0012", length(data0012_1[,1]))
-data0012_1$Data_type = NA
-data0012_1$`_id` = df6$main$`_id`
-data0012_1$`_parent_table` = "main"
+# data0012_1=data.frame(Species = df6$main$Tree_Species_0012_1,
+#                   Number_of_trees = df6$main$Number_of_Trees_of_this_Species_0012_1,
+#                   Tree_type=as.character(df6$main$Tree_Type_0012_1 ),
+#                   plot_type = "Unk")
+# data0012_1$`_index` = 1
+# data0012_1$`_parent_index` = 1:length(data0012_1[,1])
+# data0012_1$`_parent_table_name` = rep("Tree_Species_0012", length(data0012_1[,1]))
+# data0012_1$Data_type = NA
+# data0012_1$`_id` = df6$main$`_id`
+# data0012_1$`_parent_table` = "main"
 
-misc_tree_data=do.call("rbind", list(data2, data12,  data0012_1))
+# misc_tree_data=do.call("rbind", list(data2, data12,  data0012_1))
+
+misc_tree_data=do.call("rbind", list(data2, data12))
+
+
+
 #sort(colnames(df6$tree_dat))==sort(colnames(misc_tree_data)) #are column names the same?
 #Sort misc_tree_data to follow order of f6$tree_dat
-misc_tree_data=misc_tree_data[,colnames(df6$tree_dat)] 
-#Add misc tree data to 
-tree_data=rbind(df6$tree_dat, misc_tree_data)
+#misc_tree_data=misc_tree_data[,colnames(df6$tree_dat)]
+# #Add misc tree data to 
+tree_data=rbind(df6$tree_dat, misc_tree_data, fill = TRUE)
 
+# tree_data = df6$tree_dat
 
 #Extract nested lists
 attachments = df6$main$`_attachments`

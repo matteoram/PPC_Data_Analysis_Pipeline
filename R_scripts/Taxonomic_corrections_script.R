@@ -25,7 +25,9 @@ path_to_raw_data = paste(getwd(), "Raw_Data", sep = "/")
 PPC_files=file.info(list.files(path_to_raw_data, full.names = T))
 recent_tree_data=PPC_files[grep("tree_data_PPC_Data", row.names(PPC_files)),]
 recent_tree_data_file=row.names(recent_tree_data[which(recent_tree_data$mtime == max(recent_tree_data$mtime)),])
-tree_data=read.csv(recent_tree_data_file) 
+tree_data=read.csv(recent_tree_data_file)
+
+tree_data <- tree_data[sample(1:nrow(tree_data), size = 40),]
 
 #remove column labeled "X"
 tree_data = tree_data[,-which(colnames(tree_data)=="X")]
@@ -266,13 +268,24 @@ if(length(unique_species[-rows_to_remove,])>0) {
 }
 
   #Get rows with "NA" entries bc this takes forever
-  rows_with_NAs=which(data_out1$matched_name2=="NA")
-  #Get families for species wth names
-  fam_data_out = get_family_names_function(data_out1[-rows_with_NAs,])
-  fam_data_out = unique(fam_data_out)
-  #add rows of data that have NA species names back into the data with family names
-  fam_data_out = rbind.fill( fam_data_out, data_out1[rows_with_NAs,])
+  # rows_with_NAs=which(data_out1$matched_name2=="NA")
+  # 
+  # #Get families for species wth names
+  # fam_data_out = get_family_names_function(data_out1[-rows_with_NAs,])
+  # 
+  # fam_data_out = unique(fam_data_out)
+  # 
+  # #add rows of data that have NA species names back into the data with family names
+  # fam_data_out = rbind.fill( fam_data_out, data_out1[rows_with_NAs,])
   
+  
+
+  # Start Edit
+  #Get families for species wth names
+  fam_data_out = get_family_names_function(data_out1)
+
+  fam_data_out = unique(fam_data_out)
+  # End edit
   
   fam_data_out2 = rbind(fam_data_out, full_tax_corrects)
   #Name and save corrected taxonomy data

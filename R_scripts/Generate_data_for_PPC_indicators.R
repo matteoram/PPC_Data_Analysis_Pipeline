@@ -20,9 +20,10 @@ ppc_data_files = list.files(path_to_raw_data)
 
 #import main and tree data
 path_to_main = paste(path_to_raw_data, ppc_data_files[grep("main", ppc_data_files)], sep="/")
-main_data = read.csv(path_to_main)
+main_data = read.csv(path_to_main[2])
 
-path_to_tax_corrects = paste(path_to_raw_data, ppc_data_files[grep("tree_data_taxonomy_corrections", ppc_data_files)], sep="/")
+path_to_tax_corrects = paste(path_to_raw_data, ppc_data_files[grep("tree_data_taxonomy_corrections", ppc_data_files)], sep="/")[2]
+
 tree_data = read.csv(path_to_tax_corrects)
 unique(tree_data$tree_data.Tree_type)
 main_data[which(main_data$main_data.Timeframe=="Y2.5"),]
@@ -247,7 +248,8 @@ planting_density_estimate = lapply(1:length(uplantpat), FUN=function(x){
    planted_seedling_estimate = 900/planting_density
    return(planted_seedling_estimate)
 })
-planting_density_estimate = do.call("rbind", planting_density_estimate)
+
+# planting_density_estimate = do.call("rbind", planting_density_estimate)
 est_pl_dens_dat=data.frame(est_pl_dens = planting_density_estimate, PlantingPattern =uplantpat)
 
 
