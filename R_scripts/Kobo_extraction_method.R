@@ -42,7 +42,7 @@ uid <- l |>
 
 asset <- kobo_asset(uid)
 
-df <- kobo_submissions(asset, all_versions = F) ## or df <-  kobo_data(asset)
+df <- kobo_submissions(asset) ## or df <-  kobo_data(asset)
 
 #Check dimensions
 #names(df) #101 columns, 324 rows, ncol(df$main); nrow(df$main) #Number of columns increased!

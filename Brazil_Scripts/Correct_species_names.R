@@ -1,7 +1,8 @@
 library(taxize)
-
+library(dplyr)
 
 tree_data <- read.csv("Tree_Data_Full_2023-10-12.csv", check.names = FALSE)
+corrected_names <- read.csv("Taxonomic_Corrections_2023-10-13.csv")
 
 unique_sp_names <- unique(tree_data$Species)
 
@@ -44,14 +45,19 @@ distinct_corrections <- final_df %>%
   distinct()
 
 # Save to CSV
-write.csv(distinct_corrections, "corrections.csv", row.names = FALSE)
+
+date_info <- Sys.Date()
+write.csv(distinct_corrections, paste0("Taxonomic_Corrections_", date_info, ".csv"), row.names = FALSE)
 
 
 updated_data <- tree_data %>%
-  left_join(distinct_corrections, by = "Species") %>%
+  mutate(submitted_species_name = Species) %>% 
+  left_join(corrected_names, by = "Species") %>%
   mutate(Species = ifelse(is.na(matched_name2), Species, matched_name2)) %>%
   mutate(name_validation = ifelse(is.na(matched_name2), "Needs review", "Resolved")) %>% 
   select(-matched_name2)
+
+
 
 
 

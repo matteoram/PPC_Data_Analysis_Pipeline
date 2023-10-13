@@ -4,9 +4,11 @@ library(dm)
 library(askpass)
 
 
+# This asset name is how the Brazil data is stored in Kobo.
 asset_name <- "PPC/PACTO Tree Monitoring - Brazil only"
 
 
+# First stage of extraction: get user credentials, locate project, extract data.
 retrieve_kobo_data <- function(asset_name) {
   
   # Authenticate and set up KoboToolbox connection
@@ -17,7 +19,11 @@ retrieve_kobo_data <- function(asset_name) {
                     password = PW,
                     url = "kf.kobotoolbox.org")
   
+  # This just prints some info into the console
   kobo_settings()
+  
+  # Get list of all assets (will likely just be the main Tree Monitoring project
+  # and the Brazil-specific project)
   l <- kobo_asset_list()
   
   # Extract UID based on asset name
@@ -43,7 +49,8 @@ retrieve_kobo_data <- function(asset_name) {
 }
 
 
-
+# Basic manipulation: renaming index so it is unique from index in other tables,
+# and moving columns around for tidiness and ease. 
 prep_main_table <- function(main_table){
   
   colnames(main_table)[colnames(main_table) == "_index"] <- "main_index"
@@ -228,17 +235,21 @@ combine_tree_tables <- function(tree_tables_list) {
 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE) {
+
+  if (!dir.exists("Brazil_Raw_Data")) {
+    dir.create("Brazil_Raw_Data")
+  }
+  
   if (date_stamp) {
     current_date <- format(Sys.Date(), "%Y-%m-%d") # e.g., "20231010"
-    filename <- paste0(prefix, "_", current_date, ".csv")
+    filename <- paste0("Brazil_Raw_Data/", prefix, "_", current_date, ".csv")
   } else {
-    filename <- paste0(prefix, ".csv")
+    filename <- paste0("Brazil_Raw_Data/", prefix, ".csv")
   }
   
   write.csv(data, filename, row.names = FALSE)
   cat(paste("Data written to:", filename), "\n")
 }
-
 
 
 write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE) {
@@ -283,7 +294,7 @@ print("Writing data to disk.")
 write_to_csv(prepared_main_table, "Main_Data")
 write_list_to_csv(final_DBH_tables, names(adjusted_DBH_tables))
 write_list_to_csv(final_tree_tables, names(cleaned_tree_tables))
-write_to_csv(final_combined_tree_tables, "Tree_Data_full")
+write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
 
 # Optionally, print a message to let the user know the process is complete:
 cat("Data processing and export complete!\n")
