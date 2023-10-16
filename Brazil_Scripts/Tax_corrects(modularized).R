@@ -133,6 +133,7 @@ save_updated_corrections <- function(final_df, corrected_names) {
   date_info <- Sys.Date()
 
   write.csv(all_corrections, paste0("Brazil_Raw_Data/Taxonomic_Corrections_", date_info, ".csv"), row.names = FALSE)
+  print(paste0("Updated species corrections saved to: Brazil_Raw_Data/Taxonomic_Corrections_", date_info, ".csv"))
   return(all_corrections)
 }
 
@@ -147,6 +148,8 @@ save_corrected_tree_data <- function(tree_data, all_corrections) {
 
   date_info <- Sys.Date()
   write.csv(updated_tree_data, paste0("Brazil_Raw_Data/Corrected_Tree_Data_", date_info, ".csv"), row.names = FALSE)
+  print(paste0("Corrected tree data saved to: Brazil_Raw_Data/Corrected_Tree_Data_", date_info, ".csv"))
+  
   return(updated_tree_data)
 }
 
@@ -165,3 +168,5 @@ all_corrections <- save_updated_corrections(final_df, data$corrected_names)
 
 # Save updated tree_data
 updated_tree_data <- save_corrected_tree_data(data$tree_data, all_corrections)
+
+

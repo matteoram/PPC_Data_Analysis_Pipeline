@@ -35,7 +35,7 @@ retrieve_kobo_data <- function(asset_name) {
 
   # Get asset and data
   asset <- kobo_asset(uid)
-  df <- kobo_data(asset, all_versions = T)
+  df <- kobo_data(asset)
 
   # Convert to list for easier handling
   main_list <- as.list(df)
@@ -45,6 +45,19 @@ retrieve_kobo_data <- function(asset_name) {
   tree_tables <- main_list[names(main_list)[grep(c("x"), x = names(main_list))]]
   DBH_tables <- main_list[names(main_list)[grep(c("group"), x = names(main_list))]]
 
+  # Print table info to check for data structure changes
+  cat(paste0("Number of Expected Tables: 8 \n", "Number of Retrieved Tables: ", length(df), "\n"))
+  expected_names <- c("main", "_30x30_Plot_Repeat", "group_un3bb19", 
+                      "_3x3_Subplot_Repeat", "_30x30_Plot_Repeat_Planted_10cm", 
+                      "_30x15_Plot_Repeat","group_dz1zn48", "Plot_Info_Repeat" )
+  
+  if (all(expected_names == names(df))) {
+    cat("Tables in Kobo data are named as expected.\n")
+  }else {
+      cat(paste0("Table names are not as expected. This may cause data quality issues or unexpected outputs. \n", 
+                   "Unexpected table name(s): ", names(df)[!names(df) %in% expected_names], " \n"))
+    }
+  
   # Return the tables as a list
   return(list(main_table = main_table, tree_tables = tree_tables, DBH_tables = DBH_tables))
 }
@@ -53,28 +66,50 @@ retrieve_kobo_data <- function(asset_name) {
 # Basic manipulation: renaming index so it is unique from index in other tables,
 # and moving columns around for tidiness and ease.
 prep_main_table <- function(main_table) {
+  
+  if("Notes" %in% names(main_table)) {
+    names(main_table)[names(main_table) == "Notes"] <- "Original_Notes"
+  }
+  # Simplify renaming using gsub and sapply
+  rename_columns <- function(x) {
+    x <- gsub("Plot_Info_", "", x)
+    x <- gsub("Site_Info_", "", x)
+    x <- gsub("General_Info_", "", x)
+    return(x)
+  }
+  names(main_table) <- sapply(names(main_table), rename_columns)
+  
+  # Ensure "_index" is renamed to "main_index" even after the previous renaming
   colnames(main_table)[colnames(main_table) == "_index"] <- "main_index"
+  
+  main_table <- main_table %>% 
+    mutate(Plot_Resampling = ifelse(is.na(Resampling), 0, Resampling)) %>% 
+    mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot))
+  
   main_table <- main_table %>% select(
-    Plot_Info_Plot_ID,
-    Site_Info_Site_ID,
-    Site_Info_SiteType,
-    General_Info_Country,
-    General_Info_Organization_Name,
-    Plot_Info_Plot_Permanence,
-    Plot_Info_Strata,
+    Plot_ID,
+    Site_ID,
+    SiteType,
+    Country,
+    Organization_Name,
+    Plot_Permanence,
+    Strata,
     everything(),
     -`_attachments`
   )
-
+  
   main_table <- main_table %>% select(
-    -General_Info_Note,
-    -General_Info_Note1,
-    -General_Info_Diagram,
-    General_Info_Note,
-    General_Info_Note1,
-    General_Info_Diagram
+    -Note,
+    -Note1,
+    -Diagram,
+    Note,
+    Note1,
+    Diagram
   )
+  
+  return(main_table)  # Make sure to return the modified table
 }
+
 
 
 
@@ -121,9 +156,14 @@ clean_tree_tables <- function(tree_tables, main_table) {
         select(
           main_table,
           main_index,
-          Plot_Info_Plot_ID,
-          Site_Info_Site_ID,
-          Site_Info_SiteType
+          Plot_ID,
+          Organization_Name,
+          Site_ID,
+          SiteType,
+          Plot_Permanence,
+          Resampling,
+          Resample_3x3_Subplot,
+          Restoration_Technique
         ),
         by = "main_index"
       )
@@ -131,9 +171,9 @@ clean_tree_tables <- function(tree_tables, main_table) {
     df <- df %>% select(
       Species,
       Tree_Type,
-      Plot_Info_Plot_ID,
-      Site_Info_Site_ID,
-      Site_Info_SiteType,
+      Plot_ID,
+      Site_ID,
+      SiteType,
       Plot_Type,
       everything()
     )
@@ -174,9 +214,9 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
           tree_index,
           Species,
           Tree_Type,
-          Plot_Info_Plot_ID,
-          Site_Info_Site_ID,
-          Site_Info_SiteType,
+          Plot_ID,
+          Site_ID,
+          SiteType,
           Plot_Type
         ),
         by = "tree_index"
@@ -231,7 +271,7 @@ combine_tree_tables <- function(tree_tables_list) {
 
   # Group by Plot_Info_Plot_ID and Species, then summarize
   combined_tree_tables <- combined_tree_tables %>%
-    group_by(Plot_Info_Plot_ID, Species) %>%
+    group_by(Plot_ID, Species) %>%
     summarise(
       Tree_Count = sum(Tree_Count),
       # Retain the first value for all other columns
