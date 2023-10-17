@@ -222,6 +222,7 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
         select(
           parent_table,
           tree_index,
+          main_index,
           Species,
           Tree_Type,
           Plot_ID,
@@ -256,7 +257,6 @@ adjust_DBH_tables <- function(DBH_tables, tree_tables) {
 
   # Merge and adjust the first table of DBH_tables
   DBH_tables[[1]] <- bind_rows(DBH_tables[[1]], new_form_data)
-  DBH_tables[[1]]$main_index <- NULL
   DBH_tables[[1]]$trunk_index <- c(1:nrow(DBH_tables[[1]]))
 
   names(DBH_tables) <- c("DBH_30x30", "DBH_30x15")
