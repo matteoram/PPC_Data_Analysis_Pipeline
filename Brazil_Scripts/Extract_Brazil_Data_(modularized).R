@@ -277,17 +277,21 @@ remove_NA_columns <- function(tables_list) {
 
 combine_tree_tables <- function(tree_tables_list) {
   combined_tree_tables <- bind_rows(tree_tables_list)
-
-  # Remove specific columns and adjust Tree_Count
-  combined_tree_tables <- combined_tree_tables %>%
-    select(
-      -tree_index, -`_30x30_Plot_TreeIDNumber`,
-      -`_30X30_Plot_TreeTrunk`, -`_30x30_Plot_TreeDBH`
-    ) %>%
-    mutate(Tree_Count = ifelse(grepl("_30x30_Plot_Repeat|_30x15_Plot_Repeat", origin_table) & is.na(Tree_Count), 1, Tree_Count))
-
-  # Group by Plot_Info_Plot_ID and Species, then summarize
-  combined_tree_tables <- combined_tree_tables %>%
+  
+  # Separate dataframes: one with non-NA values and one with NA values for the column
+  df_non_na <- combined_tree_tables %>% filter(!is.na(`_30x30_Plot_TreeIDNumber`))
+  df_na <- combined_tree_tables %>% filter(is.na(`_30x30_Plot_TreeIDNumber`))
+  
+  # Remove duplicates only from the non-NA dataframe
+  df_non_na_fixed <- df_non_na %>% 
+    distinct(`_30x30_Plot_TreeIDNumber`, .keep_all = TRUE)
+  
+  # Bind the rows back together
+  combined_tree_tables_fixed <- bind_rows(df_na, df_non_na_fixed)
+  
+  # Your other operations here...
+  combined_tree_tables_fixed <- combined_tree_tables_fixed %>%
+    mutate(Tree_Count = ifelse(grepl("_30x30_Plot_Repeat|_30x15_Plot_Repeat", origin_table) & is.na(Tree_Count), 1, Tree_Count)) %>%
     group_by(Plot_ID, Species) %>%
     summarise(
       Tree_Count = sum(Tree_Count),
@@ -295,11 +299,9 @@ combine_tree_tables <- function(tree_tables_list) {
       across(everything(), first),
       .groups = "drop"
     )
-
-  return(combined_tree_tables)
+  
+  return(combined_tree_tables_fixed)
 }
-
-
 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE) {
