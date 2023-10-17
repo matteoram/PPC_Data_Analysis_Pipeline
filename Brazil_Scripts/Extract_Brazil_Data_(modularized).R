@@ -83,7 +83,7 @@ prep_main_table <- function(main_table) {
   colnames(main_table)[colnames(main_table) == "_index"] <- "main_index"
   
   main_table <- main_table %>% 
-    mutate(Plot_Resampling = ifelse(is.na(Resampling), 0, Resampling)) %>% 
+    mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>% 
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot))
   
   main_table <- main_table %>% select(
@@ -94,6 +94,8 @@ prep_main_table <- function(main_table) {
     Organization_Name,
     Plot_Permanence,
     Strata,
+    Resample_Main_Plot,
+    Resample_3x3_Subplot,
     everything(),
     -`_attachments`
   )
@@ -161,9 +163,10 @@ clean_tree_tables <- function(tree_tables, main_table) {
           Site_ID,
           SiteType,
           Plot_Permanence,
-          Resampling,
+          Resample_Main_Plot,
           Resample_3x3_Subplot,
-          Restoration_Technique
+          Restoration_Technique,
+          Timeframe
         ),
         by = "main_index"
       )
@@ -217,7 +220,13 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
           Plot_ID,
           Site_ID,
           SiteType,
-          Plot_Type
+          Plot_Type,
+          Organization_Name,
+          Plot_Permanence,
+          Resample_Main_Plot,
+          Resample_3x3_Subplot,
+          Restoration_Technique, 
+          Timeframe
         ),
         by = "tree_index"
       )
@@ -236,6 +245,7 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
 adjust_DBH_tables <- function(DBH_tables, tree_tables) {
   # Extract specific data from tree_tables
   new_form_data <- tree_tables$`_30x30_Plot_Repeat`[!is.na(tree_tables$`_30x30_Plot_Repeat`$`_30x30_Plot_TreeIDNumber`), ]
+
 
   # Merge and adjust the first table of DBH_tables
   DBH_tables[[1]] <- bind_rows(DBH_tables[[1]], new_form_data)
