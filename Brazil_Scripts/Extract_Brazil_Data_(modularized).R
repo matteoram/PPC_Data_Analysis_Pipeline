@@ -117,8 +117,8 @@ prep_main_table <- function(main_table) {
 
 clean_tree_tables <- function(tree_tables, main_table) {
   # Extract table names
-  table_names <- names(tree_tables)
-  tree_table_names <- table_names[grep(c("x"), x = table_names)]
+  tree_table_names <- names(tree_tables)
+  # tree_table_names <- table_names[grep(c("x"), x = table_names)]
 
   # Cleaning function
   tree_tables_modified <- lapply(tree_table_names, function(name) {
@@ -186,6 +186,13 @@ clean_tree_tables <- function(tree_tables, main_table) {
   })
   names(tree_tables_modified) <- tree_table_names
   return(tree_tables_modified)
+}
+
+
+adjust_tree_tables <- function(tree_tables) {
+  table_names <- names(tree_tables)
+  
+  
 }
 
 
