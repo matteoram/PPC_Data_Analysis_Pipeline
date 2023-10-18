@@ -1,16 +1,46 @@
-library(robotoolbox)
-library(dplyr)
-library(dm)
-library(askpass)
+# --------------------------------------------------------------------------------
+# Project: Priceless Planet Coalition
+# Author: Johannes Nelson
+# Date Updated: October 18, 2023
+# Input: User will be prompted for Kobo username and password.
+# Outputs: Eight .csv files pertaining to different tables and variables
 
+# Description: This code forms the extraction part of PPC's data analysis pipeline
+# for the Brazil data, which was collected differently than the remainder of the
+# PPC projects and so required separate code to preprocess the raw Kobo data. The 
+# two primary outputs are the "Main" table and the combined "Tree" table. The main
+# table contains information about each plot, and the tree table contains information
+# about all the trees monitored along with corresponding variables to identify plot,
+# site, organization, timeframe, planting pattern, etc. 
+# 
+# The tree data file contains the word "uncorrected", which refers to the fact that
+# the species names have not been cleaned. The next script addresses this.
+# 
+# --------------------------------------------------------------------------------
+
+# Check and install missing packages
+necessary_packages <- c("robotoolbox", "dplyr", "dm", "askpass")
+
+for (pkg in necessary_packages) {
+  if (!require(pkg, character.only = TRUE)) {
+    cat(pkg, "not found. Installing now...\n")
+    install.packages(pkg)
+    library(pkg, character.only = TRUE)
+  }
+}
 
 # This asset name is how the Brazil data is stored in Kobo.
 asset_name <- "PPC/PACTO Tree Monitoring - Brazil only"
 
 
-# First stage of extraction: get user credentials, locate project, extract data.
+#' 1. Retrieve Kobo Data
+#'
+#' This function prompts the user for their username and password, and then 
+#' proceeds to extract data from Kobo with minor wrangling and renaming.
+#'
+#' @return List of data.frames that correspond to different data tables.
 retrieve_kobo_data <- function(asset_name) {
-  # Authenticate and set up KoboToolbox connection
+  
   UN <- askpass("Enter Kobo username: ")
   PW <- askpass("Enter Kobo password: ")
 
@@ -20,32 +50,27 @@ retrieve_kobo_data <- function(asset_name) {
     url = "kf.kobotoolbox.org"
   )
 
-  # This just prints some info into the console
   kobo_settings()
 
-  # Get list of all assets (will likely just be the main Tree Monitoring project
-  # and the Brazil-specific project)
   l <- kobo_asset_list()
 
-  # Extract UID based on asset name
   uid <- l %>%
     filter(name == asset_name) %>%
     pull(uid) %>%
     first()
 
-  # Get asset and data
   asset <- kobo_asset(uid)
   df <- kobo_data(asset)
 
-  # Convert to list for easier handling
   main_list <- as.list(df)
 
-  # Extract main table and other tables
   main_table <- main_list$main
+  
+  # This renames tables based on patterns in the way data was labelled in Koobo
   tree_tables <- main_list[names(main_list)[grep(c("x"), x = names(main_list))]]
   DBH_tables <- main_list[names(main_list)[grep(c("group"), x = names(main_list))]]
 
-  # Print table info to check for data structure changes
+  # Print table info to check for data structure or naming changes
   cat(paste0("Number of Expected Tables: 8 \n", "Number of Retrieved Tables: ", length(df), "\n"))
   expected_names <- c("main", "_30x30_Plot_Repeat", "group_un3bb19", 
                       "_3x3_Subplot_Repeat", "_30x30_Plot_Repeat_Planted_10cm", 
@@ -58,19 +83,25 @@ retrieve_kobo_data <- function(asset_name) {
                    "Unexpected table name(s): ", names(df)[!names(df) %in% expected_names], " \n"))
     }
   
-  # Return the tables as a list
   return(list(main_table = main_table, tree_tables = tree_tables, DBH_tables = DBH_tables))
 }
 
 
-# Basic manipulation: renaming index so it is unique from index in other tables,
-# and moving columns around for tidiness and ease.
+
+#' 2. Prepare Main Table
+#'
+#' This function pre-processes the main table by renaming columns, handling NAs,
+#' and organizing the columns in a more logical order.
+#'
+#' @param main_table The original main table to be preprocessed.
+#' @return Dataframe with cleaned and organized columns.
+
 prep_main_table <- function(main_table) {
   
   if("Notes" %in% names(main_table)) {
     names(main_table)[names(main_table) == "Notes"] <- "Original_Notes"
   }
-  # Simplify renaming using gsub and sapply
+  # Remove lengthy prefixes
   rename_columns <- function(x) {
     x <- gsub("Plot_Info_", "", x)
     x <- gsub("Site_Info_", "", x)
@@ -79,41 +110,48 @@ prep_main_table <- function(main_table) {
   }
   names(main_table) <- sapply(names(main_table), rename_columns)
   
-  # Ensure "_index" is renamed to "main_index" even after the previous renaming
+  # Ensure "_index" is renamed to "main_index"
   colnames(main_table)[colnames(main_table) == "_index"] <- "main_index"
   
+  # Address NAs for Resample values. This assumes an NA was a 0.
   main_table <- main_table %>% 
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>% 
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot))
   
-  main_table <- main_table %>% select(
-    Plot_ID,
-    Site_ID,
-    SiteType,
-    Country,
-    Organization_Name,
-    Plot_Permanence,
-    Strata,
-    Resample_Main_Plot,
-    Resample_3x3_Subplot,
-    everything(),
-    -`_attachments`
-  )
-  
-  main_table <- main_table %>% select(
-    -Note,
-    -Note1,
-    -Diagram,
-    Note,
-    Note1,
-    Diagram
-  )
+  # Organize into more helpful order, remove 'attachments'. Note: these attachments
+  # are links to photo downloads. If desired in output, script can be added.
+  main_table <- main_table %>% 
+    select(
+      Plot_ID,
+      Site_ID,
+      SiteType,
+      Country,
+      Organization_Name,
+      Plot_Permanence,
+      Strata,
+      Resample_Main_Plot,
+      Resample_3x3_Subplot,
+      everything(),
+      -`_attachments`,
+      Note,
+      Note1,
+      Diagram
+    )
   
   return(main_table)  # Make sure to return the modified table
 }
 
-
-
+#' 3. Clean Tree Tables
+#'
+#' This function renames columns based on naming conventions so that the combined 
+#' data has common variable names, adds columns and values for Plot_Type and 
+#' origin_table, and joins the tree data with the main data so that information
+#' like Plot_ID, Site_ID, etc. becomes available in the tree data as well. 
+#'
+#' @param tree_tables The unprocessed tree tables from the main data list
+#' @param main_table The preprocessed main table.
+#' 
+#' @return a list of tree tables that have been preprocessed
 
 clean_tree_tables <- function(tree_tables, main_table) {
   # Extract table names
@@ -148,7 +186,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
     df <- df[, !grepl("diagram", names(df))]
 
     # If "Tree_Type" column doesn't exist, add it and populate with "planted." This
-    # handles one of the tables which has planted in its title, but not in its columns
+    # handles one of the tables which has planted in its title, but not in its columns.
     if (!"Tree_Type" %in% names(df)) {
       df$Tree_Type <- "planted"
     }
@@ -190,6 +228,19 @@ clean_tree_tables <- function(tree_tables, main_table) {
 
 
 
+#' 4. Clean Diameter at Breast Height (DBH) Tables
+#'
+#' This function processes the DBH tables by renaming specific columns for consistency, 
+#' removing unnecessary columns, and merging the DBH data with the tree data. This 
+#' ensures that the combined data includes critical information such as Species, Tree_Type, 
+#' Plot_ID, Site_ID, and other essential attributes. The function also introduces an 
+#' origin_table column to identify the source table for each entry.
+#'
+#' @param DBH_tables A list of unprocessed DBH tables.
+#' @param tree_tables The preprocessed tree tables, used to provide context and 
+#' additional information for the DBH tables.
+#' 
+#' @return A list of cleaned and merged DBH tables.
 
 
 clean_DBH_tables <- function(DBH_tables, tree_tables) {
@@ -237,19 +288,31 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
     return(df)
   })
 
-  # Rename tables and return
   names(DBH_tables_modified) <- DBH_table_names
   return(DBH_tables_modified)
 }
 
 
+#' 5. Adjust Diameter at Breast Height (DBH) Tables
+#'
+#' This function refines the DBH tables and handles an inconsistency in the data
+#' coming from Kobo, where certain DBH measurements were not in the expected tables. 
+#' It extracts these misplaced data from the tree tables and binds them to the 
+#' relevant DBH table. Currently, this is a one-time issue, and the below function
+#' assumes this will not continue to happen.
+#'
+#' @param DBH_tables A list of DBH tables that need adjustments.
+#' @param tree_tables A list of tree tables, from which specific data will be extracted 
+#' and appended to the DBH tables.
+#'
+#' @return A list of adjusted DBH tables.
 
 
 adjust_DBH_tables <- function(DBH_tables, tree_tables) {
-  # Extract specific data from tree_tables
+  # Extract specific trunk data from tree_tables that should not be there.
   new_form_data <- tree_tables$`_30x30_Plot_Repeat`[!is.na(tree_tables$`_30x30_Plot_Repeat`$`_30x30_Plot_TreeIDNumber`), ]
 
-  # Merge and adjust the first table of DBH_tables
+  # Merge and adjust tables
   DBH_tables[[1]] <- bind_rows(DBH_tables[[1]], new_form_data)
   DBH_tables[[1]]$trunk_index <- c(1:nrow(DBH_tables[[1]]))
 
@@ -293,6 +356,17 @@ find_problem_rows_30x15 <- function(DBH_table) {
 }
 
 
+#' 6. Remove Columns with Only NAs
+#'
+#' This function processes a list of tables and removes any columns within 
+#' these tables that contain only NA values. If this is not desired, exclude
+#' this function from main script below.
+#'
+#' @param tables_list A list of tables (dataframes) from which columns containing 
+#' only NAs should be removed.
+#'
+#' @return A list of cleaned tables with columns containing only NAs removed.
+
 remove_NA_columns <- function(tables_list) {
   cleaned_tables <- lapply(tables_list, function(df) {
     df <- df %>% select_if(~ !all(is.na(.)))
@@ -303,6 +377,19 @@ remove_NA_columns <- function(tables_list) {
 
 
 
+
+#' 7. Combine and Refine Tree Tables
+#'
+#' This function consolidates a list of tree tables into a single table. During the 
+#' combination process, the function distinguishes rows based on the presence or 
+#' absence of NA values in the "_30x30_Plot_TreeIDNumber" column. For rows without NA 
+#' values in this column, duplicates are removed. The function then reintegrates these 
+#' treated rows with those containing NA values. Additional refinements are made to 
+#' the Tree_Count values and the data is grouped by Plot_ID and Species for summarization.
+#'
+#' @param tree_tables_list A list of tree tables that need to be combined and refined.
+#'
+#' @return A single consolidated and refined tree table.
 combine_tree_tables <- function(tree_tables_list) {
   combined_tree_tables <- bind_rows(tree_tables_list)
   
@@ -330,6 +417,8 @@ combine_tree_tables <- function(tree_tables_list) {
   
   return(combined_tree_tables_fixed)
 }
+
+
 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE) {
@@ -362,6 +451,7 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE) {
 
 
 print("Retrieving data from KoboToolbox. This requires internet connection and may take a moment.")
+# 1. Retrieve Kobo Data
 all_data <- retrieve_kobo_data(asset_name) # This will prompt the user for username and password.
 print("Data Retrieved successfully!")
 
