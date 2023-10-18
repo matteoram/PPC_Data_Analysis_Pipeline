@@ -7,15 +7,15 @@
 
 # Description: This code forms the extraction part of PPC's data analysis pipeline
 # for the Brazil data, which was collected differently than the remainder of the
-# PPC projects and so required separate code to preprocess the raw Kobo data. The 
+# PPC projects and so required separate code to preprocess the raw Kobo data. The
 # two primary outputs are the "Main" table and the combined "Tree" table. The main
 # table contains information about each plot, and the tree table contains information
 # about all the trees monitored along with corresponding variables to identify plot,
-# site, organization, timeframe, planting pattern, etc. 
-# 
+# site, organization, timeframe, planting pattern, etc.
+#
 # The tree data file contains the word "uncorrected", which refers to the fact that
 # the species names have not been cleaned. The next script addresses this.
-# 
+#
 # --------------------------------------------------------------------------------
 
 # Check and install missing packages
@@ -35,12 +35,11 @@ asset_name <- "PPC/PACTO Tree Monitoring - Brazil only"
 
 #' 1. Retrieve Kobo Data
 #'
-#' This function prompts the user for their username and password, and then 
+#' This function prompts the user for their username and password, and then
 #' proceeds to extract data from Kobo with minor wrangling and renaming.
 #'
 #' @return List of data.frames that correspond to different data tables.
 retrieve_kobo_data <- function(asset_name) {
-  
   UN <- askpass("Enter Kobo username: ")
   PW <- askpass("Enter Kobo password: ")
 
@@ -65,24 +64,28 @@ retrieve_kobo_data <- function(asset_name) {
   main_list <- as.list(df)
 
   main_table <- main_list$main
-  
+
   # This renames tables based on patterns in the way data was labelled in Koobo
   tree_tables <- main_list[names(main_list)[grep(c("x"), x = names(main_list))]]
   DBH_tables <- main_list[names(main_list)[grep(c("group"), x = names(main_list))]]
 
   # Print table info to check for data structure or naming changes
   cat(paste0("Number of Expected Tables: 8 \n", "Number of Retrieved Tables: ", length(df), "\n"))
-  expected_names <- c("main", "_30x30_Plot_Repeat", "group_un3bb19", 
-                      "_3x3_Subplot_Repeat", "_30x30_Plot_Repeat_Planted_10cm", 
-                      "_30x15_Plot_Repeat","group_dz1zn48", "Plot_Info_Repeat" )
-  
+  expected_names <- c(
+    "main", "_30x30_Plot_Repeat", "group_un3bb19",
+    "_3x3_Subplot_Repeat", "_30x30_Plot_Repeat_Planted_10cm",
+    "_30x15_Plot_Repeat", "group_dz1zn48", "Plot_Info_Repeat"
+  )
+
   if (all(expected_names == names(df))) {
     cat("Tables in Kobo data are named as expected.\n")
-  }else {
-      cat(paste0("Table names are not as expected. This may cause data quality issues or unexpected outputs. \n", 
-                   "Unexpected table name(s): ", names(df)[!names(df) %in% expected_names], " \n"))
-    }
-  
+  } else {
+    cat(paste0(
+      "Table names are not as expected. This may cause data quality issues or unexpected outputs. \n",
+      "Unexpected table name(s): ", names(df)[!names(df) %in% expected_names], " \n"
+    ))
+  }
+
   return(list(main_table = main_table, tree_tables = tree_tables, DBH_tables = DBH_tables))
 }
 
@@ -97,8 +100,7 @@ retrieve_kobo_data <- function(asset_name) {
 #' @return Dataframe with cleaned and organized columns.
 
 prep_main_table <- function(main_table) {
-  
-  if("Notes" %in% names(main_table)) {
+  if ("Notes" %in% names(main_table)) {
     names(main_table)[names(main_table) == "Notes"] <- "Original_Notes"
   }
   # Remove lengthy prefixes
@@ -109,18 +111,18 @@ prep_main_table <- function(main_table) {
     return(x)
   }
   names(main_table) <- sapply(names(main_table), rename_columns)
-  
+
   # Ensure "_index" is renamed to "main_index"
   colnames(main_table)[colnames(main_table) == "_index"] <- "main_index"
-  
+
   # Address NAs for Resample values. This assumes an NA was a 0.
-  main_table <- main_table %>% 
-    mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>% 
+  main_table <- main_table %>%
+    mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>%
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot))
-  
+
   # Organize into more helpful order, remove 'attachments'. Note: these attachments
   # are links to photo downloads. If desired in output, script can be added.
-  main_table <- main_table %>% 
+  main_table <- main_table %>%
     select(
       Plot_ID,
       Site_ID,
@@ -137,20 +139,20 @@ prep_main_table <- function(main_table) {
       Note1,
       Diagram
     )
-  
-  return(main_table)  # Make sure to return the modified table
+
+  return(main_table) # Make sure to return the modified table
 }
 
 #' 3. Clean Tree Tables
 #'
-#' This function renames columns based on naming conventions so that the combined 
-#' data has common variable names, adds columns and values for Plot_Type and 
+#' This function renames columns based on naming conventions so that the combined
+#' data has common variable names, adds columns and values for Plot_Type and
 #' origin_table, and joins the tree data with the main data so that information
-#' like Plot_ID, Site_ID, etc. becomes available in the tree data as well. 
+#' like Plot_ID, Site_ID, etc. becomes available in the tree data as well.
 #'
 #' @param tree_tables The unprocessed tree tables from the main data list
 #' @param main_table The preprocessed main table.
-#' 
+#'
 #' @return a list of tree tables that have been preprocessed
 
 clean_tree_tables <- function(tree_tables, main_table) {
@@ -230,16 +232,16 @@ clean_tree_tables <- function(tree_tables, main_table) {
 
 #' 4. Clean Diameter at Breast Height (DBH) Tables
 #'
-#' This function processes the DBH tables by renaming specific columns for consistency, 
-#' removing unnecessary columns, and merging the DBH data with the tree data. This 
-#' ensures that the combined data includes critical information such as Species, Tree_Type, 
-#' Plot_ID, Site_ID, and other essential attributes. The function also introduces an 
+#' This function processes the DBH tables by renaming specific columns for consistency,
+#' removing unnecessary columns, and merging the DBH data with the tree data. This
+#' ensures that the combined data includes critical information such as Species, Tree_Type,
+#' Plot_ID, Site_ID, and other essential attributes. The function also introduces an
 #' origin_table column to identify the source table for each entry.
 #'
 #' @param DBH_tables A list of unprocessed DBH tables.
-#' @param tree_tables The preprocessed tree tables, used to provide context and 
+#' @param tree_tables The preprocessed tree tables, used to provide context and
 #' additional information for the DBH tables.
-#' 
+#'
 #' @return A list of cleaned and merged DBH tables.
 
 
@@ -279,7 +281,7 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
           Plot_Permanence,
           Resample_Main_Plot,
           Resample_3x3_Subplot,
-          Restoration_Technique, 
+          Restoration_Technique,
           Timeframe
         ),
         by = "tree_index"
@@ -296,13 +298,13 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
 #' 5. Adjust Diameter at Breast Height (DBH) Tables
 #'
 #' This function refines the DBH tables and handles an inconsistency in the data
-#' coming from Kobo, where certain DBH measurements were not in the expected tables. 
-#' It extracts these misplaced data from the tree tables and binds them to the 
+#' coming from Kobo, where certain DBH measurements were not in the expected tables.
+#' It extracts these misplaced data from the tree tables and binds them to the
 #' relevant DBH table. Currently, this is a one-time issue, and the below function
 #' assumes this will not continue to happen.
 #'
 #' @param DBH_tables A list of DBH tables that need adjustments.
-#' @param tree_tables A list of tree tables, from which specific data will be extracted 
+#' @param tree_tables A list of tree tables, from which specific data will be extracted
 #' and appended to the DBH tables.
 #'
 #' @return A list of adjusted DBH tables.
@@ -324,20 +326,20 @@ adjust_DBH_tables <- function(DBH_tables, tree_tables) {
 
 
 find_problem_rows_30x30 <- function(DBH_table) {
-    df <- DBH_table
-    problematic_tree_indices <- df %>%
-      group_by(Plot_ID, Timeframe, `_30x30_Plot_TreeIDNumber`) %>%
-      filter(sum(`_30X30_Plot_TreeTrunk` == 1) > 1) %>%
-      pull(tree_index) %>%
-      unique()
-    
-    # Filtering the problematic rows from the original table
-    problematic_rows <- df %>%
-      filter(tree_index %in% problematic_tree_indices)
-    
-    return(problematic_rows)
-  }
-  
+  df <- DBH_table
+  problematic_tree_indices <- df %>%
+    group_by(Plot_ID, Timeframe, `_30x30_Plot_TreeIDNumber`) %>%
+    filter(sum(`_30X30_Plot_TreeTrunk` == 1) > 1) %>%
+    pull(tree_index) %>%
+    unique()
+
+  # Filtering the problematic rows from the original table
+  problematic_rows <- df %>%
+    filter(tree_index %in% problematic_tree_indices)
+
+  return(problematic_rows)
+}
+
 
 
 find_problem_rows_30x15 <- function(DBH_table) {
@@ -347,22 +349,22 @@ find_problem_rows_30x15 <- function(DBH_table) {
     filter(sum(`_30X15_Plot_TreeTrunk` == 1) > 1) %>%
     pull(tree_index) %>%
     unique()
-  
+
   # Filtering the problematic rows from the original table
   problematic_rows <- df %>%
     filter(tree_index %in% problematic_tree_indices)
-  
+
   return(problematic_rows)
 }
 
 
 #' 6. Remove Columns with Only NAs
 #'
-#' This function processes a list of tables and removes any columns within 
+#' This function processes a list of tables and removes any columns within
 #' these tables that contain only NA values. If this is not desired, exclude
 #' this function from main script below.
 #'
-#' @param tables_list A list of tables (dataframes) from which columns containing 
+#' @param tables_list A list of tables (dataframes) from which columns containing
 #' only NAs should be removed.
 #'
 #' @return A list of cleaned tables with columns containing only NAs removed.
@@ -380,11 +382,11 @@ remove_NA_columns <- function(tables_list) {
 
 #' 7. Combine and Refine Tree Tables
 #'
-#' This function consolidates a list of tree tables into a single table. During the 
-#' combination process, the function distinguishes rows based on the presence or 
-#' absence of NA values in the "_30x30_Plot_TreeIDNumber" column. For rows without NA 
-#' values in this column, duplicates are removed. The function then reintegrates these 
-#' treated rows with those containing NA values. Additional refinements are made to 
+#' This function consolidates a list of tree tables into a single table. During the
+#' combination process, the function distinguishes rows based on the presence or
+#' absence of NA values in the "_30x30_Plot_TreeIDNumber" column. For rows without NA
+#' values in this column, duplicates are removed. The function then reintegrates these
+#' treated rows with those containing NA values. Additional refinements are made to
 #' the Tree_Count values and the data is grouped by Plot_ID and Species for summarization.
 #'
 #' @param tree_tables_list A list of tree tables that need to be combined and refined.
@@ -392,18 +394,18 @@ remove_NA_columns <- function(tables_list) {
 #' @return A single consolidated and refined tree table.
 combine_tree_tables <- function(tree_tables_list) {
   combined_tree_tables <- bind_rows(tree_tables_list)
-  
+
   # Separate dataframes: one with non-NA values and one with NA values for the column
   df_non_na <- combined_tree_tables %>% filter(!is.na(`_30x30_Plot_TreeIDNumber`))
   df_na <- combined_tree_tables %>% filter(is.na(`_30x30_Plot_TreeIDNumber`))
-  
+
   # Remove duplicates only from the non-NA dataframe
-  df_non_na_fixed <- df_non_na %>% 
+  df_non_na_fixed <- df_non_na %>%
     distinct(`_30x30_Plot_TreeIDNumber`, .keep_all = TRUE)
-  
+
   # Bind the rows back together
   combined_tree_tables_fixed <- bind_rows(df_na, df_non_na_fixed)
-  
+
   # Your other operations here...
   combined_tree_tables_fixed <- combined_tree_tables_fixed %>%
     mutate(Tree_Count = ifelse(grepl("_30x30_Plot_Repeat|_30x15_Plot_Repeat", origin_table) & is.na(Tree_Count), 1, Tree_Count)) %>%
@@ -414,7 +416,7 @@ combine_tree_tables <- function(tree_tables_list) {
       across(everything(), first),
       .groups = "drop"
     )
-  
+
   return(combined_tree_tables_fixed)
 }
 
@@ -471,12 +473,16 @@ adjusted_DBH_tables <- adjust_DBH_tables(cleaned_DBH_tables, cleaned_tree_tables
 
 # 5.5 This block and the associated functions would ideally be deleted. There
 problematic_rows_30x30 <- find_problem_rows_30x30(DBH_table = adjusted_DBH_tables[[1]])
-print(paste0("There are inconsistencies with trunk data for the following tree_index,",
-             "values in the 30x30 DBH table: ",problematic_rows_30x30$tree_index))
+print(paste0(
+  "There are inconsistencies with trunk data for the following tree_index,",
+  "values in the 30x30 DBH table: ", problematic_rows_30x30$tree_index
+))
 
 problematic_rows_30x15 <- find_problem_rows_30x15(DBH_table = adjusted_DBH_tables[[2]])
-print(paste0("There are inconsistencies with trunk data for the following tree_index,",
-             "values in the 30x30 DBH table: ",problematic_rows_30x15$tree_index))
+print(paste0(
+  "There are inconsistencies with trunk data for the following tree_index,",
+  "values in the 30x30 DBH table: ", problematic_rows_30x15$tree_index
+))
 
 problem_entries <- bind_rows(problematic_rows_30x30, problematic_rows_30x15)
 
