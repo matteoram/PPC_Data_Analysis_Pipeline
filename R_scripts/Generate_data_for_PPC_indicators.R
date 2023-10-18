@@ -108,7 +108,7 @@ treefreq_data=lapply(1:length(upi), FUN=function(x){
       }
     
     if( dfx$tree_data.plot_type == "10x10m"){
-      #Scale tree number to 30x30m by multiplying by 9
+      # Scale tree number to 30x30m by multiplying by 9
       Number_of_tree_in_30x30=(dfx$tree_data.Number_of_trees * 9)/resample_number1
       size_class=">10cm"
     }

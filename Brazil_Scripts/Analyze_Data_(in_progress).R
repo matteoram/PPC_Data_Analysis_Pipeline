@@ -12,13 +12,45 @@ tree_data_with_sizeclass <- tree_data %>%
                              ifelse(Plot_Type == "3x3", "1 - 9.9cm", "<1cm")))
 
 
-tree_data_with_scaled_count <- tree_data_with_sizeclass %>% 
+big_tree_data_with_scaled_count <- tree_data_with_sizeclass %>% 
   filter(Plot_Type == "30x30") %>% 
   mutate(scaled_count = case_when(
     Resample_Main_Plot == 0 ~ Tree_Count, 
     Resample_Main_Plot == 1 ~ Tree_Count/2, 
     Resample_Main_Plot == 2 ~ Tree_Count/3
   ))
+
+big_tree_data_with_scaled_count <- tree_data_with_sizeclass %>% 
+  filter(Plot_Type == "30x30") %>% 
+  mutate(scaled_count = case_when(
+    Resample_Main_Plot == 0 ~ Tree_Count, 
+    Resample_Main_Plot == 1 ~ Tree_Count/2, 
+    Resample_Main_Plot == 2 ~ Tree_Count/3
+  ))
+
+
+
+
+
+small_tree_data_with_scaled_count <- tree_data_with_sizeclass %>% 
+  filter(Plot_Type == "3x3") %>% 
+  mutate(scaled_count = case_when(
+    Resample_3x3_Subplot == 0 ~ Tree_Count*100, 
+    Resample_3x3_Subplot == 1 ~ Tree_Count*100/2, 
+    Resample_3x3_Subplot == 2 ~ Tree_Count*100/3
+  ))
+
+
+
+tiny_tree_data_with_scaled_count <- tree_data_with_sizeclass %>% 
+  filter(Plot_Type == "1x1") %>% 
+  mutate(scaled_count = case_when(
+    Resample_Main_Plot == 0 ~ Tree_Count*900, 
+    Resample_Main_Plot == 1 ~ Tree_Count*900/2, 
+    Resample_Main_Plot == 2 ~ Tree_Count*900/3
+  ))
+
+
 
 
 
