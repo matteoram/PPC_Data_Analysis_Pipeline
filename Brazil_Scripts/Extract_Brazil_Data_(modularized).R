@@ -189,11 +189,6 @@ clean_tree_tables <- function(tree_tables, main_table) {
 }
 
 
-adjust_tree_tables <- function(tree_tables) {
-  table_names <- names(tree_tables)
-  
-  
-}
 
 
 
@@ -254,7 +249,6 @@ adjust_DBH_tables <- function(DBH_tables, tree_tables) {
   # Extract specific data from tree_tables
   new_form_data <- tree_tables$`_30x30_Plot_Repeat`[!is.na(tree_tables$`_30x30_Plot_Repeat`$`_30x30_Plot_TreeIDNumber`), ]
 
-
   # Merge and adjust the first table of DBH_tables
   DBH_tables[[1]] <- bind_rows(DBH_tables[[1]], new_form_data)
   DBH_tables[[1]]$trunk_index <- c(1:nrow(DBH_tables[[1]]))
@@ -262,6 +256,40 @@ adjust_DBH_tables <- function(DBH_tables, tree_tables) {
   names(DBH_tables) <- c("DBH_30x30", "DBH_30x15")
 
   return(DBH_tables)
+}
+
+
+
+find_problem_rows_30x30 <- function(DBH_table) {
+    df <- DBH_table
+    problematic_tree_indices <- df %>%
+      group_by(Plot_ID, Timeframe, `_30x30_Plot_TreeIDNumber`) %>%
+      filter(sum(`_30X30_Plot_TreeTrunk` == 1) > 1) %>%
+      pull(tree_index) %>%
+      unique()
+    
+    # Filtering the problematic rows from the original table
+    problematic_rows <- df %>%
+      filter(tree_index %in% problematic_tree_indices)
+    
+    return(problematic_rows)
+  }
+  
+
+
+find_problem_rows_30x15 <- function(DBH_table) {
+  df <- DBH_table
+  problematic_tree_indices <- df %>%
+    group_by(Plot_ID, Timeframe, `_30x15_Plot_TreeIDNumber`) %>%
+    filter(sum(`_30X15_Plot_TreeTrunk` == 1) > 1) %>%
+    pull(tree_index) %>%
+    unique()
+  
+  # Filtering the problematic rows from the original table
+  problematic_rows <- df %>%
+    filter(tree_index %in% problematic_tree_indices)
+  
+  return(problematic_rows)
 }
 
 
@@ -349,6 +377,19 @@ cleaned_DBH_tables <- clean_DBH_tables(all_data$DBH_tables, cleaned_tree_tables)
 
 # 5. Adjust DBH Tables
 adjusted_DBH_tables <- adjust_DBH_tables(cleaned_DBH_tables, cleaned_tree_tables)
+
+
+# 5.5 This block and the associated functions would ideally be deleted. There
+problematic_rows_30x30 <- find_problem_rows_30x30(DBH_table = adjusted_DBH_tables[[1]])
+print(paste0("There are inconsistencies with trunk data for the following tree_index,",
+             "values in the 30x30 DBH table: ",problematic_rows_30x30$tree_index))
+
+problematic_rows_30x15 <- find_problem_rows_30x15(DBH_table = adjusted_DBH_tables[[2]])
+print(paste0("There are inconsistencies with trunk data for the following tree_index,",
+             "values in the 30x30 DBH table: ",problematic_rows_30x15$tree_index))
+
+problem_entries <- bind_rows(problematic_rows_30x30, problematic_rows_30x15)
+
 
 # 6. Remove NA columns
 final_DBH_tables <- remove_NA_columns(tables_list = adjusted_DBH_tables)
