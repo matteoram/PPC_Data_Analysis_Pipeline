@@ -70,14 +70,15 @@ retrieve_kobo_data <- function(asset_name) {
   DBH_tables <- main_list[names(main_list)[grep(c("group"), x = names(main_list))]]
 
   # Print table info to check for data structure or naming changes
-  cat(paste0("Number of Expected Tables: 8 \n", "Number of Retrieved Tables: ", length(df), "\n"))
+  cat(paste0("Number of Expected Tables: 10 \n", "Number of Retrieved Tables: ", length(df), "\n"))
   expected_names <- c(
     "main", "_30x30_Plot_Repeat", "group_un3bb19",
     "_3x3_Subplot_Repeat", "_30x30_Plot_Repeat_Planted_10cm",
-    "_30x15_Plot_Repeat", "group_dz1zn48", "Plot_Info_Repeat"
+    "_30x15_Plot_Repeat", "group_dz1zn48", "Plot_Info_Repeat",
+    "_30x30_Plot_Repeat_Census_10cm","_30x15_Plot_Repeat_Planted_10c_001"
   )
 
-  if (all(expected_names == names(df))) {
+  if (all(expected_names %in% names(df))) {
     cat("Tables in Kobo data are named as expected.\n")
   } else {
     cat(paste0(
@@ -118,7 +119,8 @@ prep_main_table <- function(main_table) {
   # Address NAs for Resample values. This assumes an NA was a 0.
   main_table <- main_table %>%
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>%
-    mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot))
+    mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot)) %>% 
+    mutate(Plot_Type = ifelse(SiteSize == "Yes", "30x30", "30x15"))
 
   # Organize into more helpful order, remove 'attachments'. Note: these attachments
   # are links to photo downloads. If desired in output, script can be added.
@@ -156,43 +158,47 @@ prep_main_table <- function(main_table) {
 #' @return a list of tree tables that have been preprocessed
 
 clean_tree_tables <- function(tree_tables, main_table) {
+  
   # Extract table names
   tree_table_names <- names(tree_tables)
-  # tree_table_names <- table_names[grep(c("x"), x = table_names)]
-
+  
   # Cleaning function
   tree_tables_modified <- lapply(tree_table_names, function(name) {
-    # Extract the desired string from the name (plot dimensions)
-    plot_dims <- strsplit(name, "_")[[1]][2]
-
+    
     # Retrieve the dataframe from the tree_tables list
     df <- tree_tables[[name]]
 
-    # Add  new columns to the dataframe
-    df$Plot_Type <- plot_dims
-    df$origin_table <- name
-
-
-    # Check column names for the pattern "species" and rename to "Species"; check
-    # for "TreeType" and rename "Tree_Type"
+    # Check column names for certain patterns and standardize across tables.
     col_names <- names(df)
-    col_names[grep("species|Species", col_names, ignore.case = TRUE)] <- "Species"
-    col_names[grep("TreeType", col_names, ignore.case = TRUE)] <- "Tree_Type"
-    col_names[grep("Count", col_names, ignore.case = TRUE)] <- "Tree_Count"
+    col_names[grep("species", col_names, ignore.case = TRUE)] <- "Species"
+    col_names[grep("type", col_names, ignore.case = TRUE)] <- "Tree_Type"
+    col_names[grep("count", col_names, ignore.case = TRUE)] <- "Tree_Count"
+    col_names[grep("_30x30_Plot_Census_10cm",
+                   col_names,
+                   ignore.case = TRUE)] <- "Tree_Count"
     col_names[col_names == "_index"] <- "tree_index"
     col_names[col_names == "_parent_index"] <- "main_index"
     names(df) <- col_names
+    
+    
+    # Extract the desired string from the name (plot dimensions) and add column.
+    # If table names change, this could break.
+    plot_dims <- strsplit(name, "_")[[1]][2]
+    df$Plot_Type <- plot_dims
+    df$origin_table <- name
 
-    # Remove columns with the patterns "001" and "diagram"
-    df <- df[, !grepl("001", names(df))]
-    df <- df[, !grepl("diagram", names(df))]
-
-    # If "Tree_Type" column doesn't exist, add it and populate with "planted." This
-    # handles one of the tables which has planted in its title, but not in its columns.
-    if (!"Tree_Type" %in% names(df)) {
+    # Remove columns with the patterns "001" and "diagram" -- commented out, likely redundant, possibly unwanted
+    # df <- df[, !grepl("001", names(df))]
+    # df <- df[, !grepl("diagram", names(df))]
+    
+    # Checks for two tables with planted tree data. These need Tree_Type columns
+    # that can automatically be populated with 'planted'
+    if (grepl("planted", name, ignore.case = TRUE) && !"Tree_Type" %in% names(df)) {
       df$Tree_Type <- "planted"
     }
-
+    
+    # This joins the tree data with essential elements in the main data that will
+    # be used in down stream analyses. 
     df <- df %>%
       left_join(
         select(
@@ -210,7 +216,8 @@ clean_tree_tables <- function(tree_tables, main_table) {
         ),
         by = "main_index"
       )
-
+    
+    # Reordering columns -- relevant first.
     df <- df %>% select(
       Species,
       Tree_Type,
@@ -324,6 +331,28 @@ adjust_DBH_tables <- function(DBH_tables, tree_tables) {
 }
 
 
+adjust_census_table <- function(tree_tables, main_table){
+  # Extracting the census table name
+  census_table_name <- names(tree_tables)[grep(pattern = "census",
+                                               x = names(tree_tables), 
+                                               ignore.case = TRUE)]
+  
+  # Extracting the dataframe from the list
+  df <- tree_tables[[census_table_name]]
+  
+  df$Plot_Type <- NULL
+  
+  # Adjusting the dataframe
+  df_fixed <- df %>% 
+    left_join(select(main_table, main_index, Plot_Type), by = "main_index") %>% 
+    select(-main_index)
+  
+  # Updating the list with the modified dataframe
+  tree_tables[[census_table_name]] <- df_fixed
+  
+  return(tree_tables)
+}
+
 
 find_problem_rows_30x30 <- function(DBH_table) {
   df <- DBH_table
@@ -423,30 +452,46 @@ combine_tree_tables <- function(tree_tables_list) {
 
 
 
-write_to_csv <- function(data, prefix, date_stamp = TRUE) {
-  if (!dir.exists("Brazil_Raw_Data")) {
-    dir.create("Brazil_Raw_Data")
+write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
+  main_dir <- "Brazil_Raw_Data"
+  
+  # Check if the main directory exists, if not, create it
+  if (!dir.exists(main_dir)) {
+    dir.create(main_dir)
   }
-
-  if (date_stamp) {
-    current_date <- format(Sys.Date(), "%Y-%m-%d") # e.g., "20231010"
-    filename <- paste0("Brazil_Raw_Data/", prefix, "_", current_date, ".csv")
+  
+  # If a subdirectory is provided, ensure it's created
+  if (!is.null(sub_dir)) {
+    sub_path <- file.path(main_dir, sub_dir)
+    if (!dir.exists(sub_path)) {
+      dir.create(sub_path)
+    }
+    path_prefix <- file.path(sub_path, prefix)
   } else {
-    filename <- paste0("Brazil_Raw_Data/", prefix, ".csv")
+    path_prefix <- file.path(main_dir, prefix)
   }
-
+  
+  # Determine filename with optional date stamp
+  if (date_stamp) {
+    current_date <- format(Sys.Date(), "%Y-%m-%d") # e.g., "2023-10-10"
+    filename <- paste0(path_prefix, "_", current_date, ".csv")
+  } else {
+    filename <- paste0(path_prefix, ".csv")
+  }
+  
+  # Write to file and print message
   write.csv(data, filename, row.names = FALSE)
   cat(paste("Data written to:", filename), "\n")
 }
 
 
-write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE) {
+write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir = NULL) {
   if (length(data_list) != length(prefix_list)) {
     stop("The number of data items does not match the number of prefixes.")
   }
-
+  
   for (i in seq_along(data_list)) {
-    write_to_csv(data_list[[i]], prefix_list[i], date_stamp)
+    write_to_csv(data_list[[i]], prefix_list[i], date_stamp, sub_dir)
   }
 }
 
@@ -481,11 +526,11 @@ print(paste0(
 problematic_rows_30x15 <- find_problem_rows_30x15(DBH_table = adjusted_DBH_tables[[2]])
 print(paste0(
   "There are inconsistencies with trunk data for the following tree_index,",
-  "values in the 30x30 DBH table: ", problematic_rows_30x15$tree_index
+  "values in the 30x15 DBH table: ", problematic_rows_30x15$tree_index
 ))
 
-problem_entries <- bind_rows(problematic_rows_30x30, problematic_rows_30x15)
-
+problem_entries_30x30 <- problematic_rows_30x30
+problem_entries_30x15 <- problematic_rows_30x15
 
 # 6. Remove NA columns
 final_DBH_tables <- remove_NA_columns(tables_list = adjusted_DBH_tables)
@@ -498,8 +543,8 @@ print("Preprocessing complete!")
 print("Writing data to disk.")
 # 8. Write Data to Disk
 write_to_csv(prepared_main_table, "Main_Data")
-write_list_to_csv(final_DBH_tables, names(adjusted_DBH_tables))
-write_list_to_csv(final_tree_tables, names(cleaned_tree_tables))
+write_list_to_csv(final_DBH_tables, names(final_DBH_tables), sub_dir = "DBH_data")
+write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
 
 # Optionally, print a message to let the user know the process is complete:
