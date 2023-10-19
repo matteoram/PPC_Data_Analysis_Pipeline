@@ -75,7 +75,7 @@ retrieve_kobo_data <- function(asset_name) {
     "main", "_30x30_Plot_Repeat", "group_un3bb19",
     "_3x3_Subplot_Repeat", "_30x30_Plot_Repeat_Planted_10cm",
     "_30x15_Plot_Repeat", "group_dz1zn48", "Plot_Info_Repeat",
-    "_30x30_Plot_Repeat_Census_10cm","_30x15_Plot_Repeat_Planted_10c_001"
+    "_30x30_Plot_Repeat_Census_10cm", "_30x15_Plot_Repeat_Planted_10c_001"
   )
 
   if (all(expected_names %in% names(df))) {
@@ -119,7 +119,7 @@ prep_main_table <- function(main_table) {
   # Address NAs for Resample values. This assumes an NA was a 0.
   main_table <- main_table %>%
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>%
-    mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot)) %>% 
+    mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot)) %>%
     mutate(Plot_Type = ifelse(SiteSize == "Yes", "30x30", "30x15"))
 
   # Organize into more helpful order, remove 'attachments'. Note: these attachments
@@ -158,13 +158,11 @@ prep_main_table <- function(main_table) {
 #' @return a list of tree tables that have been preprocessed
 
 clean_tree_tables <- function(tree_tables, main_table) {
-  
   # Extract table names
   tree_table_names <- names(tree_tables)
-  
+
   # Cleaning function
   tree_tables_modified <- lapply(tree_table_names, function(name) {
-    
     # Retrieve the dataframe from the tree_tables list
     df <- tree_tables[[name]]
 
@@ -174,13 +172,14 @@ clean_tree_tables <- function(tree_tables, main_table) {
     col_names[grep("type", col_names, ignore.case = TRUE)] <- "Tree_Type"
     col_names[grep("count", col_names, ignore.case = TRUE)] <- "Tree_Count"
     col_names[grep("_30x30_Plot_Census_10cm",
-                   col_names,
-                   ignore.case = TRUE)] <- "Tree_Count"
+      col_names,
+      ignore.case = TRUE
+    )] <- "Tree_Count"
     col_names[col_names == "_index"] <- "tree_index"
     col_names[col_names == "_parent_index"] <- "main_index"
     names(df) <- col_names
-    
-    
+
+
     # Extract the desired string from the name (plot dimensions) and add column.
     # If table names change, this could break.
     plot_dims <- strsplit(name, "_")[[1]][2]
@@ -190,15 +189,15 @@ clean_tree_tables <- function(tree_tables, main_table) {
     # Remove columns with the patterns "001" and "diagram" -- commented out, likely redundant, possibly unwanted
     # df <- df[, !grepl("001", names(df))]
     # df <- df[, !grepl("diagram", names(df))]
-    
+
     # Checks for two tables with planted tree data. These need Tree_Type columns
     # that can automatically be populated with 'planted'
     if (grepl("planted", name, ignore.case = TRUE) && !"Tree_Type" %in% names(df)) {
       df$Tree_Type <- "planted"
     }
-    
+
     # This joins the tree data with essential elements in the main data that will
-    # be used in down stream analyses. 
+    # be used in down stream analyses.
     df <- df %>%
       left_join(
         select(
@@ -216,7 +215,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
         ),
         by = "main_index"
       )
-    
+
     # Reordering columns -- relevant first.
     df <- df %>% select(
       Species,
@@ -331,25 +330,27 @@ adjust_DBH_tables <- function(DBH_tables, tree_tables) {
 }
 
 
-adjust_census_table <- function(tree_tables, main_table){
+adjust_census_table <- function(tree_tables, main_table) {
   # Extracting the census table name
-  census_table_name <- names(tree_tables)[grep(pattern = "census",
-                                               x = names(tree_tables), 
-                                               ignore.case = TRUE)]
-  
+  census_table_name <- names(tree_tables)[grep(
+    pattern = "census",
+    x = names(tree_tables),
+    ignore.case = TRUE
+  )]
+
   # Extracting the dataframe from the list
   df <- tree_tables[[census_table_name]]
-  
+
   df$Plot_Type <- NULL
-  
+
   # Adjusting the dataframe
-  df_fixed <- df %>% 
-    left_join(select(main_table, main_index, Plot_Type), by = "main_index") %>% 
+  df_fixed <- df %>%
+    left_join(select(main_table, main_index, Plot_Type), by = "main_index") %>%
     select(-main_index)
-  
+
   # Updating the list with the modified dataframe
   tree_tables[[census_table_name]] <- df_fixed
-  
+
   return(tree_tables)
 }
 
@@ -445,6 +446,12 @@ combine_tree_tables <- function(tree_tables_list) {
       across(everything(), first),
       .groups = "drop"
     )
+  combined_tree_tables_fixed <- combined_tree_tables_fixed %>%
+    select(
+      -`_30x30_Plot_TreeIDNumber`,
+      -`_30X30_Plot_TreeTrunk`,
+      -`_30x30_Plot_TreeDBH`
+    )
 
   return(combined_tree_tables_fixed)
 }
@@ -454,12 +461,12 @@ combine_tree_tables <- function(tree_tables_list) {
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
   main_dir <- "Brazil_Raw_Data"
-  
+
   # Check if the main directory exists, if not, create it
   if (!dir.exists(main_dir)) {
     dir.create(main_dir)
   }
-  
+
   # If a subdirectory is provided, ensure it's created
   if (!is.null(sub_dir)) {
     sub_path <- file.path(main_dir, sub_dir)
@@ -470,7 +477,7 @@ write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
   } else {
     path_prefix <- file.path(main_dir, prefix)
   }
-  
+
   # Determine filename with optional date stamp
   if (date_stamp) {
     current_date <- format(Sys.Date(), "%Y-%m-%d") # e.g., "2023-10-10"
@@ -478,7 +485,7 @@ write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
   } else {
     filename <- paste0(path_prefix, ".csv")
   }
-  
+
   # Write to file and print message
   write.csv(data, filename, row.names = FALSE)
   cat(paste("Data written to:", filename), "\n")
@@ -489,7 +496,7 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
   if (length(data_list) != length(prefix_list)) {
     stop("The number of data items does not match the number of prefixes.")
   }
-  
+
   for (i in seq_along(data_list)) {
     write_to_csv(data_list[[i]], prefix_list[i], date_stamp, sub_dir)
   }
