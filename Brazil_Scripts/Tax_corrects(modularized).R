@@ -13,7 +13,8 @@ load_data <- function() {
   latest_tree_file <- tree_files[order(file.info(tree_files)$mtime, decreasing = TRUE)[1]]
 
   tree_data <- read.csv(latest_tree_file, check.names = FALSE)
-
+  # tree_data <- tree_data[1:300,]
+  
   # Do the same for "Taxonomic_Corrections" in the "Raw_Data" folder
   corrections_files <- list.files(path = raw_data_path, pattern = "Taxonomic_Corrections", full.names = TRUE)
 
@@ -83,12 +84,44 @@ resolve_names <- function(unresolved_names) {
 }
 
 
+# manual_validation <- function(df) {
+#   total_to_correct <- sum(is.na(df$matched_name2))
+#   cat(paste("You have", total_to_correct, "corrections to make..."))
+#   for (i in 1:nrow(df)) {
+#     if (is.na(df$matched_name2[i])) {
+#       cat(paste("Unable to resolve:", df$Species[i], "\n"))
+#       new_name <- readline(prompt = "Please provide the correct name (or press Enter to skip): ")
+#       if (new_name != "") {
+#         df$matched_name2[i] <- new_name
+#         df$data_source_title[i] <- "Manual validation"
+#       }
+#     }
+#   }
+#   return(df)
+# }
+
+
 manual_validation <- function(df) {
+  total_to_correct <- sum(is.na(df$matched_name2))
+  cat(paste("You have", total_to_correct, "corrections to make...\n"))
+  
+  chunk_size <- 20 # Display a reminder every 20 corrections
+  
   for (i in 1:nrow(df)) {
     if (is.na(df$matched_name2[i])) {
+      # Display a reminder every chunk_size corrections
+      if (i %% chunk_size == 0) {
+        cat("Remember: Type 'save' anytime to save your progress.\n")
+      }
+      
       cat(paste("Unable to resolve:", df$Species[i], "\n"))
       new_name <- readline(prompt = "Please provide the correct name (or press Enter to skip): ")
-      if (new_name != "") {
+      
+      # If the user types "save", save the current state of df and continue
+      if (new_name == "save") {
+        cat("Progress saved. You can resume from where you left off.\n")
+        return(df)
+      } else if (new_name != "") {
         df$matched_name2[i] <- new_name
         df$data_source_title[i] <- "Manual validation"
       }
@@ -96,6 +129,7 @@ manual_validation <- function(df) {
   }
   return(df)
 }
+
 
 
 

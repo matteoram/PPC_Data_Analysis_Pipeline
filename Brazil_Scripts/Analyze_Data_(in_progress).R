@@ -2,8 +2,8 @@ library(dplyr)
 library(stringr)
 library(tidyverse)
 
-tree_data <- read.csv("Brazil_Raw_Data\\Corrected_Tree_Data_2023-10-19.csv", check.names = FALSE)
-main_data <- read.csv("Brazil_Raw_Data\\Main_Data_2023-10-19.csv", check.names = FALSE)
+tree_data <- read.csv("Main_Raw_Data\\Tree_Data_Uncorrected_2023-10-20.csv", check.names = FALSE)
+main_data <- read.csv("Main_Raw_Data\\Main_Data_2023-10-20.csv", check.names = FALSE)
 
 
 
@@ -21,16 +21,6 @@ big_tree_data_with_scaled_count <- tree_data_with_sizeclass %>%
     Resample_Main_Plot == 2 ~ Tree_Count/3
   ))
 
-big_tree_data_with_scaled_count <- tree_data_with_sizeclass %>% 
-  filter(Plot_Type == "30x30") %>% 
-  mutate(scaled_count = case_when(
-    Resample_Main_Plot == 0 ~ Tree_Count, 
-    Resample_Main_Plot == 1 ~ Tree_Count/2, 
-    Resample_Main_Plot == 2 ~ Tree_Count/3
-  ))
-
-
-
 
 
 small_tree_data_with_scaled_count <- tree_data_with_sizeclass %>% 
@@ -45,28 +35,50 @@ small_tree_data_with_scaled_count <- tree_data_with_sizeclass %>%
 
 tiny_tree_data_with_scaled_count <- tree_data_with_sizeclass %>% 
   filter(Plot_Type == "1x1") %>% 
-  mutate(scaled_count = case_when(
-    Resample_Main_Plot == 0 ~ Tree_Count*900, 
-    Resample_Main_Plot == 1 ~ Tree_Count*900/2, 
-    Resample_Main_Plot == 2 ~ Tree_Count*900/3
-  ))
+  mutate(scaled_count = Tree_Count * 900)
 
 
 
 
 
-tree_count_by_site <- tree_data_with_scaled_count %>%
-  group_by(Site_ID, SiteType,Tree_Type) %>%
+scale_tree_count <- function(data) {
+  data %>%
+    mutate(scaled_count = case_when(
+      Plot_Type == "30x30" ~ Tree_Count / (Resample_Main_Plot + 1),
+      Plot_Type == "10x10" ~ Tree_Count / (Resample_Main_Plot + 1),
+      Plot_Type == "3x3" ~ Tree_Count * 100 / (Resample_3x3_Subplot + 1),
+      Plot_Type == "1x1" ~ Tree_Count * 900,
+      TRUE ~ Tree_Count
+    ))
+}
+
+
+
+
+
+
+
+tree_count_by_site <- testscaled %>%
+  group_by(Site_ID, SiteType,Tree_Type, Timeframe) %>%
   summarise(total_count = sum(Tree_Count)) %>%
-  spread(Tree_Type, total_count, fill = 0)
+  spread(Tree_Type, total_count, fill = 0) %>% 
+  spread(Timeframe, total_count, fill = 0)
 
 
-tree_count_by_plot <-  tree_data_with_scaled_count %>%
+tree_count_by_plot <-  testscaled %>%
   group_by(Plot_ID, SiteType, Tree_Type) %>%
   summarise(total_count = sum(Tree_Count)) %>%
-  spread(Tree_Type, total_count, fill = 0)
+  spread(Tree_Type, total_count, fill = 0) %>% 
+  left_join(testscaled %>% select(Plot_ID, Site_ID) %>% distinct(), by = "Plot_ID")
 
 
+
+
+tree_count_by_site_over_time <- testscaled %>%
+  group_by(Site_ID, SiteType, Tree_Type, Timeframe) %>%
+  summarise(total_count = sum(Tree_Count)) %>%
+  unite("Tree_Time", Tree_Type, Timeframe, sep = "_") %>%
+  spread(Tree_Time, total_count, fill = 0)
 
 
 
