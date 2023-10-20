@@ -26,14 +26,14 @@ asset <- kobo_asset(uid)
 df <- kobo_data(asset, all_versions = T)
 main_list <- as.list(df)
 
-# table_names <- names(df)
+table_names <- names(df)
 # 
 # 
 # # Not necessary script, this is mostly for easy exploring
-# for (name in table_names) {
-#   tbl_x <- df[name][[1]]
-#   assign(paste(name, "tbl", sep = "_"), value = tbl_x, envir = globalenv())
-# }
+for (name in table_names) {
+  tbl_x <- df[name][[1]]
+  assign(paste(name, "tbl", sep = "_"), value = tbl_x, envir = globalenv())
+}
 # 
 # Kobo extracts as a special object called "dm". To make it easier to handle, I 
 # am converting to a list here. 

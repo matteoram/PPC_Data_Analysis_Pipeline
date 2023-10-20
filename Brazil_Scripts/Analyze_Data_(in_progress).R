@@ -2,14 +2,15 @@ library(dplyr)
 library(stringr)
 library(tidyverse)
 
-tree_data <- read.csv("Brazil_Raw_Data\\Corrected_Tree_Data_2023-10-17.csv", check.names = FALSE)
-main_data <- read.csv("Brazil_Raw_Data\\Main_Data_2023-10-17.csv", check.names = FALSE)
+tree_data <- read.csv("Brazil_Raw_Data\\Corrected_Tree_Data_2023-10-19.csv", check.names = FALSE)
+main_data <- read.csv("Brazil_Raw_Data\\Main_Data_2023-10-19.csv", check.names = FALSE)
 
 
 
 tree_data_with_sizeclass <- tree_data %>%
-  mutate(size_class = ifelse(Plot_Type %in% c("30x30", "30x15"), ">10cm",
-                             ifelse(Plot_Type == "3x3", "1 - 9.9cm", "<1cm")))
+  mutate(size_class = ifelse(Plot_Type %in% c("30x30", "30x15") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
+                             ifelse(Plot_Type == "3x3", "1 - 9.9cm", 
+                                    ifelse(grepl("census", origin_table, ignore.case= TRUE),"1 - 9.9cm", "<1cm"))))
 
 
 big_tree_data_with_scaled_count <- tree_data_with_sizeclass %>% 
