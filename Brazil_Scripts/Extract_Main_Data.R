@@ -243,10 +243,7 @@ extract_misplaced_data <- function(main_table, tree_tables) {
     updated_table <- bind_rows(corresponding_tree_table, df)
     print(paste("Rows after:", nrow(updated_table)))
     
-    # Update the tree_tables list with the updated table
-    tree_tables[[destination]] <- updated_table
-    
-    return(tree_tables)
+    return(updated_table)
   }
   tree_tables$Control_10x10 <- bind_to_tree_table(df_type_1, tree_tables)
   tree_tables$Normal_30x30 <- bind_to_tree_table(df_type_2, tree_tables)
