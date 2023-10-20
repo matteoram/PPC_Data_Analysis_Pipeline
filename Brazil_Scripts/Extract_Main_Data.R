@@ -155,14 +155,13 @@ extract_misplaced_data <- function(main_table, tree_tables) {
   tree_table_names <- names(tree_tables)
   
   # Renaming index labels so that they are unique between main and tree tables
-  tree_tables_renamed_indices <- lapply(tree_tables, function(df) {
+  tree_tables <- lapply(tree_tables, function(df) {
     col_names <- names(df)
     col_names[col_names == "_index"] <- "tree_index"
     col_names[col_names == "_parent_index"] <- "main_index"
     names(df) <- col_names
     return(df)
   })
-  
   # Select columns in main table where there is tree data, group by data type,
   # and append to appropriate tree table.
   misplaced_tree_data <- main_table %>% 
@@ -190,8 +189,11 @@ extract_misplaced_data <- function(main_table, tree_tables) {
         !is.na(Tree_Type1) | 
         !is.na(Number_of_Trees_of_this_Species1)) %>% 
     mutate(
-      destination_table = "10x10_Control"
+      destination_table = "Control_10x10"
     )
+  print("Data for df_type_1")
+  print(df_type_1)
+  
 
   
   # Subset dataframe for type "2"
@@ -228,17 +230,24 @@ extract_misplaced_data <- function(main_table, tree_tables) {
       destination_table = "Nested_3x3_within_30x30"
     )
   
+
+  # Inside bind_to_tree_table function
   bind_to_tree_table <- function(df, tree_tables) {
     destination <- unique(df$destination_table)
-    if (length(destination) != 1) {
-      stop("Each dataframe should have only one unique destination_table value!")
-    }
+    print(paste("Binding data to table:", destination))
     
     corresponding_tree_table <- tree_tables[[destination]]
     
-    bind_rows(corresponding_tree_table, df)
+    # Print the number of rows before and after binding
+    print(paste("Rows before:", nrow(corresponding_tree_table)))
+    updated_table <- bind_rows(corresponding_tree_table, df)
+    print(paste("Rows after:", nrow(updated_table)))
+    
+    # Update the tree_tables list with the updated table
+    tree_tables[[destination]] <- updated_table
+    
+    return(tree_tables)
   }
-  
   tree_tables$Control_10x10 <- bind_to_tree_table(df_type_1, tree_tables)
   tree_tables$Normal_30x30 <- bind_to_tree_table(df_type_2, tree_tables)
   tree_tables$Nested_3x3_within_10x10_Control <- bind_to_tree_table(df_type_0011, tree_tables)
@@ -253,6 +262,7 @@ extract_misplaced_data <- function(main_table, tree_tables) {
   return(list(main_table = main_table, tree_tables = tree_tables))
   
 }
+
 
 
 #' 3. Clean Tree Tables
@@ -623,7 +633,20 @@ print("Cleaning and transforming Data")
 # 2. Prepare Main Table
 prepared_main_table <- prep_main_table(all_data$main_table)
 
-# 3. Clean Tree Tables
+# 3. Extract misplaced data
+all_data_fixed <- extract_misplaced_data(main_table = prepped_main_table, tree_tables = all_data$tree_tables)
+
+
+
+
+
+
+
+
+
+
+
+
 cleaned_tree_tables <- clean_tree_tables(all_data$tree_tables, prepared_main_table)
 
 # 4. Clean DBH Tables
