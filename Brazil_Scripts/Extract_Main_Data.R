@@ -60,6 +60,7 @@ retrieve_kobo_data <- function(asset_name) {
     first()
   
   asset <- kobo_asset(uid)
+  
   df <- kobo_data(asset)
   
   main_list <- as.list(df)
@@ -87,7 +88,7 @@ retrieve_kobo_data <- function(asset_name) {
   }
   
   # This renames tables based on patterns in the way data was labelled in Koobo
-  tree_tables <- main_list[names(main_list)[grep(c("x"), x = names(main_list))]]
+  tree_tables <- main_list[setdiff(names(main_list), "main")]
   # Print table info to check for data structure or naming changes
   cat(paste0("Number of Expected Tables: 14 \n", "Number of Retrieved Tables: ", length(df), "\n"))
   
@@ -151,10 +152,9 @@ return(main_table) # Make sure to return the modified table
 
 extract_misplaced_data <- function(main_table, tree_tables) {
 
-  # Ensure "_index" is renamed to "main_index"
-  
   tree_table_names <- names(tree_tables)
   
+  # Renaming index labels so that they are unique between main and tree tables
   tree_tables_renamed_indices <- lapply(tree_tables, function(df) {
     col_names <- names(df)
     col_names[col_names == "_index"] <- "tree_index"
@@ -163,7 +163,8 @@ extract_misplaced_data <- function(main_table, tree_tables) {
     return(df)
   })
   
-  # Remove errant tree data
+  # Select columns in main table where there is tree data, group by data type,
+  # and append to appropriate tree table.
   misplaced_tree_data <- main_table %>% 
     filter(
       !is.na(Tree_Species1) | 
@@ -233,10 +234,8 @@ extract_misplaced_data <- function(main_table, tree_tables) {
       stop("Each dataframe should have only one unique destination_table value!")
     }
     
-    # Extract the corresponding tree table
     corresponding_tree_table <- tree_tables[[destination]]
     
-    # Bind the dataframe to the tree table
     bind_rows(corresponding_tree_table, df)
   }
   
@@ -244,7 +243,14 @@ extract_misplaced_data <- function(main_table, tree_tables) {
   tree_tables$Normal_30x30 <- bind_to_tree_table(df_type_2, tree_tables)
   tree_tables$Nested_3x3_within_10x10_Control <- bind_to_tree_table(df_type_0011, tree_tables)
   tree_tables$Nested_3x3_within_30x30 <- bind_to_tree_table(df_type_0012, tree_tables)
-  return(tree_tables)
+  
+  main_table <- main_table %>%
+    select(
+      -contains("Tree_Species"),
+      -contains("Number_of_Trees"),
+      -contains("Tree_Type")
+    )
+  return(list(main_table = main_table, tree_tables = tree_tables))
   
 }
 
