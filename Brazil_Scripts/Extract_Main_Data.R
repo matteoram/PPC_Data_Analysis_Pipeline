@@ -390,6 +390,22 @@ combine_tree_tables <- function(tree_tables_list) {
 }
 
 
+#' 8. Pull Out Geolocation Data
+#' 
+#' This simply selects the columns with geolocation and produces a separate dataframe
+#' that can be written to a .csv file.
+#'
+#' @param main_table The "Main" dataframe with data for each submission
+#'
+#' @return A dataframe with geolocation data
+pull_geo_data <- function(main_table){
+  main_table %>% 
+    select(Site_ID, Plot_ID, Coordinate_System_Used, 
+           names(main_table)[grep("Corner", names(main_table), ignore.case = TRUE)]) %>% 
+    select(-names(.)[grep("Photo", names(.), ignore.case = TRUE)])
+}
+
+
 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
@@ -460,11 +476,15 @@ final_main_table <- remove_NA_columns(list(all_data_fixed$main_table))[[1]]
 final_combined_tree_tables <- combine_tree_tables(final_tree_tables)
 print("Preprocessing complete!")
 
-print("Writing data to disk.")
+# 7. Pull out geolocation data
+geo_data <- pull_geo_data(all_data_fixed$main_table)
+
 # 8. Write Data to Disk
-write_to_csv(prepared_main_table, "Main_Data")
+print("Writing data to disk.")
+write_to_csv(prepped_main_table, "Main_Data")
 write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
+write_to_csv(geo_data, "Geolocation_Data")
 
 # Optionally, print a message to let the user know the process is complete:
 cat("Data processing and export complete!\n")

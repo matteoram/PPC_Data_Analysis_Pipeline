@@ -54,24 +54,35 @@ scale_tree_count <- function(data) {
 
 
 
+prepped_data <- scale_tree_count(tree_data_with_sizeclass)
 
 
 
 
-tree_count_by_site <- testscaled %>%
-  group_by(Site_ID, SiteType,Tree_Type, Timeframe) %>%
+tree_count_by_site <- prepped_data %>%
+  group_by(Site_ID, SiteType, Tree_Type, Timeframe) %>%
   summarise(total_count = sum(Tree_Count)) %>%
-  spread(Tree_Type, total_count, fill = 0) %>% 
-  spread(Timeframe, total_count, fill = 0)
+  pivot_wider(names_from = Tree_Type, values_from = total_count, values_fill = 0)
 
 
-tree_count_by_plot <-  testscaled %>%
-  group_by(Plot_ID, SiteType, Tree_Type) %>%
+
+tree_count_by_site_andTF <- prepped_data %>%
+  group_by(Site_ID, SiteType, Tree_Type, Timeframe) %>%
   summarise(total_count = sum(Tree_Count)) %>%
-  spread(Tree_Type, total_count, fill = 0) %>% 
-  left_join(testscaled %>% select(Plot_ID, Site_ID) %>% distinct(), by = "Plot_ID")
+  mutate(combined_id = paste(Tree_Type, Timeframe, sep="_")) %>%
+  pivot_wider(names_from = combined_id, values_from = total_count, values_fill = 0)
 
 
+
+
+
+
+
+tree_count_by_plot <-  prepped_data %>%
+  mutate(unique_plot_ID = paste(Site_ID, Plot_ID, sep = "_")) %>% 
+  group_by(unique_plot_ID, SiteType, Tree_Type) %>%
+  summarise(total_count = sum(Tree_Count)) %>%
+  spread(Tree_Type, total_count, fill = 0) 
 
 
 tree_count_by_site_over_time <- testscaled %>%
