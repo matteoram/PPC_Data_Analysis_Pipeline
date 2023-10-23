@@ -457,6 +457,21 @@ combine_tree_tables <- function(tree_tables_list) {
 }
 
 
+#' 8. Pull Out Geolocation Data
+#' 
+#' This simply selects the columns with geolocation and produces a separate dataframe
+#' that can be written to a .csv file.
+#'
+#' @param main_table The "Main" dataframe with data for each submission
+#'
+#' @return A dataframe with geolocation data
+pull_geo_data <- function(main_table){
+  main_table %>% 
+    select(Site_ID, Plot_ID,
+           names(main_table)[grep("Corner", names(main_table), ignore.case = TRUE)]) %>% 
+    select(-names(.)[grep("Photo|001", names(.), ignore.case = TRUE)])
+}
+
 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
@@ -511,10 +526,10 @@ print("Data Retrieved successfully!")
 
 print("Cleaning and transforming Data")
 # 2. Prepare Main Table
-prepared_main_table <- prep_main_table(all_data$main_table)
+prepped_main_table <- prep_main_table(all_data$main_table)
 
 # 3. Clean Tree Tables
-cleaned_tree_tables <- clean_tree_tables(all_data$tree_tables, prepared_main_table)
+cleaned_tree_tables <- clean_tree_tables(all_data$tree_tables, prepped_main_table)
 
 # 4. Clean DBH Tables
 cleaned_DBH_tables <- clean_DBH_tables(all_data$DBH_tables, cleaned_tree_tables)
@@ -547,12 +562,17 @@ final_tree_tables <- remove_NA_columns(tables_list = cleaned_tree_tables)
 final_combined_tree_tables <- combine_tree_tables(final_tree_tables)
 print("Preprocessing complete!")
 
+# 8. Pull Out Geolocation Data
+
+geo_data <- pull_geo_data(prepped_main_table)
+
+
+# 9. Write Data to Disk
 print("Writing data to disk.")
-# 8. Write Data to Disk
 write_to_csv(prepared_main_table, "Main_Data")
 write_list_to_csv(final_DBH_tables, names(final_DBH_tables), sub_dir = "DBH_data")
 write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
+write_to_csv(geo_data, "Geolocation_Data")
 
-# Optionally, print a message to let the user know the process is complete:
 cat("Data processing and export complete!\n")
