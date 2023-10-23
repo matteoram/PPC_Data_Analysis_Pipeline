@@ -569,7 +569,7 @@ geo_data <- pull_geo_data(prepped_main_table)
 
 # 9. Write Data to Disk
 print("Writing data to disk.")
-write_to_csv(prepared_main_table, "Main_Data")
+write_to_csv(prepped_main_table, "Main_Data")
 write_list_to_csv(final_DBH_tables, names(final_DBH_tables), sub_dir = "DBH_data")
 write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
