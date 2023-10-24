@@ -35,9 +35,30 @@ prepped_data_with_ID <- prepped_data %>%  left_join(select(main_data, `_id`, mai
 
 
 
+check <- prepped_data_with_ID %>%
+  filter(Tree_Type == "planted", Timeframe == "Y0") %>% 
+  group_by(Organization_Name, Site_ID, Plot_ID, Species) %>%
+  summarise(total_count = sum(scaled_count, na.rm = TRUE))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 baseline_tree_count_plot <- prepped_data_with_ID %>%
   filter(Timeframe == "Y0") %>% 
-  group_by(`_id`, Tree_Type) %>%
+  group_by(Organization_Name, Site_ID, Plot_ID, Species, Tree_Type) %>%
   summarise(total_count = sum(scaled_count), .groups = 'drop') %>%
   spread(Tree_Type, total_count, fill = 0) %>%
   mutate(existing_trees = naturally_regenerating + Present,
