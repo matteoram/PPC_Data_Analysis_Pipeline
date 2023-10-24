@@ -402,7 +402,7 @@ combine_tree_tables <- function(tree_tables_list) {
 #' @return A dataframe with geolocation data
 pull_geo_data <- function(main_table){
   main_table %>% 
-    select(Site_ID, Plot_ID, Coordinate_System_Used, 
+    select(Organization_Name, Site_ID, Plot_ID, Coordinate_System_Used, 
            names(main_table)[grep("Corner", names(main_table), ignore.case = TRUE)]) %>% 
     select(-names(.)[grep("Photo", names(.), ignore.case = TRUE)])
 }

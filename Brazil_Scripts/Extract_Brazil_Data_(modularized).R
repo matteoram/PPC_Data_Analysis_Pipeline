@@ -465,9 +465,10 @@ combine_tree_tables <- function(tree_tables_list) {
 #' @param main_table The "Main" dataframe with data for each submission
 #'
 #' @return A dataframe with geolocation data
+
 pull_geo_data <- function(main_table){
   main_table %>% 
-    select(Site_ID, Plot_ID,
+    select(Organization_Name, Site_ID, Plot_ID,
            names(main_table)[grep("Corner", names(main_table), ignore.case = TRUE)]) %>% 
     select(-names(.)[grep("Photo|001", names(.), ignore.case = TRUE)])
 }

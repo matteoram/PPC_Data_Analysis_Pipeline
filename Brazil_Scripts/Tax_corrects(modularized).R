@@ -4,7 +4,7 @@ library(dplyr)
 
 load_data <- function() {
   # Define the path to the "Brazil_Raw_Data" folder
-  raw_data_path <- "Brazil_Raw_Data"
+  raw_data_path <- "Main_Raw_Data"
 
   # Get all files that match the pattern "Tree_Data_Full" in the "Brazil_Raw_Data" folder
   tree_files <- list.files(path = raw_data_path, pattern = "Tree_Data_Uncorrected", full.names = TRUE)
