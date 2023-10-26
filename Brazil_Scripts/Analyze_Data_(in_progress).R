@@ -6,6 +6,7 @@ tree_data <- read.csv("Main_Raw_Data\\Tree_Data_Uncorrected_2023-10-24.csv", che
 main_data <- read.csv("Main_Raw_Data\\Main_Data_2023-10-24.csv", check.names = FALSE)
 
 
+# NOTE size class for planted trees recorded in 30x30
 
 tree_data_with_sizeclass <- tree_data %>%
   mutate(size_class = ifelse(Plot_Type %in% c("30x30", "30x15") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
@@ -16,10 +17,26 @@ tree_data_with_sizeclass <- tree_data %>%
 
 
 
+# NOTE: figure out what to do with planted trees
+
 scale_tree_count <- function(data) {
   data %>%
     mutate(scaled_count = case_when(
-      Plot_Type == "30x30" ~ Tree_Count / (Resample_Main_Plot + 1),
+      (Plot_Type == "30x30" & grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count,
+      (Plot_Type == "30x30" & !grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count / (Resample_Main_Plot + 1),
+      Plot_Type == "10x10" ~ Tree_Count / (Resample_Main_Plot + 1),
+      Plot_Type == "3x3" ~ Tree_Count * 100 / (Resample_3x3_Subplot + 1),
+      Plot_Type == "1x1" ~ Tree_Count * 900,
+      TRUE ~ Tree_Count
+    ))
+}
+
+
+
+scale_tree_count_no_planted <- function(data) {
+  data %>%
+    mutate(scaled_count = case_when(
+      (Plot_Type == "30x30" & Tree_Type != "planted") ~ Tree_Count / (Resample_Main_Plot + 1),
       Plot_Type == "10x10" ~ Tree_Count / (Resample_Main_Plot + 1),
       Plot_Type == "3x3" ~ Tree_Count * 100 / (Resample_3x3_Subplot + 1),
       Plot_Type == "1x1" ~ Tree_Count * 900,
@@ -38,19 +55,22 @@ tree_data_size_and_scaled_count <- tree_data_size_and_scaled_count %>%
 
 
 
-check <- tree_data_size_and_scaled_count %>%
-  filter(Tree_Type == "planted", Timeframe == "Y0") %>% 
-  group_by(Organization_Name, Site_ID, Plot_ID, Species) %>%
-  summarise(total_count = sum(scaled_count, na.rm = TRUE))
+Mada_data <- tree_data_size_and_scaled_count %>% 
+  filter(Country == "Madagascar") %>%
+  summarise(planted_count = sum(.[.$Tree_Type == "planted",]$scaled_count, na.rm = T),
+            pres_regen = sum(.[.$Tree_Type == "Present" | .$Tree_Type == "naturally regenerating",]$scaled_count, na.rm = T),
+            unk_count = sum(.[!.$Tree_Type %in% c("planted", "Present", "naturally regenerating"),]$scaled_count, na.rm = T))
 
 
 
+tree_data %>% 
+  filter(Country == "Madagascar") %>%
+  summarise(planted_count = sum(.[.$Tree_Type == "planted",]$Tree_Count, na.rm = T),
+            pres_regen = sum(.[.$Tree_Type == "Present" | .$Tree_Type == "naturally regenerating",]$Tree_Count, na.rm = T),
+            unk_count = sum(.[!.$Tree_Type %in% c("planted", "Present", "naturally regenerating"),]$Tree_Count, na.rm = T))
 
 
-check2 <- tree_data_size_and_scaled_count %>%
-  filter(Tree_Type == "planted", Timeframe == "Y0") %>% 
-  group_by(Organization_Name, Site_ID, Plot_ID) %>%
-  summarise(total_count = sum(scaled_count, na.rm = TRUE))
+
 
 
 
