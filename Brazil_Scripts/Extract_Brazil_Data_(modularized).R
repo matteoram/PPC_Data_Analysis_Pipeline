@@ -120,7 +120,7 @@ prep_main_table <- function(main_table) {
   main_table <- main_table %>%
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>%
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot)) %>%
-    mutate(Plot_Type = ifelse(SiteSize == "Yes", "30x30", "30x15"))
+    mutate(Plot_Size = ifelse(SiteSize == "Yes", "30x30", "30x15"))
 
   # Organize into more helpful order, remove 'attachments'. Note: these attachments
   # are links to photo downloads. If desired in output, script can be added.
@@ -148,7 +148,7 @@ prep_main_table <- function(main_table) {
 #' 3. Clean Tree Tables
 #'
 #' This function renames columns based on naming conventions so that the combined
-#' data has common variable names, adds columns and values for Plot_Type and
+#' data has common variable names, adds columns and values for Plot_Size and
 #' origin_table, and joins the tree data with the main data so that information
 #' like Plot_ID, Site_ID, etc. becomes available in the tree data as well.
 #'
@@ -183,7 +183,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
     # Extract the desired string from the name (plot dimensions) and add column.
     # If table names change, this could break.
     plot_dims <- strsplit(name, "_")[[1]][2]
-    df$Plot_Type <- plot_dims
+    df$Plot_Size <- plot_dims
     df$origin_table <- name
 
     # Remove columns with the patterns "001" and "diagram" -- commented out, likely redundant, possibly unwanted
@@ -223,7 +223,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
       Plot_ID,
       Site_ID,
       SiteType,
-      Plot_Type,
+      Plot_Size,
       everything()
     )
 
@@ -282,7 +282,7 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
           Plot_ID,
           Site_ID,
           SiteType,
-          Plot_Type,
+          Plot_Size,
           Organization_Name,
           Plot_Permanence,
           Resample_Main_Plot,
@@ -341,11 +341,11 @@ adjust_census_table <- function(tree_tables, main_table) {
   # Extracting the dataframe from the list
   df <- tree_tables[[census_table_name]]
 
-  df$Plot_Type <- NULL
+  df$Plot_Size <- NULL
 
   # Adjusting the dataframe
   df_fixed <- df %>%
-    left_join(select(main_table, main_index, Plot_Type), by = "main_index") %>%
+    left_join(select(main_table, main_index, Plot_Size), by = "main_index") %>%
     select(-main_index)
 
   # Updating the list with the modified dataframe

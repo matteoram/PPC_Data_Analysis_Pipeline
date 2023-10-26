@@ -121,7 +121,7 @@ prep_main_table <- function(main_table) {
   main_table <- main_table %>%
   mutate(Resample_Main_Plot = ifelse(is.na(Resampling1), 0, Resampling1)) %>%
   mutate(Resample_3x3_Subplot = ifelse(is.na(Resampling2), 0, Resampling2)) %>%
-  mutate(Plot_Type = ifelse(SiteSize == "Yes", "30x30", "3x3")) %>% 
+  mutate(Plot_Size = ifelse(SiteSize == "Yes", "30x30", "3x3")) %>% 
     select(-Resampling1, -Resampling2)
 
 # Organize into more helpful order, remove 'attachments'. Note: these attachments
@@ -135,6 +135,7 @@ prep_main_table <- function(main_table) {
     Country,
     Organization_Name,
     Plot_Permanence,
+    Plot_Size,
     Strata_Number,
     Timeframe,
     Date,
@@ -260,7 +261,7 @@ extract_misplaced_data <- function(main_table, tree_tables) {
 #' 3. Clean Tree Tables
 #'
 #' This function renames columns based on naming conventions so that the combined
-#' data has common variable names, adds columns and values for Plot_Type and
+#' data has common variable names, adds columns and values for Plot_Size and
 #' origin_table, and joins the tree data with the main data so that information
 #' like Plot_ID, Site_ID, etc. becomes available in the tree data as well.
 #'
@@ -291,7 +292,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
     # Extract the desired string from the name (plot dimensions) and add column.
     # If table names change, this could break.
     plot_dims <- strsplit(name, "_")[[1]][2]
-    df$Plot_Type <- plot_dims
+    df$Plot_Size <- plot_dims
     df$origin_table <- name
     
     # Remove columns with the patterns "001" and "diagram" -- commented out, likely redundant, possibly unwanted
@@ -339,7 +340,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
       Country,
       Organization_Name,
       SiteType,
-      Plot_Type,
+      Plot_Size,
       everything()
     )
 
@@ -483,7 +484,7 @@ geo_data <- pull_geo_data(all_data_fixed$main_table)
 
 # 8. Write Data to Disk
 print("Writing data to disk.")
-write_to_csv(prepped_main_table, "Main_Data")
+write_to_csv(prepped_main_table, "Main_Brazil_Data")
 write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
 write_to_csv(geo_data, "Geolocation_Data")
