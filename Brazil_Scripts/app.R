@@ -30,7 +30,7 @@ ui <- fluidPage(
     ),
     mainPanel(
       tabsetPanel(
-        tabPanel("Raw Data", div(style = "overflow-x: scroll; max-height: 300px; width: 100%;", DTOutput("raw_data"))),
+        tabPanel("Raw Data", div(style = "overflow-x: scroll; height: 100%; width: 100%;", DTOutput("raw_data"))),
         tabPanel("Grouped Data", DTOutput("grouped_data"))
       )
     )
@@ -89,8 +89,9 @@ server <- function(input, output, session) {
   
   output$raw_data <- renderDT({
     if (is.null(raw_data())) return(NULL)
-    raw_data()
+    datatable(raw_data(), filter = 'top', options = list(scrollX = TRUE))
   })
+  
   
   output$grouped_data <- renderDT({
     if (is.null(raw_data()) || is.null(input$spatialGranularity)) return(NULL)
@@ -108,13 +109,12 @@ server <- function(input, output, session) {
     }
     
     result <- df %>%
-      
       group_by(across(all_of(grouping_vars))) %>%
       summarise(tree_count = sum(scaled_count, na.rm = TRUE), .groups = 'drop') %>%
       pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
       replace_na(list(`Planted` = 0, `Already Present` = 0, `Unknown` = 0))
     
-    return(result)
+    datatable(result, filter = 'top', options = list(scrollX = TRUE))
   })
   
   output$downloadData <- downloadHandler(
