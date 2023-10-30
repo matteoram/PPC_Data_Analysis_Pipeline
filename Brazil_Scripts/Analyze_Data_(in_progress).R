@@ -38,6 +38,7 @@ tree_data_size_and_scaled_count <- scale_tree_count(tree_data_with_sizeclass)
 
 
 
+widerdata <- tree_data_size_and_scaled_count %>% pivot_wider(names_from = Tree_Type, values_from = scaled_count)
 
 
 

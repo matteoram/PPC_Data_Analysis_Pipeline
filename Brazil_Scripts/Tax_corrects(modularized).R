@@ -2,9 +2,20 @@ library(taxize)
 library(dplyr)
 
 
+choose_dataset <- function(){
+  answer <- readline(prompt = "Which Dataset are you correcting for? Enter '1' for the Primary Dataset or '2' for the Brazil Dataset:")
+  if (!answer %in% c('1', '2')) {print("Invalid response, please enter either '1' or '2'")}
+  else if (answer == '1') {
+    raw_data_path <- "Main_Raw_Data"
+  }
+  else if (answer == '2'){
+    raw_data_path <- "Brazil_Raw_Data"
+  }
+  return(raw_data_path)
+}
+
 load_data <- function() {
   # Define the path to the "Brazil_Raw_Data" folder
-  raw_data_path <- "Main_Raw_Data"
 
   # Get all files that match the pattern "Tree_Data_Full" in the "Brazil_Raw_Data" folder
   tree_files <- list.files(path = raw_data_path, pattern = "Tree_Data_Uncorrected", full.names = TRUE)
@@ -31,16 +42,24 @@ load_data <- function() {
 
 
 
-update_tree_data_with_existing_corrections <- function(tree_data, corrected_names) {
+format_species_names <- function(tree_data) {
+  cleaned_tree_data <- tree_data %>% 
+    mutate(submitted_species_name = Species) %>%
+    mutate(Species = trimws(gsub("[\"']", "", Species)))
+    
+}
+
+
+
+
+update_tree_data_with_existing_corrections <- function(cleaned_tree_data, corrected_names) {
   if (!is.null(corrected_names)) {
-    updated_data <- tree_data %>%
-      mutate(submitted_species_name = Species) %>%
+    updated_data <- cleaned_tree_data %>%
       left_join(corrected_names, by = "Species") %>%
       mutate(Species = ifelse(is.na(matched_name2), Species, matched_name2)) %>%
-      mutate(Species = trimws(gsub("[\"']", "", Species))) %>% 
       mutate(name_validation = ifelse(is.na(matched_name2), "Needs review", "Resolved"))
   } else {
-    updated_data <- tree_data %>%
+    updated_data <- cleaned_tree_data %>%
       mutate(
         submitted_species_name = Species,
         name_validation = "Needs review"
@@ -86,14 +105,23 @@ resolve_names <- function(unresolved_names) {
 }
 
 
+
+
 # manual_validation <- function(df) {
 #   total_to_correct <- sum(is.na(df$matched_name2))
-#   cat(paste("You have", total_to_correct, "corrections to make..."))
+#   cat(paste("You have", total_to_correct, "corrections to make...\n"))
+#   
 #   for (i in 1:nrow(df)) {
 #     if (is.na(df$matched_name2[i])) {
+#       
 #       cat(paste("Unable to resolve:", df$Species[i], "\n"))
 #       new_name <- readline(prompt = "Please provide the correct name (or press Enter to skip): ")
-#       if (new_name != "") {
+#       
+#       # If the user types "save", save the current state of df and continue
+#       if (new_name == "save") {
+#         cat("Progress saved. You can resume from where you left off.\n")
+#         return(df)
+#       } else if (new_name != "") {
 #         df$matched_name2[i] <- new_name
 #         df$data_source_title[i] <- "Manual validation"
 #       }
@@ -101,32 +129,6 @@ resolve_names <- function(unresolved_names) {
 #   }
 #   return(df)
 # }
-
-
-manual_validation <- function(df) {
-  total_to_correct <- sum(is.na(df$matched_name2))
-  cat(paste("You have", total_to_correct, "corrections to make...\n"))
-  
-  for (i in 1:nrow(df)) {
-    if (is.na(df$matched_name2[i])) {
-      
-      cat(paste("Unable to resolve:", df$Species[i], "\n"))
-      new_name <- readline(prompt = "Please provide the correct name (or press Enter to skip): ")
-      
-      # If the user types "save", save the current state of df and continue
-      if (new_name == "save") {
-        cat("Progress saved. You can resume from where you left off.\n")
-        return(df)
-      } else if (new_name != "") {
-        df$matched_name2[i] <- new_name
-        df$data_source_title[i] <- "Manual validation"
-      }
-    }
-  }
-  return(df)
-}
-
-
 
 
 create_complete_df <- function(updated_data, resolver_dataframe_short, corrected_names) {
@@ -152,6 +154,41 @@ create_complete_df <- function(updated_data, resolver_dataframe_short, corrected
 
 
 
+manual_validation <- function(df) {
+  
+  # Extract unique unresolved species names
+  unresolved_unique <- df %>%
+    filter(is.na(matched_name2)) %>%
+    distinct(Species) %>%
+    pull(Species)
+  
+  total_to_correct <- length(unresolved_unique)
+  cat(paste("You have", total_to_correct, "unique unresolved species names to correct...\n"))
+  
+  for (species in unresolved_unique) {
+    cat(paste("Unable to resolve:", species, "\n"))
+    new_name <- readline(prompt = "Please provide the correct name (or press Enter to skip): ")
+    
+    # If the user types "save", save the current state of df and continue
+    if (new_name == "save") {
+      cat("Progress saved. You can resume from where you left off.\n")
+      return(df)
+    } else if (new_name != "") {
+      # Update all occurrences of that name in the dataframe
+      df$matched_name2[df$Species == species] <- new_name
+      df$data_source_title[df$Species == species] <- "Manual validation"
+    }
+  }
+  
+  return(df)
+}
+
+
+
+
+
+
+
 
 
 save_updated_corrections <- function(final_df, corrected_names) {
@@ -162,8 +199,8 @@ save_updated_corrections <- function(final_df, corrected_names) {
 
   date_info <- Sys.Date()
 
-  write.csv(all_corrections, paste0("Brazil_Raw_Data/Taxonomic_Corrections_", date_info, ".csv"), row.names = FALSE)
-  print(paste0("Updated species corrections saved to: Brazil_Raw_Data/Taxonomic_Corrections_", date_info, ".csv"))
+  write.csv(all_corrections, paste0(raw_data_path,"/Taxonomic_Corrections_", date_info, ".csv"), row.names = FALSE)
+  print(paste0("Updated species corrections saved to: ", raw_data_path, "/Taxonomic_Corrections_", date_info, ".csv"))
   return(all_corrections)
 }
 
@@ -171,23 +208,25 @@ save_updated_corrections <- function(final_df, corrected_names) {
 save_corrected_tree_data <- function(tree_data, all_corrections) {
   # Update tree_data with all corrections
   updated_tree_data <- tree_data %>%
-    mutate(submitted_species_name = Species) %>%
+    # mutate(submitted_species_name = Species) %>%
+    # mutate(Species = trimws(gsub("[\"']", "", Species))) %>%
     left_join(all_corrections, by = "Species") %>%
     mutate(Species = ifelse(is.na(matched_name2), Species, matched_name2)) %>%
     select(-matched_name2) # Remove the matched_name2 column
 
   date_info <- Sys.Date()
-  write.csv(updated_tree_data, paste0("Brazil_Raw_Data/Corrected_Tree_Data_", date_info, ".csv"), row.names = FALSE)
-  print(paste0("Corrected tree data saved to: Brazil_Raw_Data/Corrected_Tree_Data_", date_info, ".csv"))
+  write.csv(updated_tree_data, paste0(raw_data_path, "/Corrected_Tree_Data_", date_info, ".csv"), row.names = FALSE)
+  print(paste0("Corrected tree data saved to: ", raw_data_path, "/Corrected_Tree_Data_", date_info, ".csv"))
   
   return(updated_tree_data)
 }
 
 
 
-
+raw_data_path <- choose_dataset()
 data <- load_data()
-updated_data <- update_tree_data_with_existing_corrections(data$tree_data, data$corrected_names)
+cleaned_tree_data <- format_species_names(data$tree_data)
+updated_data <- update_tree_data_with_existing_corrections(cleaned_tree_data, data$corrected_names)
 unresolved_names <- get_unresolved_names(updated_data)
 resolved_dataframe_short <- resolve_names(unresolved_names)
 complete_df <- create_complete_df(updated_data, resolved_dataframe_short, data$corrected_names)
@@ -197,6 +236,6 @@ final_df <- manual_validation(complete_df)
 all_corrections <- save_updated_corrections(final_df, data$corrected_names)
 
 # Save updated tree_data
-updated_tree_data <- save_corrected_tree_data(data$tree_data, all_corrections)
+updated_tree_data <- save_corrected_tree_data(cleaned_tree_data, all_corrections)
 
 

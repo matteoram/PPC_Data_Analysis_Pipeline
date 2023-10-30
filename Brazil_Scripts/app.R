@@ -23,7 +23,6 @@ ui <- fluidPage(
                                "Species Level" = "speciesLevel"),
                    selected = "treeTypes"),
       
-      
       actionButton("group_data", "Group Data"),
       downloadButton("downloadData", "Download Grouped Data")
       

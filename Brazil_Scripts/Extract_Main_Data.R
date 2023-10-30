@@ -145,7 +145,6 @@ prep_main_table <- function(main_table) {
     -`_attachments`
   )
   
-  main_table <- 
 
 return(main_table) # Make sure to return the modified table
 }
@@ -461,11 +460,13 @@ print("Retrieving data from KoboToolbox. This requires internet connection and m
 all_data <- retrieve_kobo_data(asset_name) # This will prompt the user for username and password.
 print("Data Retrieved successfully!")
 
-print("Cleaning and transforming Data")
+print("Cleaning/Prepping Main Table")
 # 2. Prepare Main Table
 prepped_main_table <- prep_main_table(all_data$main_table)
+print("Main Table Prepped")
 
 # 3. Extract misplaced data
+print("Extrac")
 all_data_fixed <- extract_misplaced_data(main_table = prepped_main_table, tree_tables = all_data$tree_tables)
 
 # 4. Clean Tree Tables
@@ -484,7 +485,7 @@ geo_data <- pull_geo_data(all_data_fixed$main_table)
 
 # 8. Write Data to Disk
 print("Writing data to disk.")
-write_to_csv(prepped_main_table, "Main_Brazil_Data")
+write_to_csv(prepped_main_table, "Main_Data")
 write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
 write_to_csv(geo_data, "Geolocation_Data")
