@@ -42,11 +42,12 @@ load_data <- function() {
 
 
 
-format_species_names <- function(tree_data) {
+preprocess_species_names <- function(tree_data) {
   cleaned_tree_data <- tree_data %>% 
     mutate(submitted_species_name = Species) %>%
-    mutate(Species = trimws(gsub("[\"']", "", Species)))
-    
+    mutate(Species = trimws(gsub("[\"']", "", Species))) %>% 
+    mutate(Species = gsub("\n", "", Species))  # This line removes newline characters
+
 }
 
 
@@ -82,8 +83,8 @@ get_unresolved_names <- function(updated_data) {
 
 
 resolve_names <- function(unresolved_names) {
-  resolved_df <- gnr_resolve(sci = unresolved_names, data_source_ids = c(165, 167), canonical = TRUE)
-
+  resolved_df <- gnr_resolve(sci = unresolved_names, data_source_ids = c(165, 167), canonical = TRUE, best_match_only = TRUE)
+  
   # Check if the dataframe is empty
   if (nrow(resolved_df) == 0) {
     # Return a dataframe with the expected structure but no rows
@@ -94,15 +95,37 @@ resolve_names <- function(unresolved_names) {
       data_source_title = character(0)
     ))
   }
-
-  resolved_dataframe_short <- resolved_df %>%
-    group_by(user_supplied_name) %>%
-    arrange(desc(score)) %>%
-    slice(1) %>%
-    ungroup()
+  
 
   return(resolved_dataframe_short)
 }
+
+
+
+
+# 
+# resolve_names <- function(unresolved_names) {
+#   resolved_df <- gnr_resolve(sci = unresolved_names, data_source_ids = c(165, 167), canonical = TRUE, best_match_only = TRUE)
+# 
+#   # Check if the dataframe is empty
+#   if (nrow(resolved_df) == 0) {
+#     # Return a dataframe with the expected structure but no rows
+#     return(data.frame(
+#       user_supplied_name = character(0),
+#       matched_name2 = character(0),
+#       score = numeric(0),
+#       data_source_title = character(0)
+#     ))
+#   }
+# 
+#   resolved_dataframe_short <- resolved_df %>%
+#     group_by(user_supplied_name) %>%
+#     arrange(desc(score)) %>%
+#     slice(1) %>%
+#     ungroup()
+# 
+#   return(resolved_dataframe_short)
+# }
 
 
 
@@ -225,8 +248,8 @@ save_corrected_tree_data <- function(tree_data, all_corrections) {
 
 raw_data_path <- choose_dataset()
 data <- load_data()
-cleaned_tree_data <- format_species_names(data$tree_data)
-updated_data <- update_tree_data_with_existing_corrections(cleaned_tree_data, data$corrected_names)
+preprocessed_tree_data <- preprocess_species_names(data$tree_data)
+updated_data <- update_tree_data_with_existing_corrections(preprocessed_tree_data, data$corrected_names)
 unresolved_names <- get_unresolved_names(updated_data)
 resolved_dataframe_short <- resolve_names(unresolved_names)
 complete_df <- create_complete_df(updated_data, resolved_dataframe_short, data$corrected_names)
@@ -236,6 +259,6 @@ final_df <- manual_validation(complete_df)
 all_corrections <- save_updated_corrections(final_df, data$corrected_names)
 
 # Save updated tree_data
-updated_tree_data <- save_corrected_tree_data(cleaned_tree_data, all_corrections)
+updated_tree_data <- save_corrected_tree_data(preprocessed_tree_data, all_corrections)
 
 

@@ -1,20 +1,18 @@
 # --------------------------------------------------------------------------------
 # Project: Priceless Planet Coalition
 # Author: Johannes Nelson
-# Date Updated: October 18, 2023
 # Input: User will be prompted for Kobo username and password.
-# Outputs: Eight .csv files pertaining to different tables and variables
+# Outputs: CSV files pertaining to different tables and variables.
 
-# Description: This code forms the extraction part of PPC's data analysis pipeline
-# for the Brazil data, which was collected differently than the remainder of the
-# PPC projects and so required separate code to preprocess the raw Kobo data. The
-# two primary outputs are the "Main" table and the combined "Tree" table. The main
-# table contains information about each plot, and the tree table contains information
-# about all the trees monitored along with corresponding variables to identify plot,
-# site, organization, timeframe, planting pattern, etc.
+# Description: This code forms the data extraction and preprocessing component 
+# of PPC's data analysis pipeline. The primary outputs are the "Main_Data" 
+# CSV and the combined "Tree_Data" CSV. The 'Main_Data' CSV contains information  
+# about each submission/monitoring plot (the responses to the Kobo form questions 
+# that are not records of tree species observed or planted), and the tree table 
+# contains information about all the trees observed during monitoring surveys.
 #
 # The tree data file contains the word "uncorrected", which refers to the fact that
-# the species names have not been cleaned. The next script addresses this.
+# the species names have not been cleaned. This will be addressed in a later script.
 #
 # --------------------------------------------------------------------------------
 
@@ -29,9 +27,6 @@ for (pkg in necessary_packages) {
   }
 }
 
-# This asset name is how the Brazil data is stored in Kobo.
-asset_name <- "Tree Monitoring"
-
 
 #' 1. Retrieve Kobo Data
 #'
@@ -40,7 +35,7 @@ asset_name <- "Tree Monitoring"
 #'
 #' @return List of data.frames that correspond to different data tables.
 #' 
-retrieve_kobo_data <- function(asset_name) {
+retrieve_kobo_data <- function(asset_name = "Tree Monitoring") {
   UN <- askpass("Enter Kobo username: ")
   PW <- askpass("Enter Kobo password: ")
   
@@ -65,8 +60,12 @@ retrieve_kobo_data <- function(asset_name) {
   
   main_list <- as.list(df)
   
+  # Separate out the main submission data
   main_table <- main_list$main
   
+  # This is a dataframe that maps the names in Kobo with more clear, informative
+  # names designating what the data represents. If new tables appear, this will
+  # need to be edited.
   table_name_mappings <- data.frame(
     original_name = c(
       "main", "begin_repeat_ztsNCjoPm", "begin_repeat_ELDOiv5Dr", "PlantedTrees3",
@@ -87,9 +86,12 @@ retrieve_kobo_data <- function(asset_name) {
     }
   }
   
-  # This renames tables based on patterns in the way data was labelled in Koobo
+  # Separate out tree tables
   tree_tables <- main_list[setdiff(names(main_list), "main")]
-  # Print table info to check for data structure or naming changes
+  
+  # Print table info to check for data structure or naming changes. The number 
+  # and table names in this check represent the expected values as of last update.
+  # If forms change/new tables appear, this will need to be edited.
   cat(paste0("Number of Expected Tables: 14 \n", "Number of Retrieved Tables: ", length(df), "\n"))
   
   if (all(table_name_mappings$clarified_name %in% names(main_list))) {
@@ -108,13 +110,18 @@ retrieve_kobo_data <- function(asset_name) {
 
 #' 2. Prepare Main Table
 #'
-#' This function pre-processes the main table by renaming columns, handling NAs,
-#' and organizing the columns in a more logical order.
+#' This function pre-processes the main table by renaming columns, handling NAs
+#' within the 'resample' column--the assumption here is that no response meant no
+#' resampling occurred--and organizing the columns into a more helpful order.
 #'
 #' @param main_table The original main table to be preprocessed.
 #' @return Dataframe with cleaned and organized columns.
 
 prep_main_table <- function(main_table) {
+  
+  # All tables have the same value '_index' as their primary key. This gives the
+  # index in this table a unique name to avoid unwanted behavior and confusion
+  # when joining data together.
   colnames(main_table)[colnames(main_table) == "_index"] <- "main_index"
   colnames(main_table)[colnames(main_table) == "Enter_a_date"] <- "Date"
   
@@ -146,15 +153,30 @@ prep_main_table <- function(main_table) {
   )
   
 
-return(main_table) # Make sure to return the modified table
+return(main_table) 
 }
+
+
+
+#' 3. Extract Misplaced Data
+#'
+#' For mysterious reasons that no mortal mind can comprehend, some of the tree
+#' data was output into the main data table with submission data. This function's
+#' sole purpose is to grab it and put it where it belongs based on hard-coded, 
+#' clunky rules. If there ever appear new data in the main table like this, a 
+#' it will need to be examined and code will need to be added to this function to 
+#' accomodate it.
+#'
+#' @param main_table The original main table to be preprocessed.
+#' @return Dataframe with cleaned and organized columns.
 
 
 extract_misplaced_data <- function(main_table, tree_tables) {
 
   tree_table_names <- names(tree_tables)
   
-  # Renaming index labels so that they are unique between main and tree tables
+  # This renames all '_index' columns to 'tree_index', and all '_parent_index'
+  # columns to 'main_index' to be able to match the entries in the main table.
   tree_tables <- lapply(tree_tables, function(df) {
     col_names <- names(df)
     col_names[col_names == "_index"] <- "tree_index"
@@ -162,6 +184,7 @@ extract_misplaced_data <- function(main_table, tree_tables) {
     names(df) <- col_names
     return(df)
   })
+  
   # Select columns in main table where there is tree data, group by data type,
   # and append to appropriate tree table.
   misplaced_tree_data <- main_table %>% 
@@ -401,10 +424,19 @@ combine_tree_tables <- function(tree_tables_list) {
 #'
 #' @return A dataframe with geolocation data
 pull_geo_data <- function(main_table){
-  main_table %>% 
-    select(Organization_Name, Site_ID, Plot_ID, Coordinate_System_Used, 
-           names(main_table)[grep("Corner", names(main_table), ignore.case = TRUE)]) %>% 
+  # Get column names that match "Corner|Centroid"
+  geo_columns <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
+  
+  # Extract geo_data with additional columns and without "Photo" columns
+  geo_data <- main_table %>% 
+    select(Organization_Name, Site_ID, Plot_ID, Coordinate_System_Used, all_of(geo_columns)) %>% 
     select(-names(.)[grep("Photo", names(.), ignore.case = TRUE)])
+  
+  # Remove only the geo_columns (Corner|Centroid columns) from the main table
+  main_table_no_geo <- main_table %>% 
+    select(-all_of(geo_columns))
+  
+  return(list(Geolocation_Data = geo_data, Main_Data = main_table_no_geo))
 }
 
 
@@ -455,40 +487,49 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
 
 
 
-print("Retrieving data from KoboToolbox. This requires internet connection and may take a moment.")
 # 1. Retrieve Kobo Data
-all_data <- retrieve_kobo_data(asset_name) # This will prompt the user for username and password.
+print("Retrieving data from KoboToolbox. This requires internet connection and may take a moment.")
+all_data <- retrieve_kobo_data() # This will prompt the user for username and password.
 print("Data Retrieved successfully!")
 
-print("Cleaning/Prepping Main Table")
 # 2. Prepare Main Table
+print("Cleaning/Prepping Main Table")
 prepped_main_table <- prep_main_table(all_data$main_table)
 print("Main Table Prepped")
 
 # 3. Extract misplaced data
-print("Extrac")
+print("Extracting misplaced tree data from main data and putting it in correct place.")
 all_data_fixed <- extract_misplaced_data(main_table = prepped_main_table, tree_tables = all_data$tree_tables)
-
+print("Tree data put in correct place and main table fixed.")
 # 4. Clean Tree Tables
+print("Cleaning tree tables.")
 cleaned_tree_tables <- clean_tree_tables(all_data_fixed$tree_tables, all_data_fixed$main_table)
+print("Tree tables cleaned.")
 
 # 5. Remove columns that are entirely NA (optional)
+print("Removing columns that are entirely NA.")
 final_tree_tables <- remove_NA_columns(cleaned_tree_tables)
 final_main_table <- remove_NA_columns(list(all_data_fixed$main_table))[[1]]
+print("NA columns removed.")
 
 # 6. Combine Tree Tables
+print("Binding all cleaned tree tables together.")
 final_combined_tree_tables <- combine_tree_tables(final_tree_tables)
-print("Preprocessing complete!")
+print("Tree tables bound and ready for export.")
 
 # 7. Pull out geolocation data
-geo_data <- pull_geo_data(all_data_fixed$main_table)
+print("Separating geolocation data and main table.")
+main_and_geo <- pull_geo_data(all_data_fixed$main_table)
+print("Geolocation data prepared and main table shortened.")
 
 # 8. Write Data to Disk
 print("Writing data to disk.")
 write_to_csv(prepped_main_table, "Main_Data")
 write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
-write_to_csv(geo_data, "Geolocation_Data")
+write_list_to_csv(main_and_geo, names(main_and_geo))
+
+# write_to_csv(geo_data, "Geolocation_Data")
 
 # Optionally, print a message to let the user know the process is complete:
 cat("Data processing and export complete!\n")
