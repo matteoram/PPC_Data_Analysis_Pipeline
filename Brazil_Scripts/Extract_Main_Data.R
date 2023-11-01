@@ -117,7 +117,7 @@ retrieve_kobo_data <- function(asset_name = "Tree Monitoring") {
 #' @param main_table The original main table to be preprocessed.
 #' @return Dataframe with cleaned and organized columns.
 
-prep_main_table <- function(main_table) {
+process_main_table <- function(main_table) {
   
   # All tables have the same value '_index' as their primary key. This gives the
   # index in this table a unique name to avoid unwanted behavior and confusion
@@ -130,11 +130,34 @@ prep_main_table <- function(main_table) {
   mutate(Resample_3x3_Subplot = ifelse(is.na(Resampling2), 0, Resampling2)) %>%
   mutate(Plot_Size = ifelse(SiteSize == "Yes", "30x30", "3x3")) %>% 
     select(-Resampling1, -Resampling2)
+  
+  geo_columns <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
+  geo_data <- main_table %>% 
+    select(Organization_Name, Site_ID, Plot_ID,
+           SiteType, Plot_Type, Coordinate_System_Used, 
+           all_of(geo_columns)) %>% 
+    select(-names(.)[grep("Photo", names(.), ignore.case = TRUE)])
+  
+  
+  
+  photo_attachments <- main_table$`_attachments`
+  full_attachments_df <- bind_rows(photo_attachments)
+  final_attachments <- left_join(
+    select(
+      main_table, 
+      Organization_Name,
+      Site_ID, 
+      Plot_ID,
+      `_id`),
+    full_attachments_df,
+    by = c("_id" = "instance")
+    )
+    
 
 # Organize into more helpful order, remove 'attachments'. Note: these attachments
 # are links to photo downloads. If desired in output, script can be added.
   
-  main_table <- main_table %>%
+  main_table_shortened <- main_table %>%
   select(
     Plot_ID,
     Site_ID,
@@ -149,11 +172,12 @@ prep_main_table <- function(main_table) {
     Resample_Main_Plot,
     Resample_3x3_Subplot,
     everything(),
+    -all_of(geo_columns),
     -`_attachments`
   )
   
 
-return(main_table) 
+return(list(Main_Data = main_table_shortened, Geo_Data = geo_data, Photo_Data = final_attachments)) 
 }
 
 
@@ -370,7 +394,10 @@ clean_tree_tables <- function(tree_tables, main_table) {
     return(df)
   })
   names(tree_tables_modified) <- tree_table_names
-  return(tree_tables_modified)
+  
+  combined_tree_tables <- bind_rows(tree_tables_modified)
+  
+  return(list(Tree_Tables = tree_tables_modified, Full_Tree_Data = combined_tree_tables))
 }
 
 
@@ -393,53 +420,6 @@ remove_NA_columns <- function(tables_list) {
   })
   return(cleaned_tables)
 }
-
-
-
-
-#' 7. Combine and Refine Tree Tables
-#'
-#' This function consolidates a list of tree tables into a single table. During the
-#' combination process, the function distinguishes rows based on the presence or
-#' absence of NA values in the "_30x30_Plot_TreeIDNumber" column. For rows without NA
-#' values in this column, duplicates are removed. The function then reintegrates these
-#' treated rows with those containing NA values. Additional refinements are made to
-#' the Tree_Count values and the data is grouped by Plot_ID and Species for summarization.
-#'
-#' @param tree_tables_list A list of tree tables that need to be combined and refined.
-#'
-#' @return A single consolidated and refined tree table.
-combine_tree_tables <- function(tree_tables_list) {
-  combined_tree_tables <- bind_rows(tree_tables_list)
-  return(combined_tree_tables)
-}
-
-
-#' 8. Pull Out Geolocation Data
-#' 
-#' This simply selects the columns with geolocation and produces a separate dataframe
-#' that can be written to a .csv file.
-#'
-#' @param main_table The "Main" dataframe with data for each submission
-#'
-#' @return A dataframe with geolocation data
-pull_geo_data <- function(main_table){
-  # Get column names that match "Corner|Centroid"
-  geo_columns <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
-  
-  # Extract geo_data with additional columns and without "Photo" columns
-  geo_data <- main_table %>% 
-    select(Organization_Name, Site_ID, Plot_ID, Coordinate_System_Used, all_of(geo_columns)) %>% 
-    select(-names(.)[grep("Photo", names(.), ignore.case = TRUE)])
-  
-  # Remove only the geo_columns (Corner|Centroid columns) from the main table
-  main_table_no_geo <- main_table %>% 
-    select(-all_of(geo_columns))
-  
-  return(list(Geolocation_Data = geo_data, Main_Data = main_table_no_geo))
-}
-
-
 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
@@ -493,14 +473,15 @@ all_data <- retrieve_kobo_data() # This will prompt the user for username and pa
 print("Data Retrieved successfully!")
 
 # 2. Prepare Main Table
-print("Cleaning/Prepping Main Table")
-prepped_main_table <- prep_main_table(all_data$main_table)
-print("Main Table Prepped")
+print("Processing Main Table, Extracting Geolocation and Photo Data")
+main_geo_photo <- process_main_table(all_data$main_table)
+print("Main Data, Geo Data, and Photo Data processed")
 
 # 3. Extract misplaced data
 print("Extracting misplaced tree data from main data and putting it in correct place.")
-all_data_fixed <- extract_misplaced_data(main_table = prepped_main_table, tree_tables = all_data$tree_tables)
+all_data_fixed <- extract_misplaced_data(main_table = main_geo_photo$Main_Data, tree_tables = all_data$tree_tables)
 print("Tree data put in correct place and main table fixed.")
+
 # 4. Clean Tree Tables
 print("Cleaning tree tables.")
 cleaned_tree_tables <- clean_tree_tables(all_data_fixed$tree_tables, all_data_fixed$main_table)
@@ -508,26 +489,17 @@ print("Tree tables cleaned.")
 
 # 5. Remove columns that are entirely NA (optional)
 print("Removing columns that are entirely NA.")
-final_tree_tables <- remove_NA_columns(cleaned_tree_tables)
+final_tree_tables <- remove_NA_columns(cleaned_tree_tables$Tree_Tables)
+final_full_tree_table <- remove_NA_columns(list(cleaned_tree_tables$Full_Tree_Data))[[1]]
 final_main_table <- remove_NA_columns(list(all_data_fixed$main_table))[[1]]
 print("NA columns removed.")
 
-# 6. Combine Tree Tables
-print("Binding all cleaned tree tables together.")
-final_combined_tree_tables <- combine_tree_tables(final_tree_tables)
-print("Tree tables bound and ready for export.")
-
-# 7. Pull out geolocation data
-print("Separating geolocation data and main table.")
-main_and_geo <- pull_geo_data(all_data_fixed$main_table)
-print("Geolocation data prepared and main table shortened.")
-
 # 8. Write Data to Disk
 print("Writing data to disk.")
-write_to_csv(prepped_main_table, "Main_Data")
+write_to_csv(final_main_table, "Main_Data")
 write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
-write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
-write_list_to_csv(main_and_geo, names(main_and_geo))
+write_to_csv(final_full_tree_table, "Tree_Data_Uncorrected")
+write_list_to_csv(main_geo_photo[2:3], names(main_geo_photo[2:3]))
 
 # write_to_csv(geo_data, "Geolocation_Data")
 
