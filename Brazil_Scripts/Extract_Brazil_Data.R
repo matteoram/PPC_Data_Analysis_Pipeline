@@ -1,20 +1,26 @@
 # --------------------------------------------------------------------------------
 # Project: Priceless Planet Coalition
 # Author: Johannes Nelson
-# Date Updated: October 18, 2023
 # Input: User will be prompted for Kobo username and password.
-# Outputs: Eight .csv files pertaining to different tables and variables
+# Outputs: CSV files pertaining to different tables and variables.
 
-# Description: This code forms the extraction part of PPC's data analysis pipeline
-# for the Brazil data, which was collected differently than the remainder of the
-# PPC projects and so required separate code to preprocess the raw Kobo data. The
-# two primary outputs are the "Main" table and the combined "Tree" table. The main
-# table contains information about each plot, and the tree table contains information
-# about all the trees monitored along with corresponding variables to identify plot,
-# site, organization, timeframe, planting pattern, etc.
+# Description: This code forms the data extraction and preprocessing component 
+# of PPC's data analysis pipeline. This is the script specific to the Brazil Data,
+# which was collected in a different manner and required special handling.
+
+# The primary outputs are the "Main_Data_Brazil"  CSV and the combined 
+# "Tree_Data_Brazil" CSV. The former contains information  about each 
+# submission/monitoring plot (the responses to the Kobo form questions 
+# that are not records of tree species observed or planted), and the latter
+# contains information about all the trees observed during monitoring surveys.
+# In addition to the tree data, a folder with DBH data will contain trunk measurements
+# for each of the recorded trees.
+
+# Additional outputs include Geolocation_Data, Photo_Data, PACTO_data, and a folder
+# that separates out tree data by plot type.
 #
 # The tree data file contains the word "uncorrected", which refers to the fact that
-# the species names have not been cleaned. The next script addresses this.
+# the species names have not been cleaned. This will be addressed in a later script.
 #
 # --------------------------------------------------------------------------------
 
@@ -29,9 +35,6 @@ for (pkg in necessary_packages) {
   }
 }
 
-# This asset name is how the Brazil data is stored in Kobo.
-asset_name <- "PPC/PACTO Tree Monitoring - Brazil only"
-
 
 #' 1. Retrieve Kobo Data
 #'
@@ -39,7 +42,8 @@ asset_name <- "PPC/PACTO Tree Monitoring - Brazil only"
 #' proceeds to extract data from Kobo with minor wrangling and renaming.
 #'
 #' @return List of data.frames that correspond to different data tables.
-retrieve_kobo_data <- function(asset_name) {
+
+retrieve_kobo_data <- function(asset_name = "PPC/PACTO Tree Monitoring - Brazil only") {
   UN <- askpass("Enter Kobo username: ")
   PW <- askpass("Enter Kobo password: ")
 
@@ -100,7 +104,7 @@ retrieve_kobo_data <- function(asset_name) {
 #' @param main_table The original main table to be preprocessed.
 #' @return Dataframe with cleaned and organized columns.
 
-prep_main_table <- function(main_table) {
+process_main_table <- function(main_table) {
   if ("Notes" %in% names(main_table)) {
     names(main_table)[names(main_table) == "Notes"] <- "Original_Notes"
   }
@@ -121,7 +125,39 @@ prep_main_table <- function(main_table) {
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>%
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot)) %>%
     mutate(Plot_Size = ifelse(SiteSize == "Yes", "30x30", "30x15"))
-
+  
+  
+  
+  geo_columns <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
+  geo_data <- main_table %>% 
+    select(Organization_Name, Site_ID, Plot_ID,
+           SiteType, 
+           all_of(geo_columns)) %>% 
+    select(-names(.)[grep("Photo|001", names(.), ignore.case = TRUE)])
+  
+  
+  
+  photo_attachments <- main_table$`_attachments`
+  full_attachments_df <- bind_rows(photo_attachments)
+  final_attachments <- left_join(
+    select(
+      main_table, 
+      Organization_Name,
+      Site_ID, 
+      Plot_ID,
+      `_id`),
+    full_attachments_df,
+    by = c("_id" = "instance")
+  )
+  
+  
+  PACTO_cols <- names(main_table)[grep("pacto", names(main_table), ignore.case = TRUE)]
+  PACTO_data <- main_table %>% 
+    select(Organization_Name, Site_ID, Plot_ID,
+           SiteType, 
+           all_of(PACTO_cols))
+  
+  
   # Organize into more helpful order, remove 'attachments'. Note: these attachments
   # are links to photo downloads. If desired in output, script can be added.
   main_table <- main_table %>%
@@ -142,7 +178,10 @@ prep_main_table <- function(main_table) {
       Diagram
     )
 
-  return(main_table) # Make sure to return the modified table
+  return(list(Main_Data = main_table, 
+              Geo_Data = geo_data, 
+              Photo_Data = final_attachments,
+              PACTO_data = PACTO_data)) 
 }
 
 #' 3. Clean Tree Tables
@@ -466,13 +505,6 @@ combine_tree_tables <- function(tree_tables_list) {
 #'
 #' @return A dataframe with geolocation data
 
-pull_geo_data <- function(main_table){
-  main_table %>% 
-    select(Organization_Name, Site_ID, Plot_ID,
-           names(main_table)[grep("Corner", names(main_table), ignore.case = TRUE)]) %>% 
-    select(-names(.)[grep("Photo|001", names(.), ignore.case = TRUE)])
-}
-
 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
@@ -522,15 +554,15 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
 
 print("Retrieving data from KoboToolbox. This requires internet connection and may take a moment.")
 # 1. Retrieve Kobo Data
-all_data <- retrieve_kobo_data(asset_name) # This will prompt the user for username and password.
+all_data <- retrieve_kobo_data() # This will prompt the user for username and password.
 print("Data Retrieved successfully!")
 
 print("Cleaning and transforming Data")
 # 2. Prepare Main Table
-prepped_main_table <- prep_main_table(all_data$main_table)
+main_geo_photo_pacto <- process_main_table(all_data$main_table)
 
 # 3. Clean Tree Tables
-cleaned_tree_tables <- clean_tree_tables(all_data$tree_tables, prepped_main_table)
+cleaned_tree_tables <- clean_tree_tables(all_data$tree_tables, main_geo_photo_pacto$Main_Data)
 
 # 4. Clean DBH Tables
 cleaned_DBH_tables <- clean_DBH_tables(all_data$DBH_tables, cleaned_tree_tables)
@@ -563,17 +595,11 @@ final_tree_tables <- remove_NA_columns(tables_list = cleaned_tree_tables)
 final_combined_tree_tables <- combine_tree_tables(final_tree_tables)
 print("Preprocessing complete!")
 
-# 8. Pull Out Geolocation Data
-
-geo_data <- pull_geo_data(prepped_main_table)
-
-
-# 9. Write Data to Disk
+# 8. Write Data to Disk
 print("Writing data to disk.")
-write_to_csv(prepped_main_table, "Main_Brazil_Data")
+write_list_to_csv(main_geo_photo_pacto, names(main_geo_photo_pacto))
 write_list_to_csv(final_DBH_tables, names(final_DBH_tables), sub_dir = "DBH_data")
 write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
-write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected")
-write_to_csv(geo_data, "Geolocation_Data")
+write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected_Brazil")
 
 cat("Data processing and export complete!\n")

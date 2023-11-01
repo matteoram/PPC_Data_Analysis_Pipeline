@@ -8,8 +8,10 @@
 # of PPC's data analysis pipeline. The primary outputs are the "Main_Data" 
 # CSV and the combined "Tree_Data" CSV. The 'Main_Data' CSV contains information  
 # about each submission/monitoring plot (the responses to the Kobo form questions 
-# that are not records of tree species observed or planted), and the tree table 
-# contains information about all the trees observed during monitoring surveys.
+# that are not records of tree species observed or planted), and the 'Tree_Data_' 
+# CSV contains information about all the trees observed during monitoring surveys.
+# Additional outputs include Geolocation_Data, Photo_Data, and a folder
+# that separates out tree data by plot type.
 #
 # The tree data file contains the word "uncorrected", which refers to the fact that
 # the species names have not been cleaned. This will be addressed in a later script.
