@@ -168,7 +168,7 @@ process_main_table <- function(main_table) {
     Country,
     Organization_Name,
     Plot_Permanence,
-    Plot_Size,
+    Monitoring_Plot_Size,
     Strata_Number,
     Timeframe,
     Date,
@@ -339,18 +339,13 @@ clean_tree_tables <- function(tree_tables, main_table) {
     names(df)[grep("number|numer", names(df), ignore.case = TRUE)] <- "Tree_Count"
     names(df)[grep("species", names(df), ignore.case = TRUE)] <- "Species"
     names(df)[grep("type", names(df), ignore.case = TRUE)] <- "Tree_Type"
-    
-    # The word 'Number' was missing from this column name, which is the count column
-    names(df)[grep("_30x30_Plot_Census_10cm",
-                   names(df),
-                   ignore.case = TRUE
-    )] <- "Tree_Count" 
-
 
     # Extract plot dimensions from the table name and add Plot_Size column. Assumes
     # table names do not change. Unexpected new tables may cause unwanted behavior.
     plot_dims <- strsplit(name, "_")[[1]][2]
     df$Plot_Size <- plot_dims
+    
+    # Record origin table for future reference
     df$origin_table <- name
     
     
@@ -495,29 +490,24 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
 # 1. Retrieve Kobo Data
 print("Retrieving data from KoboToolbox. This requires internet connection and may take a moment.")
 all_data <- retrieve_kobo_data() # This will prompt the user for username and password.
-print("Data Retrieved successfully!")
 
 # 2. Prepare Main Table
 print("Processing Main Table, Extracting Geolocation and Photo Data")
 main_geo_photo <- process_main_table(all_data$main_table)
-print("Main Data, Geo Data, and Photo Data processed")
 
 # 3. Extract misplaced data
 print("Extracting misplaced tree data from main data and putting it in correct place.")
 all_data_fixed <- extract_misplaced_data(main_table = main_geo_photo$Main_Data, tree_tables = all_data$tree_tables)
-print("Tree data put in correct place and main table fixed.")
 
 # 4. Clean Tree Tables
 print("Cleaning tree tables.")
 cleaned_tree_tables <- clean_tree_tables(all_data_fixed$tree_tables, all_data_fixed$main_table)
-print("Tree tables cleaned.")
 
 # 5. Remove columns that are entirely NA (optional)
 print("Removing columns that are entirely NA.")
 final_tree_tables <- remove_NA_columns(cleaned_tree_tables$Tree_Tables)
 final_full_tree_table <- remove_NA_columns(list(cleaned_tree_tables$Full_Tree_Data))[[1]]
 final_main_table <- remove_NA_columns(list(all_data_fixed$main_table))[[1]]
-print("NA columns removed.")
 
 # 8. Write Data to Disk
 print("Writing data to disk.")
