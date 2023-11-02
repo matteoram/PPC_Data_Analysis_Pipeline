@@ -103,57 +103,6 @@ resolve_names <- function(unresolved_names) {
 
 
 
-# 
-# resolve_names <- function(unresolved_names) {
-#   resolved_df <- gnr_resolve(sci = unresolved_names, data_source_ids = c(165, 167), canonical = TRUE, best_match_only = TRUE)
-# 
-#   # Check if the dataframe is empty
-#   if (nrow(resolved_df) == 0) {
-#     # Return a dataframe with the expected structure but no rows
-#     return(data.frame(
-#       user_supplied_name = character(0),
-#       matched_name2 = character(0),
-#       score = numeric(0),
-#       data_source_title = character(0)
-#     ))
-#   }
-# 
-#   resolved_dataframe_short <- resolved_df %>%
-#     group_by(user_supplied_name) %>%
-#     arrange(desc(score)) %>%
-#     slice(1) %>%
-#     ungroup()
-# 
-#   return(resolved_dataframe_short)
-# }
-
-
-
-
-# manual_validation <- function(df) {
-#   total_to_correct <- sum(is.na(df$matched_name2))
-#   cat(paste("You have", total_to_correct, "corrections to make...\n"))
-#   
-#   for (i in 1:nrow(df)) {
-#     if (is.na(df$matched_name2[i])) {
-#       
-#       cat(paste("Unable to resolve:", df$Species[i], "\n"))
-#       new_name <- readline(prompt = "Please provide the correct name (or press Enter to skip): ")
-#       
-#       # If the user types "save", save the current state of df and continue
-#       if (new_name == "save") {
-#         cat("Progress saved. You can resume from where you left off.\n")
-#         return(df)
-#       } else if (new_name != "") {
-#         df$matched_name2[i] <- new_name
-#         df$data_source_title[i] <- "Manual validation"
-#       }
-#     }
-#   }
-#   return(df)
-# }
-
-
 create_complete_df <- function(updated_data, resolver_dataframe_short, corrected_names) {
   if (is.null(corrected_names)) {
     # If no corrections file was present
@@ -205,11 +154,6 @@ manual_validation <- function(df) {
   
   return(df)
 }
-
-
-
-
-
 
 
 

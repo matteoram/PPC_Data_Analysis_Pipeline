@@ -18,7 +18,7 @@
 #
 # --------------------------------------------------------------------------------
 
-# Check and install missing packages
+# Check for and install missing packages; load them into session
 necessary_packages <- c("robotoolbox", "dplyr", "dm", "askpass")
 
 for (pkg in necessary_packages) {
@@ -114,25 +114,27 @@ retrieve_kobo_data <- function(asset_name = "Tree Monitoring") {
 #'
 #' This function pre-processes the main table by renaming columns, handling NAs
 #' within the 'resample' column--the assumption here is that no response meant no
-#' resampling occurred--and organizing the columns into a more helpful order.
+#' resampling occurred--and organizing the columns into a more helpful order. It
+#' also prepares and separates out a table for geolocation data and photo 
+#' attachment data.
 #'
-#' @param main_table The original main table to be preprocessed.
-#' @return Dataframe with cleaned and organized columns.
+#' @param main_table The original main table extracted from Kobo.
+#' @return List of dataframes--Main_Data, Geo_Data, Photo_Data.
 
 process_main_table <- function(main_table) {
   
-  # All tables have the same value '_index' as their primary key. This gives the
-  # index in this table a unique name to avoid unwanted behavior and confusion
-  # when joining data together.
+  # Rename generic _index column to distinct value for later joins.
   colnames(main_table)[colnames(main_table) == "_index"] <- "main_index"
   colnames(main_table)[colnames(main_table) == "Enter_a_date"] <- "Date"
   
+  # Rename and process sampling columns; add plot size based on SiteSize answer
   main_table <- main_table %>%
   mutate(Resample_Main_Plot = ifelse(is.na(Resampling1), 0, Resampling1)) %>%
   mutate(Resample_3x3_Subplot = ifelse(is.na(Resampling2), 0, Resampling2)) %>%
-  mutate(Plot_Size = ifelse(SiteSize == "Yes", "30x30", "3x3")) %>% 
+  mutate(Monitoring_Plot_Size = ifelse(SiteSize == "Yes", "30x30", "3x3")) %>% 
     select(-Resampling1, -Resampling2)
   
+  # Separate out geolocation data based on pattern in column names
   geo_columns <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
   geo_data <- main_table %>% 
     select(Organization_Name, Site_ID, Plot_ID,
@@ -141,7 +143,7 @@ process_main_table <- function(main_table) {
     select(-names(.)[grep("Photo", names(.), ignore.case = TRUE)])
   
   
-  
+  # Separate out photo attachment data and join with relevant plot data
   photo_attachments <- main_table$`_attachments`
   full_attachments_df <- bind_rows(photo_attachments)
   final_attachments <- left_join(
@@ -156,9 +158,8 @@ process_main_table <- function(main_table) {
     )
     
 
-# Organize into more helpful order, remove 'attachments'. Note: these attachments
-# are links to photo downloads. If desired in output, script can be added.
-  
+
+  # Simple reordering for ease of viewing; drops all geolocation and photo columns
   main_table_shortened <- main_table %>%
   select(
     Plot_ID,
@@ -187,14 +188,18 @@ return(list(Main_Data = main_table_shortened, Geo_Data = geo_data, Photo_Data = 
 #' 3. Extract Misplaced Data
 #'
 #' For mysterious reasons that no mortal mind can comprehend, some of the tree
-#' data was output into the main data table with submission data. This function's
-#' sole purpose is to grab it and put it where it belongs based on hard-coded, 
-#' clunky rules. If there ever appear new data in the main table like this, a 
-#' it will need to be examined and code will need to be added to this function to 
-#' accomodate it.
+#' data was output into the main data table with submission data. The columns 
+#' containing this data have patterns '1', '2', '0011', and '0012' in their names.
+#' These patterns are used to find the misplaced data. This lengthy function's
+#' sole purpose is to grab this data and put it where it belongs based on hard-coded, 
+#' clunky rules. If there ever appear new data in the main table that do not have
+#' the above mentioned patterns,it will need to be examined and code will need to 
+#' be added to this function to accommodate it.
 #'
-#' @param main_table The original main table to be preprocessed.
-#' @return Dataframe with cleaned and organized columns.
+#' @param main_table The main table after it has undergone the above preprocessing.
+#' @param tree_tables The tree tables straight from extraction.
+#' @return List with a dataframe called main_table and a list of dataframes called
+#' tree tables.
 
 
 extract_misplaced_data <- function(main_table, tree_tables) {
@@ -211,8 +216,9 @@ extract_misplaced_data <- function(main_table, tree_tables) {
     return(df)
   })
   
-  # Select columns in main table where there is tree data, group by data type,
-  # and append to appropriate tree table.
+  # Select columns in main table where there is tree data based on known patterns, 
+  # group by data type, and append to appropriate tree table. Destination tables
+  # were chosen based on patterns in the 'Kobo_Key' document.
   misplaced_tree_data <- main_table %>% 
     filter(
       !is.na(Tree_Species1) | 
@@ -241,9 +247,7 @@ extract_misplaced_data <- function(main_table, tree_tables) {
       destination_table = "Control_10x10"
     )
 
-
   
-  # Subset dataframe for type "2"
   df_type_2 <- misplaced_tree_data %>%
     select(main_index, origin_table, ends_with("2")) %>%
     select(-ends_with("0012")) %>% 
@@ -255,7 +259,7 @@ extract_misplaced_data <- function(main_table, tree_tables) {
       destination_table = "Normal_30x30"
     )
   
-  # Subset dataframe for type "0011"
+  
   df_type_0011 <- misplaced_tree_data %>%
     select(main_index, origin_table, ends_with("0011")) %>% 
     filter(
@@ -266,7 +270,7 @@ extract_misplaced_data <- function(main_table, tree_tables) {
       destination_table = "Nested_3x3_within_10x10_Control"
     )
   
-  # Subset dataframe for type "0012"
+  
   df_type_0012 <- misplaced_tree_data %>%
     select(main_index, origin_table, ends_with("0012")) %>% 
     filter(
@@ -278,22 +282,24 @@ extract_misplaced_data <- function(main_table, tree_tables) {
     )
   
 
-  # Inside bind_to_tree_table function
+  # Helper function to bind data to correct tree table
   bind_to_tree_table <- function(df, tree_tables) {
     destination <- unique(df$destination_table)
 
     corresponding_tree_table <- tree_tables[[destination]]
     
-    # Print the number of rows before and after binding
     updated_table <- bind_rows(corresponding_tree_table, df)
 
     return(updated_table)
   }
+  
+  # Call the binding function for each table, putting the data in correct place
   tree_tables$Control_10x10 <- bind_to_tree_table(df_type_1, tree_tables)
   tree_tables$Normal_30x30 <- bind_to_tree_table(df_type_2, tree_tables)
   tree_tables$Nested_3x3_within_10x10_Control <- bind_to_tree_table(df_type_0011, tree_tables)
   tree_tables$Nested_3x3_within_30x30 <- bind_to_tree_table(df_type_0012, tree_tables)
   
+  # Remove data from main table after it has been put in place
   main_table <- main_table %>%
     select(
       -contains("Tree_Species"),
@@ -301,53 +307,54 @@ extract_misplaced_data <- function(main_table, tree_tables) {
       -contains("Tree_Type")
     )
   return(list(main_table = main_table, tree_tables = tree_tables))
-  
 }
 
 
 
-#' 3. Clean Tree Tables
+#' 4. Clean Tree Tables
 #'
-#' This function renames columns based on naming conventions so that the combined
-#' data has common variable names, adds columns and values for Plot_Size and
-#' origin_table, and joins the tree data with the main data so that information
+#' This function renames columns based on known naming conventions so that the 
+#' combined data has common variable names, adds columns and values for Plot_Size 
+#' and origin_table, and joins the tree data with the main data so that information
 #' like Plot_ID, Site_ID, etc. becomes available in the tree data as well.
 #'
-#' @param tree_tables The unprocessed tree tables from the main data list
-#' @param main_table The preprocessed main table.
+#' @param tree_tables The tree_tables after they have been 'repaired' by the above
+#' extract_misplaced_data function.
+#' @param main_table The preprocessed and repaired main table, output by previous 
+#' function
 #'
-#' @return a list of tree tables that have been preprocessed
+#' @return List with: a dataframe of all tree data combined, as well as a nested 
+#' list with tree data still separated by origin table. 
 
 clean_tree_tables <- function(tree_tables, main_table) {
-  # Extract table names
+  # Extract table names to iterate over
   tree_table_names <- names(tree_tables)
   
-  # Cleaning function
+  
   tree_tables_modified <- lapply(tree_table_names, function(name) {
-    # Retrieve the dataframe from the tree_tables list
+    # Extract single table from list
     df <- tree_tables[[name]]
     
-    # Check column names for certain patterns and standardize across tables.
+    # Check column names for certain patterns and standardize across tables
     names(df)[grep("number|numer", names(df), ignore.case = TRUE)] <- "Tree_Count"
     names(df)[grep("species", names(df), ignore.case = TRUE)] <- "Species"
     names(df)[grep("type", names(df), ignore.case = TRUE)] <- "Tree_Type"
+    
+    # The word 'Number' was missing from this column name, which is the count column
     names(df)[grep("_30x30_Plot_Census_10cm",
                    names(df),
                    ignore.case = TRUE
-    )] <- "Tree_Count"
+    )] <- "Tree_Count" 
 
 
-    # Extract the desired string from the name (plot dimensions) and add column.
-    # If table names change, this could break.
+    # Extract plot dimensions from the table name and add Plot_Size column. Assumes
+    # table names do not change. Unexpected new tables may cause unwanted behavior.
     plot_dims <- strsplit(name, "_")[[1]][2]
     df$Plot_Size <- plot_dims
     df$origin_table <- name
     
-    # Remove columns with the patterns "001" and "diagram" -- commented out, likely redundant, possibly unwanted
-    # df <- df[, !grepl("001", names(df))]
-    # df <- df[, !grepl("diagram", names(df))]
     
-    # Checks for two tables with planted tree data. These need Tree_Type columns
+    # Checks the tables with planted tree data. These need Tree_Type columns
     # that can automatically be populated with 'planted'
     if (grepl("planted", name, ignore.case = TRUE) && !"Tree_Type" %in% names(df)) {
       df$Tree_Type <- "planted"
@@ -375,10 +382,11 @@ clean_tree_tables <- function(tree_tables, main_table) {
         by = "main_index"
       )
     
+    # Convert all plot and site IDs to character values.
     df$Plot_ID <- as.character(df$Plot_ID)
     df$Site_ID <- as.character(df$Site_ID)
     
-    # Reordering columns -- relevant first.
+    # Reordering columns -- relevant first. Can easily be customized.
     df <- df %>% select(
       Species,
       Tree_Type,
@@ -404,11 +412,12 @@ clean_tree_tables <- function(tree_tables, main_table) {
 
 
 
-#' 6. Remove Columns with Only NAs
+#' 5. Remove Columns with Only NAs
 #'
 #' This function processes a list of tables and removes any columns within
 #' these tables that contain only NA values. If this is not desired, exclude
-#' this function from main script below.
+#' this function from main script below. The assumption here is that if every
+#' value is NA, it is likely not helpful.
 #'
 #' @param tables_list A list of tables (dataframes) from which columns containing
 #' only NAs should be removed.
@@ -423,6 +432,13 @@ remove_NA_columns <- function(tables_list) {
   return(cleaned_tables)
 }
 
+
+
+#' 6. Write CSVs to disk
+#'
+#' These are some simple helper functions to make writing lists of dataframes and
+#' single dataframes to the disk. They add date stamps and assume no 
+#' sub directory by default. 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
   main_dir <- "Main_Raw_Data"
@@ -468,6 +484,13 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
 }
 
 
+#---------------------------------------------------------------------------------
+# The above script defines all these functions. The 'main' script below calls them
+# each in turn. By having distinct modules, errors/bugs that might arise in the 
+# future will be easier to diagnose. The print() statements output at each step
+# in the console can help locate where things went wrong, and the relevant function
+# above will be a good starting point for debugging. 
+#---------------------------------------------------------------------------------
 
 # 1. Retrieve Kobo Data
 print("Retrieving data from KoboToolbox. This requires internet connection and may take a moment.")
@@ -503,7 +526,5 @@ write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_D
 write_to_csv(final_full_tree_table, "Tree_Data_Uncorrected")
 write_list_to_csv(main_geo_photo[2:3], names(main_geo_photo[2:3]))
 
-# write_to_csv(geo_data, "Geolocation_Data")
 
-# Optionally, print a message to let the user know the process is complete:
 cat("Data processing and export complete!\n")
