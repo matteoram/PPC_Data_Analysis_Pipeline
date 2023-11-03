@@ -673,7 +673,7 @@ print("Preprocessing complete!")
 print("Writing data to disk.")
 write_list_to_csv(main_geo_photo_pacto, names(main_geo_photo_pacto))
 write_list_to_csv(final_DBH_tables, names(final_DBH_tables), sub_dir = "DBH_data")
-write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType")
+write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType") #This may not even be a necessary output
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected_Brazil")
 
 cat("Data processing and export complete!\n")
