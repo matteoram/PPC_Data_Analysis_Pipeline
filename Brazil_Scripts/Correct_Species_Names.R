@@ -75,7 +75,7 @@ load_data <- function() {
   latest_tree_file <- tree_files[order(file.info(tree_files)$mtime, decreasing = TRUE)[1]]
   tree_data <- read.csv(latest_tree_file, check.names = FALSE)
 
-  # tree_data <- tree_data[1:300,]
+  tree_data <- tree_data[1:300, ]
 
   # Find most recent taxonomic corrections, if any exists (at the very least the
   # "_MASTER" copy should still exist from my initial corrections).
@@ -92,7 +92,7 @@ load_data <- function() {
   print(paste0("Latest correction file: ", latest_corrections_file))
   print(paste0("Latest tree data file: ", latest_tree_file))
 
-  return(list(tree_data = tree_data, corrected_names = corrected_names))
+  return(list(tree_data = tree_data, corrected_names = corrected_names, raw_data_path = raw_data_path))
 }
 
 
@@ -380,14 +380,25 @@ save_updated_corrections <- function(final_df, corrected_names) {
 #' @param  tree_data The tree_data (after preprocessing step)
 #' @param  all_corrections The new, full corrections datagrame
 #' @return An updated tree data file with all known corrections made
-save_corrected_tree_data <- function(tree_data, all_corrections) {
+
+save_corrected_tree_data <- function(tree_data, all_corrections, raw_data_path) {
   updated_tree_data <- tree_data %>%
     # Join old data with new corrections
-    left_join(all_corrections, by = "Species") %>%
+    left_join(all_corrections, by = "Species", suffix = c(".old", ".new")) %>%
+    mutate(
+      # Pulls old and new corrections together, favoring the new (although there
+      # should be no cases where there is a value in both old and new columns)
+      matched_name2 = coalesce(matched_name2.new, matched_name2.old),
+      score = coalesce(score.new, score.old),
+      data_source_title = coalesce(data_source_title.new, data_source_title.old)
+    ) %>%
     # Change species column to reflect new corrections
     mutate(Species = ifelse(is.na(matched_name2), Species, matched_name2)) %>%
-    # Remove unneeded matched_name2 column
-    select(-matched_name2)
+    mutate(name_validation = ifelse(is.na(matched_name2), "Needs Review", "Resolved")) %>%
+    select(
+      -names(.)[grep(".old|.new", names(.))],
+      -matched_name2
+    )
 
   # Stamp file name with date and time; save file
   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
@@ -398,6 +409,24 @@ save_corrected_tree_data <- function(tree_data, all_corrections) {
 }
 
 
+#
+# save_corrected_tree_data <- function(tree_data, all_corrections, raw_data_path) {
+#   updated_tree_data <- tree_data %>%
+#     # Join old data with new corrections
+#     left_join(all_corrections, by = "Species") %>%
+#     # Change species column to reflect new corrections
+#     mutate(Species = ifelse(is.na(matched_name2), Species, matched_name2)) %>%
+#     # Remove unneeded matched_name2 column
+#     select(-matched_name2)
+#
+#   # Stamp file name with date and time; save file
+#   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
+#   write.csv(updated_tree_data, paste0(raw_data_path, "/Corrected_Tree_Data_", date_info, ".csv"), row.names = FALSE)
+#   print(paste0("Corrected tree data saved to: ", raw_data_path, "/Corrected_Tree_Data_", date_info, ".csv"))
+#
+#   return(updated_tree_data)
+# }
+#
 
 
 #---------------------------------------------------------------------------------
@@ -437,4 +466,4 @@ all_corrections <- save_updated_corrections(final_df, data$corrected_names)
 
 # 7. Save Corrected Tree Data
 print("Saving Corrected Tree Data")
-updated_tree_data <- save_corrected_tree_data(preprocessed_tree_data, all_corrections)
+updated_tree_data <- save_corrected_tree_data(updated_data, all_corrections, data$raw_data_path)

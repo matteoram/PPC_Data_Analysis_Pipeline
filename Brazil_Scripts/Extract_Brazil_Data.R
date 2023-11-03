@@ -4,13 +4,13 @@
 # Input: User will be prompted for Kobo username and password.
 # Outputs: CSV files pertaining to different tables and variables.
 
-# Description: This code forms the data extraction and preprocessing component 
+# Description: This code forms the data extraction and preprocessing component
 # of PPC's data analysis pipeline. This is the script specific to the Brazil Data,
 # which was collected in a different manner and required special handling.
 
-# The primary outputs are the "Main_Data_Brazil"  CSV and the combined 
-# "Tree_Data_Brazil" CSV. The former contains information  about each 
-# submission/monitoring plot (the responses to the Kobo form questions 
+# The primary outputs are the "Main_Data_Brazil"  CSV and the combined
+# "Tree_Data_Brazil" CSV. The former contains information  about each
+# submission/monitoring plot (the responses to the Kobo form questions
 # that are not records of tree species observed or planted), and the latter
 # contains information about all the trees observed during monitoring surveys.
 # In addition to the tree data, a folder with DBH data will contain trunk measurements
@@ -126,39 +126,44 @@ process_main_table <- function(main_table) {
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>%
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot)) %>%
     mutate(Monitoring_Plot_Size = ifelse(SiteSize == "Yes", "30x30", "30x15"))
-  
-  
-  
+
+
+
   geo_columns <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
-  geo_data <- main_table %>% 
-    select(Organization_Name, Site_ID, Plot_ID,
-           SiteType, 
-           all_of(geo_columns)) %>% 
+  geo_data <- main_table %>%
+    select(
+      Organization_Name, Site_ID, Plot_ID,
+      SiteType,
+      all_of(geo_columns)
+    ) %>%
     select(-names(.)[grep("Photo|001", names(.), ignore.case = TRUE)])
-  
-  
-  
+
+
+
   photo_attachments <- main_table$`_attachments`
   full_attachments_df <- bind_rows(photo_attachments)
   final_attachments <- left_join(
     select(
-      main_table, 
+      main_table,
       Organization_Name,
-      Site_ID, 
+      Site_ID,
       Plot_ID,
-      `_id`),
+      `_id`
+    ),
     full_attachments_df,
     by = c("_id" = "instance")
   )
-  
-  
+
+
   PACTO_cols <- names(main_table)[grep("pacto", names(main_table), ignore.case = TRUE)]
-  PACTO_data <- main_table %>% 
-    select(Organization_Name, Site_ID, Plot_ID,
-           SiteType, 
-           all_of(PACTO_cols))
-  
-  
+  PACTO_data <- main_table %>%
+    select(
+      Organization_Name, Site_ID, Plot_ID,
+      SiteType,
+      all_of(PACTO_cols)
+    )
+
+
   # Organize into more helpful order, remove 'attachments'. Note: these attachments
   # are links to photo downloads. If desired in output, script can be added.
   main_table <- main_table %>%
@@ -179,18 +184,20 @@ process_main_table <- function(main_table) {
       Diagram
     )
 
-  return(list(Main_Data = main_table, 
-              Geo_Data = geo_data, 
-              Photo_Data = final_attachments,
-              PACTO_data = PACTO_data)) 
+  return(list(
+    Main_Data = main_table,
+    Geo_Data = geo_data,
+    Photo_Data = final_attachments,
+    PACTO_data = PACTO_data
+  ))
 }
 
 #' 3. Clean Tree Tables
 #'
-#' This function renames columns based on known naming conventions so that the 
-#' combined data has standardized variable names, adds columns and values for 
-#' Plot_Size and origin_table, and joins the tree data with the main data so that 
-#' information like Plot_ID, Site_ID, etc. becomes available in the tree data 
+#' This function renames columns based on known naming conventions so that the
+#' combined data has standardized variable names, adds columns and values for
+#' Plot_Size and origin_table, and joins the tree data with the main data so that
+#' information like Plot_ID, Site_ID, etc. becomes available in the tree data
 #' as well.
 #'
 #' @param tree_tables The unprocessed tree tables from the main data list
@@ -202,9 +209,8 @@ clean_tree_tables <- function(tree_tables, main_table) {
   # Extract table names to iterate over them
   tree_table_names <- names(tree_tables)
 
-  
+
   tree_tables_modified <- lapply(tree_table_names, function(name) {
-    
     # Retrieve one dataframe from the tree_tables list
     df <- tree_tables[[name]]
 
@@ -213,13 +219,13 @@ clean_tree_tables <- function(tree_tables, main_table) {
     col_names[grep("species", col_names, ignore.case = TRUE)] <- "Species"
     col_names[grep("type", col_names, ignore.case = TRUE)] <- "Tree_Type"
     col_names[grep("count", col_names, ignore.case = TRUE)] <- "Tree_Count"
-    
+
     # This handles one table that did not have the word 'Number' in its tree count column.
     col_names[grep("_30x30_Plot_Census_10cm",
       col_names,
       ignore.case = TRUE
     )] <- "Tree_Count"
-    
+
     # Renaming indices in tree tables for unique, clear reference both parent and
     # child tables (main_index and trunk_index)
     col_names[col_names == "_index"] <- "tree_index"
@@ -231,7 +237,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
     # table names do not change. Unexpected new tables may cause unwanted behavior.
     plot_dims <- strsplit(name, "_")[[1]][2]
     df$Plot_Size <- plot_dims
-    
+
     # Record origin table for future reference
     df$origin_table <- name
 
@@ -240,7 +246,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
     if (grepl("planted", name, ignore.case = TRUE) && !"Tree_Type" %in% names(df)) {
       df$Tree_Type <- "planted"
     }
-    
+
 
     # This joins the tree data with essential elements in the main data that will
     # be used in down stream analyses.
@@ -275,7 +281,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
 
     return(df)
   })
-  
+
   names(tree_tables_modified) <- tree_table_names
   return(tree_tables_modified)
 }
@@ -291,7 +297,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
 #' origin_table column to identify the source table for each entry.
 #'
 #' @param DBH_tables A list of unprocessed DBH tables.
-#' @param tree_tables The preprocessed and cleaned tree tables, used to provide 
+#' @param tree_tables The preprocessed and cleaned tree tables, used to provide
 #' context and additional information for the DBH tables.
 #'
 #' @return A list of cleaned and merged DBH tables.
@@ -301,30 +307,29 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
   # Extract table names to iterate over them
   DBH_table_names <- names(DBH_tables)
 
- 
+
   DBH_tables_modified <- lapply(DBH_table_names, function(name) {
-    
     # Retrieve a dataframe from the DBH_table_names list
     df <- DBH_tables[[name]]
-    
+
     # Record origin table for future reference
     df$origin_table <- name
-    
+
     # Rename columns pertaining to reference indices for clear downstream joins
     col_names <- names(df)
     col_names[col_names == "_index"] <- "trunk_index"
     col_names[col_names == "_parent_index"] <- "tree_index"
     names(df) <- col_names
-    
+
     # Removes an unwanted column
     df <- df[, !grepl("button", names(df))]
-    
+
     # Identifies parent tree table for this data and retrieves it from tree tables
     parent_table_name <- unique(df$`_parent_table_name`)
     parent_table <- tree_tables[[parent_table_name]]
 
-    # Joins with tree data by "tree_index" so that trunk measurements are tied 
-    # with tree data as well as the plot data (since that was already joined to 
+    # Joins with tree data by "tree_index" so that trunk measurements are tied
+    # with tree data as well as the plot data (since that was already joined to
     # the tree tables)
     df <- df %>%
       left_join(
@@ -358,10 +363,10 @@ clean_DBH_tables <- function(DBH_tables, tree_tables) {
 
 #' 5. Adjust Diameter at Breast Height Tables
 #'
-#' This function handles an inconsistency in the data coming from Kobo, where 
-#' certain DBH measurements were not in the expected tables. It extracts these 
-#' misplaced data from the tree tables and binds them to the relevant DBH table. 
-#' Currently, this is a one-time issue, and the below function assumes this will 
+#' This function handles an inconsistency in the data coming from Kobo, where
+#' certain DBH measurements were not in the expected tables. It extracts these
+#' misplaced data from the tree tables and binds them to the relevant DBH table.
+#' Currently, this is a one-time issue, and the below function assumes this will
 #' not continue to happen.
 #'
 #' @param DBH_tables A list of DBH tables that need adjustments.
@@ -385,13 +390,13 @@ adjust_DBH_tables <- function(DBH_tables, tree_tables) {
 
 #' 6. Adjust Census Table
 #'
-#' This function handles a mistake in form creation, where only a single census 
+#' This function handles a mistake in form creation, where only a single census
 #' table is generated, wheter or not the monitoring plot is 30x30 or 30x15. This
-#' function uses parent index values to edit the plot size and ensure that any 
+#' function uses parent index values to edit the plot size and ensure that any
 #' tree data coming from a 30x15 plot is labeled correctly. I left this separate
 #' in case the form is ever fixed, in which case this could be easily deleted with
-#' out impacting other functions. 
-#' 
+#' out impacting other functions.
+#'
 #' @param tree_tables The list of cleaned/preprocessed tree tables
 #' @param main_table The preprocessed main_table
 #' and appended to the DBH tables.
@@ -399,7 +404,6 @@ adjust_DBH_tables <- function(DBH_tables, tree_tables) {
 #' @return List of tree tables
 
 adjust_census_table <- function(tree_tables, main_table) {
-  
   # Extracting the census table name
   census_table_name <- names(tree_tables)[grep(
     pattern = "census",
@@ -430,9 +434,9 @@ adjust_census_table <- function(tree_tables, main_table) {
 #' The following two functions will not output new data. Rather, they identify
 #' potentially problematic rows wihtin the dataset where Trunk/Tree labeling has
 #' not gone as expected. Because there are a handful of ways this can be done, it
-#' is best to clean it up on the data entry side. Since this input error would 
+#' is best to clean it up on the data entry side. Since this input error would
 #' directly impact tree counts, though, output is added here to help identify
-#' problematic entries. 
+#' problematic entries.
 
 find_problem_rows_30x30 <- function(DBH_table) {
   df <- DBH_table
@@ -491,12 +495,12 @@ remove_NA_columns <- function(tables_list) {
 #'
 #' This function consolidates a list of tree tables into a single table. During the
 #' combination process, the function distinguishes rows based on the presence or
-#' absence of NA values in the "_30x30_Plot_TreeIDNumber" column. This is because 
-#' if this column is populated, it is actually trunk data, not tree data--which 
+#' absence of NA values in the "_30x30_Plot_TreeIDNumber" column. This is because
+#' if this column is populated, it is actually trunk data, not tree data--which
 #' mysteriously appeared in the tree table, likely for the same reasons that Stonehenge
-#' was built by early humans. For rows containing trunk information, duplicates are 
-#' removed to avoid multiple trunks mistakenly being counted as multiple trees. 
-#' Additional refinements are made to the Tree_Count values and the data is grouped 
+#' was built by early humans. For rows containing trunk information, duplicates are
+#' removed to avoid multiple trunks mistakenly being counted as multiple trees.
+#' Additional refinements are made to the Tree_Count values and the data is grouped
 #' by Plot_ID and Species for summarization.
 #'
 #' @param tree_tables_list A list of tree tables that need to be combined and refined.
@@ -506,7 +510,7 @@ combine_tree_tables <- function(tree_tables_list) {
   # First, combine all tables
   combined_tree_tables <- bind_rows(tree_tables_list)
 
-  # Separate dataframes: one with non-NA values and one with NA values for the 
+  # Separate dataframes: one with non-NA values and one with NA values for the
   # column that points toward misplaced trunk data
   df_non_na <- combined_tree_tables %>% filter(!is.na(`_30x30_Plot_TreeIDNumber`))
   df_na <- combined_tree_tables %>% filter(is.na(`_30x30_Plot_TreeIDNumber`))
@@ -523,10 +527,11 @@ combine_tree_tables <- function(tree_tables_list) {
   # this populates the tree_count column with '1' for those entries. Then it goes
   # by site-plot combos, and totals the counts.
   tree_data_with_single_counts <- combined_tree_tables_fixed %>%
-    filter(origin_table %in% c("_30x30_Plot_Repeat","_30x15_Plot_Repeat")) %>%
+    filter(origin_table %in% c("_30x30_Plot_Repeat", "_30x15_Plot_Repeat")) %>%
     mutate(Tree_Count = ifelse(
-      origin_table %in% c("_30x30_Plot_Repeat","_30x15_Plot_Repeat") & is.na(Tree_Count), 
-      1, Tree_Count)) %>% 
+      origin_table %in% c("_30x30_Plot_Repeat", "_30x15_Plot_Repeat") & is.na(Tree_Count),
+      1, Tree_Count
+    )) %>%
     group_by(Site_ID, Plot_ID, Species) %>%
     summarise(
       Tree_Count = sum(Tree_Count),
@@ -534,14 +539,16 @@ combine_tree_tables <- function(tree_tables_list) {
       across(everything(), first),
       .groups = "drop"
     )
-  
-  # Takes the data for which true counts were input by users (Planted and 3x3 tables) 
+
+  # Takes the data for which true counts were input by users (Planted and 3x3 tables)
   # and binds it to the new data with total counts
   tree_data_with_true_counts <- combined_tree_tables_fixed %>%
-    filter(!origin_table %in% c("_30x30_Plot_Repeat","_30x15_Plot_Repeat"))
-  tree_data_with_final_counts <- bind_rows(tree_data_with_single_counts, 
-                                           tree_data_with_true_counts)
-  
+    filter(!origin_table %in% c("_30x30_Plot_Repeat", "_30x15_Plot_Repeat"))
+  tree_data_with_final_counts <- bind_rows(
+    tree_data_with_single_counts,
+    tree_data_with_true_counts
+  )
+
 
   # This jettisons the unneeded trunk data which has been put in place already
   tree_data_with_final_counts <- tree_data_with_final_counts %>%
@@ -559,8 +566,8 @@ combine_tree_tables <- function(tree_tables_list) {
 #' 8. Write CSVs to disk
 #'
 #' These are some simple helper functions to make writing lists of dataframes and
-#' single dataframes to the disk. They add date stamps and assume no 
-#' sub directory by default. 
+#' single dataframes to the disk. They add date stamps and assume no
+#' sub directory by default.
 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
@@ -610,10 +617,10 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
 
 #---------------------------------------------------------------------------------
 # The above script defines all these functions. The 'main' script below calls them
-# each in turn. By having distinct modules, errors/bugs that might arise in the 
+# each in turn. By having distinct modules, errors/bugs that might arise in the
 # future will be easier to diagnose. The print() statements output at each step
 # in the console can help locate where things went wrong, and the relevant function
-# above will be a good starting point for debugging. 
+# above will be a good starting point for debugging.
 #---------------------------------------------------------------------------------
 
 # 1. Retrieve Kobo Data
@@ -640,7 +647,7 @@ adjusted_DBH_tables <- adjust_DBH_tables(cleaned_DBH_tables, cleaned_tree_tables
 
 # 6. Adjust Census Table
 print("Addressing census table issue.")
-adjusted_tree_tables <- adjust_census_table(tree_tables =cleaned_tree_tables , main_table = main_geo_photo_pacto$Main_Data)
+adjusted_tree_tables <- adjust_census_table(tree_tables = cleaned_tree_tables, main_table = main_geo_photo_pacto$Main_Data)
 
 
 # 6.5 This block and the associated functions would ideally be deleted. There
@@ -673,7 +680,7 @@ print("Preprocessing complete!")
 print("Writing data to disk.")
 write_list_to_csv(main_geo_photo_pacto, names(main_geo_photo_pacto))
 write_list_to_csv(final_DBH_tables, names(final_DBH_tables), sub_dir = "DBH_data")
-write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType") #This may not even be a necessary output
+write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType") # This may not even be a necessary output
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected_Brazil")
 
 cat("Data processing and export complete!\n")
