@@ -75,7 +75,7 @@ load_data <- function() {
   latest_tree_file <- tree_files[order(file.info(tree_files)$mtime, decreasing = TRUE)[1]]
   tree_data <- read.csv(latest_tree_file, check.names = FALSE)
 
-  tree_data <- tree_data[1:300, ]
+  # tree_data <- tree_data[1:300, ]
 
   # Find most recent taxonomic corrections, if any exists (at the very least the
   # "_MASTER" copy should still exist from my initial corrections).
@@ -86,10 +86,11 @@ load_data <- function() {
   if (length(corrections_files) > 0) {
     latest_corrections_file <- corrections_files[order(file.info(corrections_files)$mtime, decreasing = TRUE)[1]]
     corrected_names <- read.csv(latest_corrections_file)
+    print(paste0("Latest correction file: ", latest_corrections_file))
   } else {
     corrected_names <- NULL
+    print("No corrections found. Starting from scratch.")
   }
-  print(paste0("Latest correction file: ", latest_corrections_file))
   print(paste0("Latest tree data file: ", latest_tree_file))
 
   return(list(tree_data = tree_data, corrected_names = corrected_names, raw_data_path = raw_data_path))
@@ -229,7 +230,7 @@ resolve_uncorrected_names <- function(updated_data) {
 
 
 
-#' 3. Create Complete Corrections Dataframe
+#' 4. Create Complete Corrections Dataframe
 #'
 #' This step takes the new names that the resolver found and adds them to the
 #' existing database in order to create a complete table of names with corrections
@@ -266,7 +267,7 @@ create_complete_corrections_df <- function(updated_data, resolved_dataframe, cor
 }
 
 
-#' 4. Manual Validation
+#' 5. Manual Validation
 #'
 #' This step is interactive, and if there have been many new entries since the
 #' last time it was run, can take a lot of human time. For every unique name that
@@ -330,7 +331,7 @@ manual_validation <- function(complete_df) {
 
 
 
-#' 4. Save Updated Corrections
+#' 6. Save Updated Corrections
 #'
 #' This step will save an updated corrections file that contains all past corrections
 #' as well as all new corrections from either the resolve_names() function or the
@@ -371,7 +372,7 @@ save_updated_corrections <- function(final_df, corrected_names) {
   return(all_corrections)
 }
 
-#' 5. Save Corrected Tree Data
+#' 7. Save Corrected Tree Data
 #'
 #' Here we update the tree data with all corrections--old and new--and save a file
 #' called 'Corrected_Tree_Data_xxx.CSV.' Unresolved names will still be unresolved
@@ -379,6 +380,7 @@ save_updated_corrections <- function(final_df, corrected_names) {
 #'
 #' @param  tree_data The tree_data (after preprocessing step)
 #' @param  all_corrections The new, full corrections datagrame
+#' @param  raw_data_path the bath to either 'Brazil' or 'Main' data
 #' @return An updated tree data file with all known corrections made
 
 save_corrected_tree_data <- function(tree_data, all_corrections, raw_data_path) {
@@ -407,6 +409,40 @@ save_corrected_tree_data <- function(tree_data, all_corrections, raw_data_path) 
 
   return(updated_tree_data)
 }
+
+
+
+
+#' 8. Save Unresolved Names
+#'
+#' An optional question will appear after all scripts have run that asks if you
+#' would like to save unresolved species names to the disk. This may be superfluous
+#' because you can also just filter the corrected tree data by name_validation, but
+#' this provides a quick way to skip that step if desired.
+#'
+#' @param  updated_tree_data The recently updated tree data with new corrections
+#' @param  raw_data_path the bath to either 'Brazil' or 'Main' data
+#' @return An updated tree data file with all known corrections made
+
+save_unresolved_names <- function(updated_tree_data, raw_data_path) {
+  save_prompt <- tolower(readline(prompt = paste0("Would you like to save a CSV with all ", 
+                                          "unresolved species names? \n Enter y/n")))
+  
+  if (save_prompt == 'y'){
+    date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
+    needs_review <- updated_tree_data %>% 
+      filter(name_validation == 'Needs Review')
+    write.csv(needs_review, paste0(raw_data_path, "/Species_for_Review_", date_info, ".csv"))
+    print(paste0("Species in need of review saved to: ", raw_data_path, "/Species_for_Review_", date_info, ".csv"))
+    
+  }
+  return(needs_review)
+}
+
+
+
+
+
 
 
 #
@@ -445,7 +481,7 @@ data <- load_data()
 print("Updating Data with Existing Corrections")
 updated_data <- update_tree_data_with_existing_corrections(data$tree_data, data$corrected_names)
 
-# 3. Resolv3 Uncorrected Names
+# 3. Resolve Uncorrected Names
 print(paste0(
   "Passing Uncorrected Names to Global Names Resolver Database.",
   "This step can take a very long time if there are many new names."
@@ -467,3 +503,6 @@ all_corrections <- save_updated_corrections(final_df, data$corrected_names)
 # 7. Save Corrected Tree Data
 print("Saving Corrected Tree Data")
 updated_tree_data <- save_corrected_tree_data(updated_data, all_corrections, data$raw_data_path)
+
+# 8. Save Unresolved Names
+needing_review <- save_unresolved_names(updated_tree_data, data$raw_data_path)
