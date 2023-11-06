@@ -45,7 +45,7 @@ load_data <- function() {
   latest_tree_file <- tree_files[order(file.info(tree_files)$mtime, decreasing = TRUE)[1]]
   tree_data <- read.csv(latest_tree_file, check.names = FALSE)
   
-  tree_data <- tree_data[1:45, ]
+  tree_data <- tree_data[1:30, ]
   
   # Find most recent Taxonomic_Ranks
   corrections_path <- "Taxonomic_Corrections"
@@ -91,7 +91,7 @@ add_existing_family_names <- function(tree_data, existing_family_names){
 # }
 
 
-get_family_names <- function(updated_tree_data) {
+get_family_names <- function(updated_tree_data, existing_family_names) {
   
   # Check if 'family' column exists
   if("family" %in% names(updated_tree_data)) {
@@ -99,11 +99,21 @@ get_family_names <- function(updated_tree_data) {
       filter(is.na(family)) %>%
       distinct(Species) %>%
       pull(Species)
+    
   } else {
     # If the 'family' column does not exist, use all Species
     species_to_lookup <- updated_tree_data %>%
       distinct(Species) %>%
       pull(Species)
+  }
+  
+  if(!is.null(existing_family_names)){
+    species_to_skip <- existing_family_names %>% 
+      filter(is.na(family)) %>% 
+      distinct(query) %>% 
+      pull(query)
+    
+    species_to_lookup <- setdiff(species_to_lookup, species_to_skip)
   }
   
   # Retrieve family names from taxonomic database
@@ -145,8 +155,9 @@ add_genus_species_cols <- function(updated_tree_data) {
 
 
 save_family_names <- function(existing_family_names, new_family_names) {
-  new_resolved_names <- new_family_names %>% filter(!is.na(family))
-  all_family_names <- rbind(new_resolved_names, existing_family_names)
+  # new_resolved_names <- new_family_names %>% filter(!is.na(family))
+  all_family_names <- rbind(new_family_names, existing_family_names) %>% 
+    distinct(query)
   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
   corrections_path <- "Taxonomic_Corrections"
   
@@ -175,7 +186,7 @@ save_updated_tree_data <- function(tree_data_with_ranks, raw_data_path){
 
 all_data <- load_data()
 updated_tree_data <- add_existing_family_names(all_data$tree_data, all_data$existing_family_names)
-new_family_names <- get_family_names(updated_tree_data)
+new_family_names <- get_family_names(updated_tree_data, all_data$existing_family_names)
 tree_data_with_family <- add_new_family_names(updated_tree_data, new_family_names, all_data$existing_family_names)
 tree_data_with_ranks <- add_genus_species_cols(tree_data_with_family)
 all_family_names <- save_family_names(all_data$existing_family_names, new_family_names)
