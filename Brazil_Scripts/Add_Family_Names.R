@@ -45,7 +45,7 @@ load_data <- function() {
   latest_tree_file <- tree_files[order(file.info(tree_files)$mtime, decreasing = TRUE)[1]]
   tree_data <- read.csv(latest_tree_file, check.names = FALSE)
   
-  tree_data <- tree_data[1:30, ]
+  tree_data <- tree_data[1:60, ]
   
   # Find most recent Taxonomic_Ranks
   corrections_path <- "Taxonomic_Corrections"
@@ -157,7 +157,7 @@ add_genus_species_cols <- function(updated_tree_data) {
 save_family_names <- function(existing_family_names, new_family_names) {
   # new_resolved_names <- new_family_names %>% filter(!is.na(family))
   all_family_names <- rbind(new_family_names, existing_family_names) %>% 
-    distinct(query)
+    distinct()
   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
   corrections_path <- "Taxonomic_Corrections"
   
