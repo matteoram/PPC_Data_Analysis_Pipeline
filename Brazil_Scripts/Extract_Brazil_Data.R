@@ -129,12 +129,12 @@ process_main_table <- function(main_table) {
 
 
 
-  geo_columns <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
+  geo_cols <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
   geo_data <- main_table %>%
     select(
       Organization_Name, Site_ID, Plot_ID,
       SiteType,
-      all_of(geo_columns)
+      all_of(geo_cols)
     ) %>%
     select(-names(.)[grep("Photo|001", names(.), ignore.case = TRUE)])
 
@@ -174,11 +174,16 @@ process_main_table <- function(main_table) {
       Country,
       Organization_Name,
       Plot_Permanence,
+      Monitoring_Plot_Size,
       Strata,
+      Timeframe,
+      Date,
       Resample_Main_Plot,
       Resample_3x3_Subplot,
       everything(),
       -`_attachments`,
+      -all_of(geo_cols),
+      -all_of(PACTO_cols),
       Note,
       Note1,
       Diagram
