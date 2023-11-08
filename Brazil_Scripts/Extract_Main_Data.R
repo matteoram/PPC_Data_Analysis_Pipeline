@@ -167,6 +167,7 @@ process_main_table <- function(main_table) {
       Plot_ID,
       Site_ID,
       SiteType,
+      Plot_Type,
       Country,
       Organization_Name,
       Plot_Permanence,
@@ -351,8 +352,14 @@ clean_tree_tables <- function(tree_tables, main_table) {
     df$Plot_Size <- plot_dims
 
     # Record origin table for future reference
-    df$origin_table <- name
-
+    
+    if ("origin_table" %in% names(df)) {
+      # 'origin_table' column exists, fill NA values with 'name'
+      df$origin_table <- ifelse(is.na(df$origin_table), name, df$origin_table)
+    } else {
+      # 'origin_table' column doesn't exist, create it and set all values to 'name'
+      df$origin_table <- name
+    }
 
     # Checks the tables with planted tree data. These need Tree_Type columns
     # that can automatically be populated with 'planted'
@@ -373,6 +380,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
           Country,
           Site_ID,
           SiteType,
+          Plot_Type,
           Plot_Permanence,
           Resample_Main_Plot,
           Resample_3x3_Subplot,
@@ -396,6 +404,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
       Country,
       Organization_Name,
       SiteType,
+      Plot_Type,
       Plot_Size,
       everything()
     )

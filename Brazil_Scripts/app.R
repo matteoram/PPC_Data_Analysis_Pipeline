@@ -46,19 +46,19 @@ server <- function(input, output, session) {
       tree_data <- read.csv(inFile$datapath, header = TRUE, check.names = FALSE)
       
       tree_and_size <- tree_data %>%
-        mutate(size_class = ifelse(Plot_Type %in% c("30x30", "30x15") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
-                                   ifelse(Plot_Type == "3x3", "1 - 9.9cm", 
+        mutate(size_class = ifelse(Plot_Size %in% c("30x30", "30x15", "10x10") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
+                                   ifelse(Plot_Size == "3x3", "1 - 9.9cm", 
                                           ifelse(grepl("census", origin_table, ignore.case= TRUE),"1 - 9.9cm", "<1cm")))) %>% 
         mutate(size_class = ifelse(Tree_Type == "planted", "small (planted)", size_class))
       
       scale_tree_count <- function(data) {
         data %>%
           mutate(scaled_count = case_when(
-            (Plot_Type == "30x30" & grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count,
-            (Plot_Type == "30x30" & !grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count / (Resample_Main_Plot + 1),
-            Plot_Type == "10x10" ~ Tree_Count / (Resample_Main_Plot + 1),
-            Plot_Type == "3x3" ~ Tree_Count * 100 / (Resample_3x3_Subplot + 1),
-            Plot_Type == "1x1" ~ Tree_Count * 900,
+            (Plot_Size == "30x30" & grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count,
+            (Plot_Size == "30x30" & !grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count / (Resample_Main_Plot + 1),
+            Plot_Size == "10x10" ~ (Tree_Count / (Resample_Main_Plot + 1)) * 9,
+            Plot_Size == "3x3" ~ Tree_Count * 100 / (Resample_3x3_Subplot + 1),
+            Plot_Size == "1x1" ~ Tree_Count * 900,
             TRUE ~ Tree_Count
           )) %>% 
           mutate(scaled_count = ifelse(Tree_Type == "planted", Tree_Count, scaled_count)) %>% 

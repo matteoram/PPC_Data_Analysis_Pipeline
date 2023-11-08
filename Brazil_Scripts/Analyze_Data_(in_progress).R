@@ -2,35 +2,47 @@ library(dplyr)
 library(stringr)
 library(tidyverse)
 
-tree_data <- read.csv("Main_Raw_Data\\Tree_Data_Uncorrected_2023-10-24.csv", check.names = FALSE)
-main_data <- read.csv("Main_Raw_Data\\Main_Data_2023-10-24.csv", check.names = FALSE)
+tree_data <- read.csv("Main_Raw_Data\\Corrected_Tree_Data_2023-11-07_1529.csv", check.names = FALSE)
+main_data <- read.csv("Main_Raw_Data\\Main_Data_2023-11-07.csv", check.names = FALSE)
 
 
 # NOTE size class for planted trees recorded in 30x30
+# NOTE 11/8 --> HANDLE CONTROLS
 
 tree_data_with_sizeclass <- tree_data %>%
-  mutate(size_class = ifelse(Plot_Type %in% c("30x30", "30x15") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
-                             ifelse(Plot_Type == "3x3", "1 - 9.9cm", 
+  mutate(size_class = ifelse(Plot_Size %in% c("30x30", "30x15", "10x10") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
+                             ifelse(Plot_Size == "3x3", "1 - 9.9cm", 
                                     ifelse(grepl("census", origin_table, ignore.case= TRUE),"1 - 9.9cm", "<1cm")))) %>% 
-  mutate(size_class = ifelse(Tree_Type == "planted", "small (planted)", size_class))
+  # mutate(size_class = ifelse(Tree_Type == "planted", "small (planted)", size_class))
 
 
 
 
 
 # NOTE: figure out what to do with planted trees
+  # NOTE 11/8 --> HANDLE CONTROLS -- scale up 10x10 controls to 30x30?
+  
 
 scale_tree_count <- function(data) {
   data %>%
     mutate(scaled_count = case_when(
-      (Plot_Type == "30x30" & grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count,
-      (Plot_Type == "30x30" & !grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count / (Resample_Main_Plot + 1),
-      Plot_Type == "10x10" ~ Tree_Count / (Resample_Main_Plot + 1),
-      Plot_Type == "3x3" ~ Tree_Count * 100 / (Resample_3x3_Subplot + 1),
-      Plot_Type == "1x1" ~ Tree_Count * 900,
+      (Plot_Size == "30x30" & grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count,
+      (Plot_Size == "30x30" & !grepl("census", origin_table, ignore.case= TRUE)) ~ Tree_Count / (Resample_Main_Plot + 1),
+      Plot_Size == "10x10" ~ (Tree_Count / (Resample_Main_Plot + 1))*9, # Change this if upscaling is not desired
+      Plot_Size == "3x3" ~ Tree_Count * 100 / (Resample_3x3_Subplot + 1),
+      Plot_Size == "1x1" ~ Tree_Count * 900,
       TRUE ~ Tree_Count
     )) %>% 
-    mutate(scaled_count = ifelse(Tree_Type == "planted", Tree_Count, scaled_count))
+    mutate(scaled_count = ifelse(Tree_Type == "planted", Tree_Count, scaled_count)) %>% 
+    select(Species, Tree_Count, 
+           scaled_count, 
+           size_class, 
+           Country, 
+           Organization_Name, 
+           Site_ID, Plot_ID, 
+           Plot_Size, 
+           origin_table,
+           everything())
   
 }
 
