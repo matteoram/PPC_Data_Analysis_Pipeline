@@ -183,7 +183,7 @@ result_by_species <- tree_data_size_and_scaled_count %>%
     Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
     Tree_Type == "don_t_know" ~ "Unknown"
   )) %>%
-  group_by(Organization_Name, Site_ID, Plot_ID,size_class, Species, Tree_Type_Group) %>%
+  group_by(Organization_Name, Site_ID, Plot_ID, size_class, Species, Tree_Type_Group) %>%
   summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
   ungroup() %>%
   pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
@@ -249,6 +249,23 @@ result_by_site <- tree_data_size_and_scaled_count %>%
   pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
   replace_na(list(Planted = 0, `Already Present` = 0))
 
+
+
+result_by_country<- tree_data_size_and_scaled_count %>%
+  filter(!(Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2"))) %>% 
+  mutate(Tree_Type = ifelse(is.na(Tree_Type), "Unknown", Tree_Type)) %>% 
+  filter(Species != "None") %>% 
+  mutate(Tree_Type_Group = case_when(
+    Tree_Type == "planted" ~ "Planted",
+    Timeframe == 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Already Present",
+    Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
+    Tree_Type == "don_t_know" ~ "Unknown"
+  )) %>%
+  group_by(Country, Tree_Type_Group) %>%
+  summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
+  replace_na(list(Planted = 0, `Already Present` = 0))
 
 
 

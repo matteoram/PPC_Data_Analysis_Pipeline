@@ -58,7 +58,7 @@ return(scaled_data)
 
 
 
-create_baseline_reports <- function(data) {
+generate_baseline_reports <- function(data) {
   
   data_Y0 <- data %>% filter(Timeframe == 'Y0')
   
@@ -161,5 +161,11 @@ create_baseline_reports <- function(data) {
          Results_by_Plot = results_by_plot,
          Results_by_Site = results_by_site,
          Results_by_Country = results_by_country))
+  
+}
+
+
+# Trees planted, plus trees that are naturally regenerating
+generate_trees_restored_reports <- function(scaled_data){
   
 }
