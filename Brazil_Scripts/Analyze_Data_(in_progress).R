@@ -2,7 +2,7 @@ library(dplyr)
 library(stringr)
 library(tidyverse)
 
-tree_data <- read.csv("Main_Raw_Data\\Corrected_Tree_Data_2023-11-07_1529.csv", check.names = FALSE)
+tree_data <- read.csv("Main_Raw_Data\\Corrected_Tree_Data_2023-11-09_1147.csv", check.names = FALSE)
 main_data <- read.csv("Main_Raw_Data\\Main_Data_2023-11-07.csv", check.names = FALSE)
 
 
@@ -13,7 +13,7 @@ tree_data_with_sizeclass <- tree_data %>%
   mutate(size_class = ifelse(Plot_Size %in% c("30x30", "30x15", "10x10") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
                              ifelse(Plot_Size == "3x3", "1 - 9.9cm", 
                                     ifelse(grepl("census", origin_table, ignore.case= TRUE),"1 - 9.9cm", "<1cm")))) %>% 
-  # mutate(size_class = ifelse(Tree_Type == "planted", "small (planted)", size_class))
+  mutate(size_class = ifelse(Tree_Type == "planted", "small (planted)", size_class))
 
 
 
@@ -46,7 +46,7 @@ scale_tree_count <- function(data) {
   
 }
 
-tree_data_size_and_scaled_count <- scale_tree_count(tree_data_with_sizeclass)
+tree_data_size_and_scaled_count <- scale_tree_count(tree_data)
 
 
 
@@ -165,6 +165,93 @@ result_by_species_only <- tree_data_size_and_scaled_count %>%
   ungroup() %>%
   pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
   replace_na(list(Planted = 0, `Already Present` = 0))
+
+
+
+
+
+
+
+###########################################################
+result_by_species <- tree_data_size_and_scaled_count %>%
+  filter(!(Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2"))) %>% 
+  mutate(Tree_Type = ifelse(is.na(Tree_Type), "Unknown", Tree_Type)) %>% 
+  filter(Species != "None") %>% 
+  mutate(Tree_Type_Group = case_when(
+    Tree_Type == "planted" ~ "Planted",
+    Timeframe == 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Already Present",
+    Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
+    Tree_Type == "don_t_know" ~ "Unknown"
+  )) %>%
+  group_by(Organization_Name, Site_ID, Plot_ID,size_class, Species, Tree_Type_Group) %>%
+  summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
+  replace_na(list(Planted = 0, `Already Present` = 0))
+
+
+
+
+result_by_size_class <- tree_data_size_and_scaled_count %>%
+  filter(!(Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2"))) %>% 
+  mutate(Tree_Type = ifelse(is.na(Tree_Type), "Unknown", Tree_Type)) %>% 
+  filter(Species != "None") %>% 
+  mutate(Tree_Type_Group = case_when(
+    Tree_Type == "planted" ~ "Planted",
+    Timeframe == 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Already Present",
+    Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
+    Tree_Type == "don_t_know" ~ "Unknown"
+  )) %>%
+  group_by(Organization_Name, Site_ID, Plot_ID,size_class, Tree_Type_Group) %>%
+  summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
+  replace_na(list(Planted = 0, `Already Present` = 0))
+
+
+
+
+
+result_by_plot <- tree_data_size_and_scaled_count %>%
+  filter(!(Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2"))) %>% 
+  mutate(Tree_Type = ifelse(is.na(Tree_Type), "Unknown", Tree_Type)) %>% 
+  filter(Species != "None") %>% 
+  mutate(Tree_Type_Group = case_when(
+    Tree_Type == "planted" ~ "Planted",
+    Timeframe == 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Already Present",
+    Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
+    Tree_Type == "don_t_know" ~ "Unknown"
+  )) %>%
+  group_by(Organization_Name, Site_ID, Plot_ID, Tree_Type_Group) %>%
+  summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
+  replace_na(list(Planted = 0, `Already Present` = 0))
+
+
+
+
+
+
+result_by_site <- tree_data_size_and_scaled_count %>%
+  filter(!(Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2"))) %>% 
+  mutate(Tree_Type = ifelse(is.na(Tree_Type), "Unknown", Tree_Type)) %>% 
+  filter(Species != "None") %>% 
+  mutate(Tree_Type_Group = case_when(
+    Tree_Type == "planted" ~ "Planted",
+    Timeframe == 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Already Present",
+    Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
+    Tree_Type == "don_t_know" ~ "Unknown"
+  )) %>%
+  group_by(Organization_Name, Site_ID, Tree_Type_Group) %>%
+  summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
+  replace_na(list(Planted = 0, `Already Present` = 0))
+
+
+
+
 
 
 
@@ -468,9 +555,9 @@ planting_pattern_corrections <- main_data_with_pattern %>%
 
 for (i in 1:nrow(planting_pattern_corrections)) {
   if(!is.na(planting_pattern_corrections$Simplified_Restoration_Technique[i])){
-    cat(paste0(planting_pattern_corrections$Restoration_Technique[i], "(original)", "-->", 
-               planting_pattern_corrections$Simplified_Restoration_Technique[i],"(simplified)", "-->",
-               planting_pattern_corrections$Planting_Area[i], "(calculated area)", "\n"))
+    cat(paste0(planting_pattern_corrections$PlantingPattern[i], " (original)", " --> ", 
+               planting_pattern_corrections$Simplified_Restoration_Technique[i],"(simplified)", " --> ",
+               planting_pattern_corrections$Planting_Area[i], " (calculated area)", "\n"))
     response <- readline(prompt = "Does the above conversion look correct? Hit enter if yes, otherwise, type in your correction.")
     if (!nchar(response) == 0) {
       planting_pattern_corrections$Simplified_Restoration_Technique[i] <- response
@@ -480,8 +567,8 @@ for (i in 1:nrow(planting_pattern_corrections)) {
       
     }
   }else if(is.na(planting_pattern_corrections$Simplified_Restoration_Technique[i])) {
-    cat(planting_pattern_corrections$Restoration_Technique[i])
-    response <- readline(prompt = paste0("Type in your interpretation of the, ", 
+    cat(planting_pattern_corrections$PlantingPattern[i])
+    response <- readline(prompt = paste0("Type in your interpretation of the ", 
                                          "description (e.g. 3x2). Press 'Enter'",
                                          " if pattern is not discernible:"))
     if (!nchar(response) == 0) {

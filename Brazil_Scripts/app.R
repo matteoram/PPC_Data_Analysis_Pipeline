@@ -45,11 +45,6 @@ server <- function(input, output, session) {
     if (!is.null(inFile)) {
       tree_data <- read.csv(inFile$datapath, header = TRUE, check.names = FALSE)
       
-      tree_and_size <- tree_data %>%
-        mutate(size_class = ifelse(Plot_Size %in% c("30x30", "30x15", "10x10") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
-                                   ifelse(Plot_Size == "3x3", "1 - 9.9cm", 
-                                          ifelse(grepl("census", origin_table, ignore.case= TRUE),"1 - 9.9cm", "<1cm")))) %>% 
-        mutate(size_class = ifelse(Tree_Type == "planted", "small (planted)", size_class))
       
       scale_tree_count <- function(data) {
         data %>%
@@ -62,15 +57,17 @@ server <- function(input, output, session) {
             TRUE ~ Tree_Count
           )) %>% 
           mutate(scaled_count = ifelse(Tree_Type == "planted", Tree_Count, scaled_count)) %>% 
+          mutate(Tree_Type = ifelse(is.na(Tree_Type), "Unknown", Tree_Type)) %>% 
           mutate(Tree_Type_Group = case_when(
             Tree_Type == "planted" ~"Planted",
-            Tree_Type %in% c("naturally_regenerating", "Present") ~ "Already Present",
+            Timeframe == 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Already Present",
+            Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
             Tree_Type == "don_t_know" ~ "Unknown"
           ))
         
       }
       
-      tree_size_count <- scale_tree_count(tree_and_size)
+      tree_size_count <- scale_tree_count(tree_data)
       raw_data(tree_size_count)
     }
   })
@@ -97,7 +94,7 @@ server <- function(input, output, session) {
     
     df <- raw_data()
     df <- df %>%
-      filter(Timeframe == "Y0", !(Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2")))
+      filter(!(Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2")))
     
     grouping_vars <- c(input$spatialGranularity, "Tree_Type_Group")
     

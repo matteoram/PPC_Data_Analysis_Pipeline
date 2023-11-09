@@ -131,7 +131,10 @@ process_main_table <- function(main_table) {
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling1), 0, Resampling1)) %>%
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resampling2), 0, Resampling2)) %>%
     mutate(Monitoring_Plot_Size = ifelse(SiteSize == "Yes", "30x30", "3x3")) %>%
-    select(-Resampling1, -Resampling2)
+    select(-Resampling1, -Resampling2) %>% 
+    # Fix issue where different forms designated 'Uciri' organization differently
+    mutate(Country = ifelse(Organization_Name == "Uciri", "Mexico", Country),
+         Organization_Name = ifelse(Organization_Name ==  "Uciri", "UCIRI", Organization_Name))
 
   # Separate out geolocation data based on pattern in column names
   geo_columns <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
@@ -366,6 +369,8 @@ clean_tree_tables <- function(tree_tables, main_table) {
     if (grepl("planted", name, ignore.case = TRUE) && !"Tree_Type" %in% names(df)) {
       df$Tree_Type <- "planted"
     }
+    
+
 
 
     # This joins the tree data with essential elements in the main data that will
@@ -389,6 +394,13 @@ clean_tree_tables <- function(tree_tables, main_table) {
         ),
         by = "main_index"
       )
+    
+    
+    df <- df %>% 
+      mutate(size_class = ifelse(Plot_Size %in% c("30x30", "30x15", "10x10") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
+                                 ifelse(Plot_Size == "3x3", "1 - 9.9cm", 
+                                        ifelse(grepl("census", origin_table, ignore.case= TRUE),"1 - 9.9cm", "<1cm")))) %>% 
+      mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == 'Y0', "small (planted)", size_class))
 
     # Convert all plot and site IDs to character values.
     df$Plot_ID <- as.character(df$Plot_ID)
@@ -399,6 +411,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
       Species,
       Tree_Type,
       Tree_Count,
+      size_class,
       Site_ID,
       Plot_ID,
       Country,
