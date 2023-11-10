@@ -8,7 +8,7 @@
 # updated corrections CSV with any new updates.
 
 # This script is built around the gnr_resolve() function from the taxize package.
-# This function takes a list of scietnific names candidates and checks databases
+# This function takes a list of scientific names candidates and checks databases
 # for close matches. Before passing the list of species names to this function, the
 # script first preprocesses the species entries to remove white space and unwanted
 # formatting that can seriously slow down gnr_resolve and the manual validation
@@ -52,11 +52,10 @@ for (pkg in necessary_packages) {
 #'
 #' This function prompts the user to designate the desired dataset (Primary or
 #' Brazil), and loads in the relevant tree data. It also checks the corrections
-#' folder for the most recent corrections data. An important note is that when
-#' saving new data, it adds a date stamp. This is to distinguish earlier corrections
-#' from later ones. However, if this scr
+#' folder for the most recent corrections data. 
 #'
-#' @return List of data.frames with corrections and uncorrected tree data.
+#' @return List with two dataframes: tree data and corrections data--as well as 
+#' a filepath for later reference.
 load_data <- function() {
   # Determine which dataset is being corrected and set path to desired folder
   answer <- readline(prompt = cat("Which Dataset are you correcting for? \n Enter '1' for the Primary Dataset or '2' for the Brazil Dataset:"))
@@ -118,7 +117,7 @@ load_data <- function() {
 #'
 #' @param  tree_data The uncorrected tree data dataframe
 #' @param corrected_names The most recent corrections dataframe
-#' @return Dataframe with cleaned and updated species names
+#' @return Dataframe of tree data with cleaned and updated species names
 update_tree_data_with_existing_corrections <- function(tree_data, corrected_names) {
   # Preprocess names by clearing unwatned formatting
   cleaned_tree_data <- tree_data %>%
@@ -146,49 +145,6 @@ update_tree_data_with_existing_corrections <- function(tree_data, corrected_name
   }
   return(updated_data)
 }
-
-
-#
-# preprocess_species_names <- function(tree_data) {
-#   cleaned_tree_data <- tree_data %>%
-#     mutate(submitted_species_name = Species) %>%
-#     mutate(Species = trimws(gsub("[\"']", "", Species))) %>%
-#     mutate(Species = gsub("\n", "", Species))  # This line removes newline characters
-#   return(cleaned_tree_data)
-#
-# }
-#
-#
-
-
-
-# update_tree_data_with_existing_corrections <- function(cleaned_tree_data, corrected_names) {
-#   if (!is.null(corrected_names)) {
-#     updated_data <- cleaned_tree_data %>%
-#       left_join(corrected_names, by = "Species") %>%
-#       mutate(Species = ifelse(is.na(matched_name2), Species, matched_name2)) %>%
-#       mutate(name_validation = ifelse(is.na(matched_name2), "Needs review", "Resolved"))
-#   } else {
-#     updated_data <- cleaned_tree_data %>%
-#       mutate(
-#         submitted_species_name = Species,
-#         name_validation = "Needs review"
-#       )
-#   }
-#   return(updated_data)
-# }
-#
-
-
-
-# get_unresolved_names <- function(updated_data) {
-#   unresolved_names <- updated_data %>%
-#     filter(name_validation == "Needs review") %>%
-#     pull(Species) %>%
-#     unique()
-#   return(unresolved_names)
-# }
-#
 
 
 
@@ -425,53 +381,31 @@ save_corrected_tree_data <- function(tree_data, all_corrections, raw_data_path) 
 #' @return An updated tree data file with all known corrections made
 
 save_unresolved_names <- function(updated_tree_data, raw_data_path) {
-  save_prompt <- tolower(readline(prompt = paste0("Would you like to save a CSV with all ", 
-                                          "unresolved species names? \n Enter y/n")))
-  
-  if (save_prompt == 'y'){
+  save_prompt <- tolower(readline(prompt = paste0(
+    "Would you like to save a CSV with all ",
+    "unresolved species names? \n Enter y/n"
+  )))
+
+  if (save_prompt == "y") {
     date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
-    needs_review <- updated_tree_data %>% 
-      filter(name_validation == 'Needs Review')
+    needs_review <- updated_tree_data %>%
+      filter(name_validation == "Needs Review")
     write.csv(needs_review, paste0(raw_data_path, "/Species_for_Review_", date_info, ".csv"))
     print(paste0("Species in need of review saved to: ", raw_data_path, "/Species_for_Review_", date_info, ".csv"))
-    
+  } else {
+    needs_review <- NULL
   }
   return(needs_review)
 }
 
 
-
-
-
-
-
-#
-# save_corrected_tree_data <- function(tree_data, all_corrections, raw_data_path) {
-#   updated_tree_data <- tree_data %>%
-#     # Join old data with new corrections
-#     left_join(all_corrections, by = "Species") %>%
-#     # Change species column to reflect new corrections
-#     mutate(Species = ifelse(is.na(matched_name2), Species, matched_name2)) %>%
-#     # Remove unneeded matched_name2 column
-#     select(-matched_name2)
-#
-#   # Stamp file name with date and time; save file
-#   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
-#   write.csv(updated_tree_data, paste0(raw_data_path, "/Corrected_Tree_Data_", date_info, ".csv"), row.names = FALSE)
-#   print(paste0("Corrected tree data saved to: ", raw_data_path, "/Corrected_Tree_Data_", date_info, ".csv"))
-#
-#   return(updated_tree_data)
-# }
-#
-
-
-#---------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # The above script defines all the functions. The 'main' script below calls them
 # each in turn. By having distinct modules, errors/bugs that might arise in the
 # future will be easier to diagnose. The print() statements output at each step
-# in the console can help locate where things went wrong, and the relevant function
-# above will be a good starting point for debugging.
-#---------------------------------------------------------------------------------
+# in the console can help locate where things went wrong, and the relevant 
+# function above will be a good starting point for debugging.
+#-------------------------------------------------------------------------------
 
 # 1. Load Data
 print("Loading Data")

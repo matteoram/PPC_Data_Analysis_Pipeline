@@ -263,6 +263,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
           Plot_ID,
           Organization_Name,
           Site_ID,
+          Country,
           SiteType,
           Plot_Permanence,
           Resample_Main_Plot,
@@ -273,12 +274,25 @@ clean_tree_tables <- function(tree_tables, main_table) {
         by = "main_index"
       )
 
+    df <- df %>%
+      mutate(size_class = ifelse(Plot_Size %in% c("30x30", "30x15", "10x10") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
+        ifelse(Plot_Size == "3x3", "1 - 9.9cm",
+          ifelse(grepl("census", origin_table, ignore.case = TRUE), "1 - 9.9cm", "<1cm")
+        )
+      )) %>%
+      mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == "Y0", "small (planted)", size_class))
+
+
     # Reordering columns -- relevant first.
     df <- df %>% select(
       Species,
       Tree_Type,
-      Plot_ID,
+      size_class,
+      Timeframe,
+      Country,
+      Organization_Name,
       Site_ID,
+      Plot_ID,
       SiteType,
       Plot_Size,
       everything()

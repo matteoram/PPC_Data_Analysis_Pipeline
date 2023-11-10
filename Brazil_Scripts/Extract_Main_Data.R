@@ -131,10 +131,12 @@ process_main_table <- function(main_table) {
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling1), 0, Resampling1)) %>%
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resampling2), 0, Resampling2)) %>%
     mutate(Monitoring_Plot_Size = ifelse(SiteSize == "Yes", "30x30", "3x3")) %>%
-    select(-Resampling1, -Resampling2) %>% 
+    select(-Resampling1, -Resampling2) %>%
     # Fix issue where different forms designated 'Uciri' organization differently
-    mutate(Country = ifelse(Organization_Name == "Uciri", "Mexico", Country),
-         Organization_Name = ifelse(Organization_Name ==  "Uciri", "UCIRI", Organization_Name))
+    mutate(
+      Country = ifelse(Organization_Name == "Uciri", "Mexico", Country),
+      Organization_Name = ifelse(Organization_Name == "Uciri", "UCIRI", Organization_Name)
+    )
 
   # Separate out geolocation data based on pattern in column names
   geo_columns <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
@@ -355,7 +357,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
     df$Plot_Size <- plot_dims
 
     # Record origin table for future reference
-    
+
     if ("origin_table" %in% names(df)) {
       # 'origin_table' column exists, fill NA values with 'name'
       df$origin_table <- ifelse(is.na(df$origin_table), name, df$origin_table)
@@ -369,7 +371,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
     if (grepl("planted", name, ignore.case = TRUE) && !"Tree_Type" %in% names(df)) {
       df$Tree_Type <- "planted"
     }
-    
+
 
 
 
@@ -394,13 +396,15 @@ clean_tree_tables <- function(tree_tables, main_table) {
         ),
         by = "main_index"
       )
-    
-    
-    df <- df %>% 
+
+
+    df <- df %>%
       mutate(size_class = ifelse(Plot_Size %in% c("30x30", "30x15", "10x10") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
-                                 ifelse(Plot_Size == "3x3", "1 - 9.9cm", 
-                                        ifelse(grepl("census", origin_table, ignore.case= TRUE),"1 - 9.9cm", "<1cm")))) %>% 
-      mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == 'Y0', "small (planted)", size_class))
+        ifelse(Plot_Size == "3x3", "1 - 9.9cm",
+          ifelse(grepl("census", origin_table, ignore.case = TRUE), "1 - 9.9cm", "<1cm")
+        )
+      )) %>%
+      mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == "Y0", "small (planted)", size_class))
 
     # Convert all plot and site IDs to character values.
     df$Plot_ID <- as.character(df$Plot_ID)
