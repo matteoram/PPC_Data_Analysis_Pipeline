@@ -63,7 +63,7 @@ print(plants)
 
 
 # Query GBIF for a species
-species_name <- "Phragmites australis"
+species_name <- "Albizia lebbeck"
 data_gbif <- occ_search(scientificName = species_name, limit = 1000)
 data_gbif_latlon <- data_gbif$data %>% select(decimalLatitude, decimalLongitude)
 data_gbif_latlon <- na.omit(data_gbif_latlon)
@@ -75,7 +75,6 @@ leaflet(sf_data) %>%
   addTiles() %>%
   addCircleMarkers()
 # Optional: visualize
-plot(st_geometry(sf_data))
 
 
 
@@ -119,3 +118,75 @@ all_sentences <- unique(all_sentences)
 # Print the result
 print(all_sentences)
 
+
+gbif_find <- function (x, ...) 
+{
+  args <- list(datasetKey = "b351a324-77c4-41c9-a909-f30f77268bc4", 
+               name = x)
+  cli <- crul::HttpClient$new(url = "https://api.gbif.org", 
+                              opts = list(...))
+  out <- cli$get("v1/species", query = args)
+  out$raise_for_status()
+  fromJSON(out$parse("UTF-8"))$results
+}
+
+
+
+
+check_invasive_status <- function (x, simplify = FALSE, ...) 
+{
+  outlist <- list()
+  for (i in seq_along(x)) {
+    message(paste("Checking", x[i]))
+    out <- gbif_find(x[i], ...)
+    if (length(out) == 0) {
+      outlist[[i]] <- list(species = x[i], status = "Not in GISD")
+    }
+    else {
+      doc <- xml2::read_html(paste0("http://www.iucngisd.org/gisd/species.php?sc=", out$taxonID))
+      if (!simplify) {
+        alien <- gsub("^\\s+|\\s+$", "", gsub("\\[|\\]|[[:digit:]]", 
+                                              "", xml_text(xml_find_all(doc, "//div[@id=\"ar-col\"]//ul/li"))))
+        native <- gsub("^\\s+|\\s+$", "", xml_text(xml_find_all(doc, 
+                                                                "//div[@id=\"nr-col\"]//ul/li")))
+        outlist[[i]] <- list(species = x[i], alien_range = alien, 
+                             native_range = native)
+      }
+      else {
+        outlist[[i]] <- list(species = x[i], status = "Invasive")
+      }
+    }
+  }
+  names(outlist) <- x
+
+
+  not_invasive <- list()
+  invasive <- list()
+  
+  for (species in outlist) {
+    if (length(species) == 2){
+      not_invasive <- c(not_invasive, list(species))
+    } else if (length(species) == 3){
+      invasive <- c(invasive, list(species))
+    }
+  }
+  
+  not_invasive_df <- bind_rows(not_invasive)
+  invasive_dfs <- lapply(invasive, function(x) {
+    data.frame(
+      species = x$species,
+      alien_range = paste(x$alien_range, collapse = ", "),
+      native_range = paste(x$native_range, collapse = ", ")
+    )
+  })
+  all_invasives_df <- do.call(rbind, invasive_dfs)
+  
+  final_df <- bind_rows(all_invasives_df, not_invasive_df)
+  final_df <- final_df %>% mutate(status = ifelse(is.na(status), "Invasive", status))
+}
+
+
+
+unique_sps <- unique(scaled_data$Species)
+unique_sps <- unique_sps[!unique_sps %in% c(".", ",", "")]
+testing <- check_invasive_status(unique_sps)

@@ -638,3 +638,95 @@ combined_data <- left_join(agg_30x30, agg_3x3, by = c("_id", "Species"))
 # Compute the total planted for each _id and Species combination
 combined_data <- combined_data %>% 
   mutate(total_planted = total_planted_3x3 + total_planted_30x30)
+
+
+
+
+
+only_3x3 <- scaled_data %>% filter(Plot_Size == '3x3' & !Tree_Type == 'planted')
+#### Confidence interval stuff
+
+confidence_intervals <- only_3x3 %>%
+  group_by(Organization_Name) %>%
+  summarise(
+    count_mean = mean(scaled_count, na.rm = TRUE),
+    count_se = sd(scaled_count, na.rm = TRUE) / sqrt(n()),
+    lower_ci = count_mean - 1.96 * count_se,
+    upper_ci = count_mean + 1.96 * count_se
+  )
+
+
+
+ggplot(confidence_intervals, aes(x = Organization_Name, y = count_mean)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2) +
+  theme_minimal() +
+  labs(title = "Mean Scaled Counts and Confidence Intervals by Organization",
+       x = "Organization",
+       y = "Mean Scaled Count") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Adjusting text angle for readability
+
+
+
+
+
+
+# Load necessary libraries
+# Load necessary libraries
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Function to create a Q-Q plot
+qq_plot_function <- function(data, organization) {
+  qqnorm(data$scaled_count, main = paste("Q-Q Plot for", organization))
+  qqline(data$scaled_count, col = "red")
+}
+
+# Loop through each organization
+results <- only_3x3 %>%
+  group_by(Organization_Name) %>%
+  do({
+    data_size <- nrow(.)
+    unique_values <- length(unique(.$scaled_count))
+    
+    # Check if data size is within the Shapiro-Wilk test limits and if there's variability
+    if (data_size >= 3 & data_size <= 5000 & unique_values > 1) {
+      shapiro_test_result <- shapiro.test(.$scaled_count)
+      p_value <- shapiro_test_result$p.value
+    } else {
+      p_value <- NA  # Set NA if conditions are not met
+    }
+    
+    qq_plot_function(., unique(.$Organization_Name))
+    
+    data.frame(
+      Organization = unique(.$Organization_Name),
+      Sample_Size = data_size,
+      Unique_Values_Count = unique_values,
+      Shapiro_Wilk_p_value = p_value
+    )
+  })
+
+# Viewing the results
+print(results)
+
+
+
+
+results_by_org <- data_Y0 %>%
+  filter(!(Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2"))) %>% 
+  mutate(Tree_Type = ifelse(is.na(Tree_Type), "Unknown", Tree_Type)) %>% 
+  filter(Species != "None") %>% 
+  mutate(Tree_Type_Group = case_when(
+    Tree_Type == "planted" ~ "Planted",
+    Timeframe == 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Already Present",
+    Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
+    Tree_Type == "don_t_know" ~ "Unknown"
+  )) %>%
+  group_by(Organization_Name, size_class, Tree_Type_Group) %>%
+  summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
+  replace_na(list(Planted = 0, `Already Present` = 0, Unknown = 0))
+
