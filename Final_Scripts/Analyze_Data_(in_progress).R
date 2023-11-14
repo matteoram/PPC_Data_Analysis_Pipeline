@@ -3,7 +3,7 @@ library(stringr)
 library(tidyverse)
 
 tree_data <- read.csv("Main_Raw_Data\\Corrected_Tree_Data_2023-11-09_1147.csv", check.names = FALSE)
-main_data <- read.csv("Main_Raw_Data\\Main_Data_2023-11-07.csv", check.names = FALSE)
+main_data <- read.csv("Main_Raw_Data\\Main_Data_2023-11-09.csv", check.names = FALSE)
 
 
 # NOTE size class for planted trees recorded in 30x30

@@ -273,13 +273,15 @@ clean_tree_tables <- function(tree_tables, main_table) {
         ),
         by = "main_index"
       )
-
+    # Adds size class based on origin_table and/or plot size
     df <- df %>%
       mutate(size_class = ifelse(Plot_Size %in% c("30x30", "30x15", "10x10") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
         ifelse(Plot_Size == "3x3", "1 - 9.9cm",
           ifelse(grepl("census", origin_table, ignore.case = TRUE), "1 - 9.9cm", "<1cm")
         )
       )) %>%
+      # If it is a baseline year, any tree marked as planted should be small. In 
+      # later years, planted trees will have grown. 
       mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == "Y0", "small (planted)", size_class))
 
 

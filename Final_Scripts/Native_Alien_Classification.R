@@ -63,7 +63,7 @@ print(plants)
 
 
 # Query GBIF for a species
-species_name <- "Trachylobium verrucosum"
+species_name <- "Phragmites australis"
 data_gbif <- occ_search(scientificName = species_name, limit = 1000)
 data_gbif_latlon <- data_gbif$data %>% select(decimalLatitude, decimalLongitude)
 data_gbif_latlon <- na.omit(data_gbif_latlon)
@@ -87,7 +87,7 @@ base_url <- "https://en.wikipedia.org/w/api.php"
 params <- list(
   action = "query",
   prop = "extracts",
-  titles = "Trachylobium_verrucosum",
+  titles = "Phragmites",
   format = "json",
   # exintro = TRUE,       # Extract only the intro section
   explaintext = TRUE    # Return plain text instead of HTML
