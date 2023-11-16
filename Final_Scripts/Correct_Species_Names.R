@@ -78,8 +78,8 @@ load_data <- function() {
 
   # Find most recent taxonomic corrections, if any exists (at the very least the
   # "_MASTER" copy should still exist from my initial corrections).
-  corrections_path <- "Taxonomic_Corrections"
-  corrections_files <- list.files(path = corrections_path, pattern = "Taxonomic_Corrections", full.names = TRUE)
+  species_data_path <- "Species_Data"
+  corrections_files <- list.files(path = species_data_path, pattern = "Taxonomic_Corrections", full.names = TRUE)
 
   # Conditional that handles the unlikely case that you are starting from scratch
   if (length(corrections_files) > 0) {
@@ -311,16 +311,16 @@ save_updated_corrections <- function(final_df, corrected_names) {
     distinct(Species, .keep_all = TRUE)
 
   # Define the path for corrections
-  corrections_path <- "Taxonomic_Corrections"
+  species_data_path <- "Species_Data"
 
-  # Check if the "Species_Corrections" directory exists, if not, create it
-  if (!dir.exists(corrections_path)) {
-    dir.create(corrections_path, recursive = TRUE)
+  # Check if the "Species_Data" directory exists, if not, create it
+  if (!dir.exists(species_data_path)) {
+    dir.create(species_data_path, recursive = TRUE)
   }
 
   # Define the filename with the current date and time
   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
-  file_name <- paste0(corrections_path, "/Taxonomic_Corrections_", date_info, ".csv")
+  file_name <- paste0(species_data_path, "/Taxonomic_Corrections_", date_info, ".csv")
 
   # Write the corrections to the file
   write.csv(all_corrections, file_name, row.names = FALSE)

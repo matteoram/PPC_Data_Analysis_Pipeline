@@ -63,8 +63,8 @@ load_data <- function() {
 
 
   # Find most recent Taxonomic_Ranks
-  corrections_path <- "Taxonomic_Corrections"
-  family_names_files <- list.files(path = corrections_path, pattern = "Family_Names", full.names = TRUE)
+  species_data_path <- "Species_Data"
+  family_names_files <- list.files(path = species_data_path, pattern = "Family_Names", full.names = TRUE)
 
   # Conditional that handles the unlikely case that you are starting from scratch
   if (length(family_names_files) > 0) {
@@ -246,14 +246,14 @@ save_family_names <- function(existing_family_names, new_family_names) {
   all_family_names <- rbind(new_family_names, existing_family_names) %>%
     distinct()
   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
-  corrections_path <- "Taxonomic_Corrections"
+  species_data_path <- "Species_Data"
 
-  if (!dir.exists(corrections_path)) {
-    dir.create(corrections_path, recursive = TRUE)
+  if (!dir.exists(species_data_path)) {
+    dir.create(species_data_path, recursive = TRUE)
   }
 
 
-  file_name <- paste0(corrections_path, "/Family_Names_", date_info, ".csv")
+  file_name <- paste0(species_data_path, "/Family_Names_", date_info, ".csv")
   write.csv(all_family_names, file_name, row.names = FALSE)
   print(paste0("Updated family corrections saved to: ", file_name))
   return(all_family_names)

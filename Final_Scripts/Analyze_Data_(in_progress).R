@@ -730,3 +730,83 @@ results_by_org <- data_Y0 %>%
   pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
   replace_na(list(Planted = 0, `Already Present` = 0, Unknown = 0))
 
+
+
+
+
+
+
+
+
+
+# Bootstrapping
+
+bootstrap_ci <- function(data, n_bootstrap = 1000) {
+  bootstrap_stats <- replicate(n_bootstrap, {
+    sample_data <- sample(data, size = length(data), replace = TRUE)
+    mean(sample_data, na.rm = TRUE)
+  })
+  
+  ci_lower <- quantile(bootstrap_stats, probs = 0.025)
+  ci_upper <- quantile(bootstrap_stats, probs = 0.975)
+  
+  c(ci_lower, ci_upper)
+}
+
+
+confidence_intervals_bootstrap <- only_3x3 %>%
+  group_by(Organization_Name) %>%
+  summarise(
+    count_mean = mean(scaled_count, na.rm = TRUE),
+    ci = list(bootstrap_ci(scaled_count, n_bootstrap = 1000))
+  ) %>%
+  tidyr::unnest(ci) %>%
+  mutate(lower_ci = ci[1], upper_ci = ci[2]) %>%
+  select(-ci)  # Remove the original 'ci' column
+
+# Check the column names
+names(confidence_intervals_bootstrap)
+
+# Now the names should be correctly assigned
+
+ggplot(confidence_intervals_bootstrap, aes(x = Organization_Name, y = count_mean)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2) +
+  theme_minimal() +
+  labs(title = "Mean Scaled Counts and Bootstrapped Confidence Intervals by Organization",
+       x = "Organization",
+       y = "Mean Scaled Count") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+
+library(dplyr)
+library(ggplot2)
+library(boot)
+
+# Define the bootstrap statistic function for a vector
+bootstrap_stat <- function(data, indices) {
+  # Use the indices to sample the data
+  sample_data <- data[indices]
+  # Calculate the mean of the sampled data
+  mean(sample_data, na.rm = TRUE)
+}
+
+# Applying bootstrapping to each organization's data
+confidence_intervals_bootstrap <- only_3x3 %>%
+  group_by(Organization_Name) %>%
+  summarise(scaled_counts = list(scaled_count)) %>%
+  rowwise() %>%
+  mutate(
+    boot_res = list(boot(scaled_counts[[1]], statistic = bootstrap_stat, R = 1000)),
+    ci = list(boot.ci(boot_res[[1]], type = "perc")[4:5])
+  ) %>%
+  unnest_wider(ci) %>%
+  select(-boot_res, -scaled_counts) %>%
+  rename(lower_ci = `1`, upper_ci = `2`)
+
+# Check the structure
+print(confidence_intervals_bootstrap)
