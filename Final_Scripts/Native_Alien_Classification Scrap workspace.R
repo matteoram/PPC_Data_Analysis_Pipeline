@@ -63,7 +63,7 @@ print(plants)
 
 
 # Query GBIF for a species
-species_name <- "Albizia lebbeck"
+species_name <- "Morus alba"
 data_gbif <- occ_search(scientificName = species_name, limit = 1000)
 data_gbif_latlon <- data_gbif$data %>% select(decimalLatitude, decimalLongitude)
 data_gbif_latlon <- na.omit(data_gbif_latlon)
