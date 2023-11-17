@@ -103,7 +103,7 @@ create_species_list <- function(processed_IMP_data, invasive_species_data){
 
 
 
-gbif_find <- function (x, ...) 
+gbif_GISD_find <- function (x, ...) 
 {
   args <- list(datasetKey = "b351a324-77c4-41c9-a909-f30f77268bc4", 
                name = x)
@@ -118,28 +118,43 @@ gbif_find <- function (x, ...)
 
 
 
+
+
 check_invasive_status <- function (species_to_check, simplify = FALSE, ...) 
 {
   if (length(species_to_check) == 0) {
     print("No new species to check.")
     return(NULL)
   }else{
+    
     outlist <- list()
+    
     for (i in seq_along(species_to_check)) {
       message(paste("Checking", species_to_check[i]))
-      out <- gbif_find(species_to_check[i], ...)
+      out <- gbif_GISD_find(species_to_check[i], ...)
       if (length(out) == 0) {
         outlist[[i]] <- list(species = species_to_check[i], status = "Not in GISD")
       }
       else {
-        doc <- xml2::read_html(paste0("http://www.iucngisd.org/gisd/species.php?sc=", out$taxonID))
+        doc <- rvest::read_html(paste0("http://www.iucngisd.org/gisd/species.php?sc=", out$taxonID))
         if (!simplify) {
-          alien <- gsub("^\\s+|\\s+$", "", gsub("\\[|\\]|[[:digit:]]", 
-                                                "", xml_text(xml_find_all(doc, "//div[@id=\"ar-col\"]//ul/li"))))
-          native <- gsub("^\\s+|\\s+$", "", xml_text(xml_find_all(doc, 
-                                                                  "//div[@id=\"nr-col\"]//ul/li")))
+          alien <- doc %>%
+            html_elements("#ar-col li") %>%
+            html_text() %>%
+            str_replace_all("\\[\\d+\\]\\s*", "") 
+          
+          native <- doc %>%
+            html_elements("#nr-col li") %>%
+            html_text()
+          
+          summary <- doc %>% 
+            html_elements("#summary") %>% 
+            html_text() %>% 
+            str_replace_all("[\r\n\t]|Summary", " ") %>%
+            str_trim()
+          
           outlist[[i]] <- list(species = species_to_check[i], alien_range = alien, 
-                               native_range = native)
+                               native_range = native, summary = summary)
         }
         else {
           outlist[[i]] <- list(species = species_to_check[i], status = "Invasive")
@@ -155,7 +170,7 @@ check_invasive_status <- function (species_to_check, simplify = FALSE, ...)
     for (species in outlist) {
       if (length(species) == 2){
         not_invasive <- c(not_invasive, list(species))
-      } else if (length(species) == 3){
+      } else if (length(species) >2){
         invasive <- c(invasive, list(species))
       }
     }
@@ -165,7 +180,8 @@ check_invasive_status <- function (species_to_check, simplify = FALSE, ...)
       data.frame(
         species = x$species,
         alien_range = paste(x$alien_range, collapse = ", "),
-        native_range = paste(x$native_range, collapse = ", ")
+        native_range = paste(x$native_range, collapse = ", "),
+        summary = x$summary
       )
     })
     all_invasives_df <- do.call(rbind, invasive_dfs)
@@ -174,7 +190,6 @@ check_invasive_status <- function (species_to_check, simplify = FALSE, ...)
     final_df <- final_df %>% mutate(status = ifelse(is.na(status), "Invasive", status))
   }
 }
-
 
 
 create_invasives_report <- function(invasives_results, processed_IMP_data, old_invasives_report){
