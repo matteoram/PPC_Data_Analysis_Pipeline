@@ -1,8 +1,11 @@
 
 library(jsonlite)
-library(xml2)
+library(rvest)
 library(dplyr)
 library(tidyr)
+library(janitor)
+library(taxize)
+library(stringr)
 
 
 
@@ -18,6 +21,20 @@ load_data <- function() {
   species_data_path <- "Species_Data"
   invasives_files <- list.files(path = species_data_path, pattern = "Invasive_Species_Data", full.names = TRUE)
   invasives_report_files <- list.files(path = species_data_path, pattern = "Invasive_Species_Report", full.names = TRUE)
+  
+  
+  
+  corrections_files <- list.files(path = species_data_path, pattern = "Taxonomic_Corrections", full.names = TRUE)
+  
+  # Conditional that handles the unlikely case that you are starting from scratch
+  if (length(corrections_files) > 0) {
+    latest_corrections_file <- corrections_files[order(file.info(corrections_files)$mtime, decreasing = TRUE)[1]]
+    corrected_names <- read.csv(latest_corrections_file)
+    print(paste0("Latest correction file: ", latest_corrections_file))
+  } else {
+    corrected_names <- NULL
+    print("No corrections found. Starting from scratch.")
+  }
   
   # Conditional that handles the unlikely case that you are starting from scratch
   if (length(invasives_files) > 0) {
@@ -42,7 +59,7 @@ load_data <- function() {
   
   print(paste0("Latest IMP data file: ", latest_IMP_file))
   
-  return(list(IMP_data = IMP_data, Invasive_Species_Data = invasive_species_data, Invasives_Report = latest_invasives_report))
+  return(list(IMP_data = IMP_data, Invasive_Species_Data = invasive_species_data, Invasives_Report = latest_invasives_report, Species_Corrections = corrected_names))
 }
 
 
@@ -78,11 +95,78 @@ preprocess_IMP_data <- function(IMP_data){
   
 }
 
+preprocess_IMP_data_v2 <- function(IMP_data){
+  
+  IMP_data <- clean_names(IMP_data)
+
+  names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][2] <- "tree_species"
+  names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][3] <- "seed_species"
+  
+  extract_tree_species_names <- function(species_count_str) {
+    # Replace the ":count" part with an empty string and "|" with ", "
+    species_names = gsub(":\\d+", "", species_count_str)
+    gsub("\\|", ", ", species_names)
+  }
+  
+  extract_seed_species_names <- function(species_count_str) {
+    # Replace the "\\d+:" part with an empty string and "|" with ", "
+    species_names = gsub("\\d+:", "", species_count_str)
+    gsub("\\|", ", ", species_names)
+  }
+  
+  IMP_simple <- IMP_data %>% select(project_name, project_country, organization_name, site_id, site_name, tree_species, seed_species)
+  IMP_modified <- IMP_simple %>% mutate(tree_species_names = extract_tree_species_names(IMP_simple$tree_species),
+                                        seed_species_names = extract_seed_species_names(IMP_simple$seed_species))
+  
+  IMP_data_long <- IMP_modified %>%
+    mutate(row_id = row_number()) %>%
+    separate_rows(tree_species_names, sep = ", ") %>%
+    separate_rows(seed_species_names, sep = ", ") %>% 
+    mutate(original_tree_names = tree_species_names) %>% 
+    mutate(original_seed_names = seed_species_names) %>% 
+    mutate(tree_species_names = trimws(gsub("[\"']", "", tree_species_names))) %>%
+    mutate(seed_species_names = trimws(gsub("[\"']", "", seed_species_names))) %>%
+    mutate(tree_species_names = gsub("\n", "", tree_species_names)) %>% 
+    mutate(seed_species_names = gsub("\n", "", seed_species_names))
+  
+  
+  
+  return(IMP_data_long)
+  
+}
 
 
 
 
-create_species_list <- function(processed_IMP_data, invasive_species_data){
+
+
+update_IMP_data_existing_corrections_v2 <- function(species_df, species_corrections){
+  
+  updated_species_list <- species_df %>% 
+    left_join(select(species_corrections, Species, matched_name2), by =c("tree_species_names" = "Species")) %>% 
+    mutate(tree_species_names = ifelse(!is.na(matched_name2), matched_name2, tree_species_names),
+           new_tree_name = matched_name2) %>% 
+    select(-matched_name2) %>% 
+    
+    
+    left_join(select(species_corrections, Species, matched_name2), by =c("seed_species_names" = "Species")) %>% 
+    mutate(seed_species_names = ifelse(!is.na(matched_name2), matched_name2, seed_species_names),
+           new_seed_name = matched_name2) %>% 
+      select(-matched_name2)
+  
+  
+  
+  return(updated_species_list)
+}
+
+
+
+get_unresolved_names <- function(updated_IMP_data){
+ tree_names <-  updated_IMP_data %>% filter()
+}
+
+
+create_species_list <- function(updated_IMP_data, invasive_species_data){
   all_species <- processed_IMP_data %>% 
     select(tree_species_names, seed_species_names) %>% 
     pivot_longer(cols = everything(), values_to = "Species_Names") %>%
@@ -93,13 +177,123 @@ create_species_list <- function(processed_IMP_data, invasive_species_data){
   unique_species_names <- unique(all_species)
   
   if(!is.null(invasive_species_data)){
-    species_to_check <- unique_species_names[!unique_species_names %in% invasive_species_data$species]
+    species_to_check <- data.frame(Species = unique_species_names[!unique_species_names %in% invasive_species_data$species])
     
   }else {
-    species_to_check <- unique_species_names
+    species_to_check <- data.frame(Species = unique_species_names)
   }
   return(species_to_check)
 }
+
+
+
+
+
+create_species_list_v2 <- function(updated_IMP_data, invasive_species_data){
+  unique_species_names <- unique(c(updated_IMP_data$tree_species_names, updated_IMP_data$seed_species_names))
+  
+  
+  if(!is.null(invasive_species_data)){
+    species_to_check <- data.frame(Species = unique_species_names[!unique_species_names %in% invasive_species_data$species])
+    
+  }else {
+    species_to_check <- data.frame(Species = unique_species_names)
+  }
+  return(species_to_check)
+}
+
+
+
+update_species_list_with_existing_corrections <- function(species_df, species_corrections){
+  cleaned_species_df <- species_df %>%
+    mutate(submitted_species_name = Species) %>%
+    mutate(Species = trimws(gsub("[\"']", "", Species))) %>%
+    mutate(Species = gsub("\n", "", Species))
+  
+  
+  updated_species_list <- species_df %>% 
+    left_join(species_corrections, by = "Species") %>% 
+    filter(is.na(matched_name2)) %>% 
+    pull(Species)
+  
+  return(updated_species_list)
+}
+
+
+
+
+
+
+resolve_species_names <- function(updated_species_list){
+  
+  # Pass names needing review to resolver
+  resolved_df <- gnr_resolve(sci = updated_species_list, data_source_ids = c(165, 167), canonical = TRUE, best_match_only = TRUE)
+  
+  # If no names can be resolved (which will happen if you've resolved everything),
+  # this returns an empty dataframe with the correct structure for next steps
+  if (nrow(resolved_df) == 0) {
+    return(data.frame(
+      user_supplied_name = character(0),
+      matched_name2 = character(0),
+      score = numeric(0),
+      data_source_title = character(0)
+    ))
+  }
+  
+  unresolved_df <- data.frame(user_supplied_name = testupdate[!testupdate %in% resolved_df$user_supplied_name])
+  full_df <- bind_rows(unresolved_df, resolved_df)
+  
+  full_df <- full_df %>% 
+    rename(Species = user_supplied_name) %>% 
+    select(-submitted_name)
+    
+  
+  return(full_df)
+}
+
+
+
+manual_validation <- function(full_df) {
+  # Extract unique unresolved species names
+  unresolved_unique <- full_df %>%
+    filter(is.na(matched_name2)) %>%
+    distinct(Species) %>%
+    pull(Species)
+  
+  # Show the user the total number of names that need correction
+  total_to_correct <- length(unresolved_unique)
+  cat(paste("You have", total_to_correct, "unique unresolved species names to correct...\n"))
+  
+  # Initialize a count to update user progress
+  count_processed <- 0
+  
+  for (species in unresolved_unique) {
+    # Increment count
+    count_processed <- count_processed + 1
+    # Show user unresolved name, prompt for correction
+    cat(paste("Unable to resolve:", species, "\n"))
+    new_name <- readline(prompt = "Please provide the correct name(or press Enter to skip): ")
+    
+    # If the user types "save", save the current state of df and continue
+    if (new_name == "save") {
+      cat("Progress saved. You can resume from where you left off.\n")
+      return(full_df)
+      
+      # If user does not leave input blank, update all entries with matching name
+      # with user correction, and record data_source_title as 'Manual validation'
+    } else if (new_name != "") {
+      full_df$matched_name2[full_df$Species == species] <- new_name
+      full_df$data_source_title[full_df$Species == species] <- "Manual validation"
+    }
+    # Every 25 species, report on how many are finished and remaining
+    if (count_processed %% 25 == 0) {
+      cat(paste(count_processed, "species processed. You have", total_to_correct - count_processed, "remaining...\n"))
+    }
+  }
+  
+  return(full_df)
+}
+
 
 
 
@@ -273,10 +467,13 @@ save_invasives_report <- function(full_invasives_report){
 
 
 all_data <- load_data()
-all_data$IMP_data <- all_data$IMP_data[1:300,]
-processed_IMP_data <- preprocess_IMP_data(all_data$IMP_data)
-species_list <- create_species_list(processed_IMP_data = processed_IMP_data, all_data$Invasive_Species_Data)
-invasives_results <- check_invasive_status(species_list)
+processed_IMP_data <- preprocess_IMP_data_v2(all_data$IMP_data)
+updated_IMP_data <- update_species_list_with_existing_corrections_v2(processed_IMP_data, all_data$Species_Corrections)
+unresolved_names <- get_unresolved_names(updated_IMP_data)
+species_list <- create_species_list_v2(updated_IMP_data = updated_IMP_data, all_data$Invasive_Species_Data)
+resolved_names <- resolve_species_names(updated_species_list)
+finished_names <- manual_validation(resolved_names)
+invasives_results <- check_invasive_status(unique(finished_names$matched_name2))
 invasives_report <- create_invasives_report(invasives_results, processed_IMP_data, all_data$Invasives_Report)
 all_invasives_data <- save_invasives_data(old_invasive_data = all_data$Invasive_Species_Data, new_invasive_data = invasives_results)
 save_invasives_report(invasives_report)
