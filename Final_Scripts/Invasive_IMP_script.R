@@ -162,7 +162,24 @@ update_IMP_data_existing_corrections_v2 <- function(species_df, species_correcti
 
 
 get_unresolved_names <- function(updated_IMP_data){
- tree_names <-  updated_IMP_data %>% filter()
+ unresolved_tree_names <-  updated_IMP_data %>% 
+   select(original_tree_names, new_tree_name) %>% 
+   filter(is.na(new_tree_name)) %>% 
+   pull(original_tree_names)
+ 
+ unresolved_tree_names <- unique(unresolved_tree_names)
+ 
+ unresolved_seed_names <-  updated_IMP_data %>% 
+   select(original_seed_names, new_seed_name) %>% 
+   filter(is.na(new_seed_name)) %>% 
+   pull(original_seed_names)
+ 
+ unresolved_seed_names <- unique(unresolved_seed_names)
+ 
+ all_unresolved_species <- unique(c(unresolved_tree_names, unresolved_seed_names))
+ 
+ return(all_unresolved_species)
+ 
 }
 
 
@@ -199,6 +216,8 @@ create_species_list_v2 <- function(updated_IMP_data, invasive_species_data){
   }else {
     species_to_check <- data.frame(Species = unique_species_names)
   }
+  
+  species_to_check <- species_to_check %>% filter(!Species == "")
   return(species_to_check)
 }
 
@@ -224,10 +243,10 @@ update_species_list_with_existing_corrections <- function(species_df, species_co
 
 
 
-resolve_species_names <- function(updated_species_list){
+resolve_species_names <- function(unresolved_names){
   
   # Pass names needing review to resolver
-  resolved_df <- gnr_resolve(sci = updated_species_list, data_source_ids = c(165, 167), canonical = TRUE, best_match_only = TRUE)
+  resolved_df <- gnr_resolve(sci = unresolved_names, data_source_ids = c(165, 167), canonical = TRUE, best_match_only = TRUE)
   
   # If no names can be resolved (which will happen if you've resolved everything),
   # this returns an empty dataframe with the correct structure for next steps
@@ -240,7 +259,7 @@ resolve_species_names <- function(updated_species_list){
     ))
   }
   
-  unresolved_df <- data.frame(user_supplied_name = testupdate[!testupdate %in% resolved_df$user_supplied_name])
+  unresolved_df <- data.frame(user_supplied_name = unresolved_names[!unresolved_names %in% resolved_df$user_supplied_name])
   full_df <- bind_rows(unresolved_df, resolved_df)
   
   full_df <- full_df %>% 
@@ -292,6 +311,32 @@ manual_validation <- function(full_df) {
   }
   
   return(full_df)
+}
+
+
+
+update_corrections_file <- function(old_corrections, new_corrections){
+  new_corrections_filtered <- new_corrections %>% 
+    filter(!is.na(matched_name2))
+  
+  all_corrections <- rbind(new_corrections_filtered, old_corrections) %>% 
+    distinct()
+
+  species_data_path <- "Species_Data"
+  
+  # Check if the "Species_Data" directory exists, if not, create it
+  if (!dir.exists(species_data_path)) {
+    dir.create(species_data_path, recursive = TRUE)
+  }
+  
+  # Define the filename with the current date and time
+  date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
+  file_name <- paste0(species_data_path, "/Taxonomic_Corrections_", date_info, ".csv")
+  
+  # Write the corrections to the file
+  write.csv(all_corrections, file_name, row.names = FALSE)
+  print(paste0("Updated species corrections saved to: ", file_name))
+  return(all_corrections)
 }
 
 
@@ -468,12 +513,19 @@ save_invasives_report <- function(full_invasives_report){
 
 all_data <- load_data()
 processed_IMP_data <- preprocess_IMP_data_v2(all_data$IMP_data)
-updated_IMP_data <- update_species_list_with_existing_corrections_v2(processed_IMP_data, all_data$Species_Corrections)
+updated_IMP_data <- update_IMP_data_existing_corrections_v2(processed_IMP_data, all_data$Species_Corrections)
 unresolved_names <- get_unresolved_names(updated_IMP_data)
-species_list <- create_species_list_v2(updated_IMP_data = updated_IMP_data, all_data$Invasive_Species_Data)
-resolved_names <- resolve_species_names(updated_species_list)
+resolved_names <- resolve_species_names(unresolved_names)
 finished_names <- manual_validation(resolved_names)
-invasives_results <- check_invasive_status(unique(finished_names$matched_name2))
+updated_corrections <- update_corrections_file(all_data$Species_Corrections, finished_names)
+updated_IMP_data_2 <- update_IMP_data_existing_corrections_v2(processed_IMP_data, updated_corrections)
+# Script that will make the update
+testresults <- updated_IMP_data_2 %>% filter(tree_species_names %in% invasives_only$species | seed_species_names%in% invasives_only$species)
+
+species_list <- create_species_list_v2(updated_IMP_data = updated_IMP_data, all_data$Invasive_Species_Data)
+invasives_results <- check_invasive_status(species_list$Species)
+
+
 invasives_report <- create_invasives_report(invasives_results, processed_IMP_data, all_data$Invasives_Report)
 all_invasives_data <- save_invasives_data(old_invasive_data = all_data$Invasive_Species_Data, new_invasive_data = invasives_results)
 save_invasives_report(invasives_report)

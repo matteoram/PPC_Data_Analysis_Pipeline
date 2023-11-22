@@ -58,7 +58,7 @@ retrieve_kobo_data <- function(asset_name = "Tree Monitoring") {
 
   asset <- kobo_asset(uid)
 
-  df <- kobo_data(asset)
+  df <- kobo_submissions(asset, all_versions = F)
 
   main_list <- as.list(df)
 
@@ -293,6 +293,7 @@ extract_misplaced_data <- function(main_table, tree_tables) {
     )
 
 
+
   # Helper function to bind data to correct tree table
   bind_to_tree_table <- function(df, tree_tables) {
     destination <- unique(df$destination_table)
@@ -400,11 +401,12 @@ clean_tree_tables <- function(tree_tables, main_table) {
 
     df <- df %>%
       mutate(size_class = ifelse(Plot_Size %in% c("30x30", "30x15", "10x10") & !grepl("census", origin_table, ignore.case = TRUE), ">10cm",
-        ifelse(Plot_Size == "3x3", "1 - 9.9cm",
-          ifelse(grepl("census", origin_table, ignore.case = TRUE), "1 - 9.9cm", "<1cm")
-        )
-      )) %>%
-      mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == "Y0", "small (planted)", size_class))
+        ifelse(Plot_Size == "3x3" & origin_table != "Small_3x3", "1 - 9.9cm",
+               ifelse(grepl("census", origin_table, ignore.case = TRUE), "1 - 9.9cm", 
+                      ifelse(origin_table == "Small_3x3", ">1cm", "<1cm")
+                      )
+               ))) %>%
+      mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == "Y0", "<10cm planted", size_class))
 
     # Convert all plot and site IDs to character values.
     df$Plot_ID <- as.character(df$Plot_ID)
