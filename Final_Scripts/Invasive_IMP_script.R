@@ -68,32 +68,32 @@ load_data <- function() {
 
 
 
-preprocess_IMP_data <- function(IMP_data){
-  
-  IMP_data <- clean_names(IMP_data)
-  names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][2] <- "tree_species"
-  names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][3] <- "seed_species"
-  
-  extract_tree_species_names <- function(species_count_str) {
-    # Replace the ":count" part with an empty string and "|" with ", "
-    species_names = gsub(":\\d+", "", species_count_str)
-    gsub("\\|", ", ", species_names)
-  }
-  
-  extract_seed_species_names <- function(species_count_str) {
-    # Replace the "\\d+:" part with an empty string and "|" with ", "
-    species_names = gsub("\\d+:", "", species_count_str)
-    gsub("\\|", ", ", species_names)
-  }
-  
-  IMP_simple <- IMP_data %>% select(project_name, project_country, organization_name, tree_species, seed_species)
-  IMP_modified <- IMP_simple %>% mutate(tree_species_names = extract_tree_species_names(IMP_simple$tree_species),
-                                        seed_species_names = extract_seed_species_names(IMP_simple$seed_species))
-  
-  
-  return(IMP_modified)
-  
-}
+# preprocess_IMP_data <- function(IMP_data){
+#   
+#   IMP_data <- clean_names(IMP_data)
+#   names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][2] <- "tree_species"
+#   names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][3] <- "seed_species"
+#   
+#   extract_tree_species_names <- function(species_count_str) {
+#     # Replace the ":count" part with an empty string and "|" with ", "
+#     species_names = gsub(":\\d+", "", species_count_str)
+#     gsub("\\|", ", ", species_names)
+#   }
+#   
+#   extract_seed_species_names <- function(species_count_str) {
+#     # Replace the "\\d+:" part with an empty string and "|" with ", "
+#     species_names = gsub("\\d+:", "", species_count_str)
+#     gsub("\\|", ", ", species_names)
+#   }
+#   
+#   IMP_simple <- IMP_data %>% select(project_name, project_country, organization_name, tree_species, seed_species)
+#   IMP_modified <- IMP_simple %>% mutate(tree_species_names = extract_tree_species_names(IMP_simple$tree_species),
+#                                         seed_species_names = extract_seed_species_names(IMP_simple$seed_species))
+#   
+#   
+#   return(IMP_modified)
+#   
+# }
 
 preprocess_IMP_data_v2 <- function(IMP_data){
   
@@ -140,9 +140,9 @@ preprocess_IMP_data_v2 <- function(IMP_data){
 
 
 
-update_IMP_data_existing_corrections_v2 <- function(species_df, species_corrections){
+update_IMP_data_existing_corrections_v2 <- function(processed_IMP_data, species_corrections){
   
-  updated_species_list <- species_df %>% 
+  updated_species_list <- processed_IMP_data %>% 
     left_join(select(species_corrections, Species, matched_name2), by =c("tree_species_names" = "Species")) %>% 
     mutate(tree_species_names = ifelse(!is.na(matched_name2), matched_name2, tree_species_names),
            new_tree_name = matched_name2) %>% 
@@ -160,7 +160,7 @@ update_IMP_data_existing_corrections_v2 <- function(species_df, species_correcti
 }
 
 
-
+# START HERE! original names are NOT the ones I want. 
 get_unresolved_names <- function(updated_IMP_data){
  unresolved_tree_names <-  updated_IMP_data %>% 
    select(original_tree_names, new_tree_name) %>% 
@@ -183,25 +183,25 @@ get_unresolved_names <- function(updated_IMP_data){
 }
 
 
-create_species_list <- function(updated_IMP_data, invasive_species_data){
-  all_species <- processed_IMP_data %>% 
-    select(tree_species_names, seed_species_names) %>% 
-    pivot_longer(cols = everything(), values_to = "Species_Names") %>%
-    pull(Species_Names) %>% 
-    unlist() %>% 
-    strsplit(", ") %>% 
-    unlist() 
-  unique_species_names <- unique(all_species)
-  
-  if(!is.null(invasive_species_data)){
-    species_to_check <- data.frame(Species = unique_species_names[!unique_species_names %in% invasive_species_data$species])
-    
-  }else {
-    species_to_check <- data.frame(Species = unique_species_names)
-  }
-  return(species_to_check)
-}
-
+# create_species_list <- function(updated_IMP_data, invasive_species_data){
+#   all_species <- processed_IMP_data %>% 
+#     select(tree_species_names, seed_species_names) %>% 
+#     pivot_longer(cols = everything(), values_to = "Species_Names") %>%
+#     pull(Species_Names) %>% 
+#     unlist() %>% 
+#     strsplit(", ") %>% 
+#     unlist() 
+#   unique_species_names <- unique(all_species)
+#   
+#   if(!is.null(invasive_species_data)){
+#     species_to_check <- data.frame(Species = unique_species_names[!unique_species_names %in% invasive_species_data$species])
+#     
+#   }else {
+#     species_to_check <- data.frame(Species = unique_species_names)
+#   }
+#   return(species_to_check)
+# }
+# 
 
 
 
@@ -223,22 +223,22 @@ create_species_list_v2 <- function(updated_IMP_data, invasive_species_data){
 
 
 
-update_species_list_with_existing_corrections <- function(species_df, species_corrections){
-  cleaned_species_df <- species_df %>%
-    mutate(submitted_species_name = Species) %>%
-    mutate(Species = trimws(gsub("[\"']", "", Species))) %>%
-    mutate(Species = gsub("\n", "", Species))
-  
-  
-  updated_species_list <- species_df %>% 
-    left_join(species_corrections, by = "Species") %>% 
-    filter(is.na(matched_name2)) %>% 
-    pull(Species)
-  
-  return(updated_species_list)
-}
-
-
+# update_species_list_with_existing_corrections <- function(species_df, species_corrections){
+#   cleaned_species_df <- species_df %>%
+#     mutate(submitted_species_name = Species) %>%
+#     mutate(Species = trimws(gsub("[\"']", "", Species))) %>%
+#     mutate(Species = gsub("\n", "", Species))
+#   
+#   
+#   updated_species_list <- species_df %>% 
+#     left_join(species_corrections, by = "Species") %>% 
+#     filter(is.na(matched_name2)) %>% 
+#     pull(Species)
+#   
+#   return(updated_species_list)
+# }
+# 
+# 
 
 
 
@@ -359,7 +359,7 @@ gbif_GISD_find <- function (x, ...)
 
 
 
-check_invasive_status <- function (species_to_check, simplify = FALSE, ...) 
+check_invasive_status <- function (species_to_check, prior_invasives_data, simplify = FALSE, ...) 
 {
   if (length(species_to_check) == 0) {
     print("No new species to check.")
@@ -427,37 +427,52 @@ check_invasive_status <- function (species_to_check, simplify = FALSE, ...)
     
     final_df <- bind_rows(all_invasives_df, not_invasive_df)
     final_df <- final_df %>% mutate(status = ifelse(is.na(status), "Invasive", status))
-  }
-}
-
-
-create_invasives_report <- function(invasives_results, processed_IMP_data, old_invasives_report){
-  
-  find_organizations_for_species <- function(species, planting_dataframe) {
-    orgs <- planting_dataframe %>% 
-      filter(grepl(species, tree_species_names) | grepl(species, seed_species_names)) %>% 
-      pull(organization_name) %>%
-      unique()
     
-    # Combine the organization names into a single character string
-    orgs_list <- paste(orgs, collapse = ", ")
-    return(orgs_list)
+    all_invasives_data <- rbind(final_df, prior_invasives_data)
+    return(all_invasives_data)
+    
   }
-  if(sum(invasives_results$status == "Invasive") >0){
-    new_invasives_report <- invasives_results %>% 
-      filter(status == 'Invasive') %>%
-      rowwise() %>% 
-      mutate(orgs_list = find_organizations_for_species(species, processed_IMP_data))
-  }else {
-    new_invasives_report <- NULL
-    print("No new invasive species data found.")
-  }
-  
-  full_invasives_report <- rbind(new_invasives_report, old_invasives_report)
-  return(full_invasives_report)
 }
 
+# 
+# create_invasives_report <- function(invasives_results, processed_IMP_data, old_invasives_report){
+#   
+#   find_organizations_for_species <- function(species, planting_dataframe) {
+#     orgs <- planting_dataframe %>% 
+#       filter(grepl(species, tree_species_names) | grepl(species, seed_species_names)) %>% 
+#       pull(organization_name) %>%
+#       unique()
+#     
+#     # Combine the organization names into a single character string
+#     orgs_list <- paste(orgs, collapse = ", ")
+#     return(orgs_list)
+#   }
+#   if(sum(invasives_results$status == "Invasive") >0){
+#     new_invasives_report <- invasives_results %>% 
+#       filter(status == 'Invasive') %>%
+#       rowwise() %>% 
+#       mutate(orgs_list = find_organizations_for_species(species, processed_IMP_data))
+#   }else {
+#     new_invasives_report <- NULL
+#     print("No new invasive species data found.")
+#   }
+#   
+#   full_invasives_report <- rbind(new_invasives_report, old_invasives_report)
+#   return(full_invasives_report)
+# }
 
+create_invasives_report_v2 <- function(invasives_results, updated_IMP_data){
+  invasives_only <- invasives_results %>% 
+    filter(status == 'Invasive')
+  IMP_data_invasives <- updated_IMP_data %>% 
+    filter(tree_species_names %in% invasives_only$species | seed_species_names %in% invasives_only$species)
+  orgs_df <- IMP_data_invasives %>%
+    group_by(tree_species_names) %>% 
+    summarise(org_list = toString(unique(organization_name)))
+  invasives_report <- invasives_only %>% 
+    left_join(orgs_df, by = c('species' ='tree_species_names'))
+  return(invasives_report)
+}
 
 
 save_invasives_data <- function(old_invasive_data, new_invasive_data){
@@ -517,16 +532,18 @@ updated_IMP_data <- update_IMP_data_existing_corrections_v2(processed_IMP_data, 
 unresolved_names <- get_unresolved_names(updated_IMP_data)
 resolved_names <- resolve_species_names(unresolved_names)
 finished_names <- manual_validation(resolved_names)
+
 updated_corrections <- update_corrections_file(all_data$Species_Corrections, finished_names)
-updated_IMP_data_2 <- update_IMP_data_existing_corrections_v2(processed_IMP_data, updated_corrections)
+updated_IMP_data_2 <- update_IMP_data_existing_corrections_v2(updated_IMP_data, updated_corrections)
+
+species_list <- create_species_list_v2(updated_IMP_data = updated_IMP_data_2, all_data$Invasive_Species_Data)
+invasives_results <- check_invasive_status(species_list$Species, prior_invasives_data = all_data$Invasive_Species_Data)
+invasives_report <- create_invasives_report_v2(invasives_results, updated_IMP_data_2)
+
 # Script that will make the update
-testresults <- updated_IMP_data_2 %>% filter(tree_species_names %in% invasives_only$species | seed_species_names%in% invasives_only$species)
-
-species_list <- create_species_list_v2(updated_IMP_data = updated_IMP_data, all_data$Invasive_Species_Data)
-invasives_results <- check_invasive_status(species_list$Species)
 
 
-invasives_report <- create_invasives_report(invasives_results, processed_IMP_data, all_data$Invasives_Report)
+
 all_invasives_data <- save_invasives_data(old_invasive_data = all_data$Invasive_Species_Data, new_invasive_data = invasives_results)
 save_invasives_report(invasives_report)
 
