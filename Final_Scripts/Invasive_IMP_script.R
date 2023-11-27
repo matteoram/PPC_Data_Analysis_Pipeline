@@ -193,8 +193,8 @@ preprocess_IMP_data <- function(IMP_data) {
   }
   
   IMP_modified <- IMP_data %>%
-    mutate(tree_species_combined = sapply(tree_species, extract_combined_species_data),
-           seed_species_combined = sapply(seed_species, extract_combined_species_data))
+    mutate(tree_species_combined = sapply(tree_species, extract_combined_tree_data),
+           seed_species_combined = sapply(seed_species, extract_combined_seed_data))
   
   # Separate rows and then split combined data
   IMP_data_long <- IMP_modified %>%
@@ -205,8 +205,15 @@ preprocess_IMP_data <- function(IMP_data) {
            tree_species_count = sapply(strsplit(tree_species_combined, ";"), `[`, 2),
            seed_species_names = sapply(strsplit(seed_species_combined, ";"), `[`, 1),
            seed_species_count = sapply(strsplit(seed_species_combined, ";"), `[`, 2)) %>%
-    select(-tree_species_combined, -seed_species_combined)
+    select(-tree_species_combined, -seed_species_combined) %>% 
   
+    mutate(original_tree_names = tree_species_names) %>% 
+    mutate(original_seed_names = seed_species_names) %>% 
+    mutate(tree_species_names = trimws(gsub("[\"']", "", tree_species_names))) %>%
+    mutate(seed_species_names = trimws(gsub("[\"']", "", seed_species_names))) %>%
+    mutate(tree_species_names = gsub("\n", "", tree_species_names)) %>% 
+    mutate(seed_species_names = gsub("\n", "", seed_species_names))
+
   return(IMP_data_long)
 }
 
@@ -216,7 +223,7 @@ preprocess_IMP_data <- function(IMP_data) {
 
 
 
-update_IMP_data_existing_corrections_v2 <- function(processed_IMP_data, species_corrections){
+update_IMP_data_existing_corrections <- function(processed_IMP_data, species_corrections){
   
   updated_species_list <- processed_IMP_data %>% 
     left_join(select(species_corrections, Species, matched_name2), by =c("tree_species_names" = "Species")) %>% 
@@ -515,8 +522,7 @@ save_invasives_data <- function(old_invasives_data, new_invasives_data){
   # Write the corrections to the file
   write.csv(new_invasives_data, file_name, row.names = FALSE)
   print(paste0("Updated invasive species data saved to: ", file_name))
-  return(all_invasives_data)
-  
+
 }
 
 
@@ -548,19 +554,19 @@ save_invasives_report <- function(full_invasives_report, new_invasives_data){
 
 
 all_data <- load_data()
-processed_IMP_data <- preprocess_IMP_data_v2(all_data$IMP_data)
-updated_IMP_data <- update_IMP_data_existing_corrections_v2(processed_IMP_data, all_data$Species_Corrections)
+processed_IMP_data <- preprocess_IMP_data(all_data$IMP_data)
+updated_IMP_data <- update_IMP_data_existing_corrections(processed_IMP_data, all_data$Species_Corrections)
 unresolved_names <- get_unresolved_names(updated_IMP_data)
 resolved_names <- resolve_species_names(unresolved_names)
 finished_names <- manual_validation(resolved_names)
 
 updated_corrections <- update_corrections_file(all_data$Species_Corrections, finished_names)
-updated_IMP_data_2 <- update_IMP_data_existing_corrections_v2(updated_IMP_data, updated_corrections)
+updated_IMP_data_2 <- update_IMP_data_existing_corrections(updated_IMP_data, updated_corrections)
 
 species_list <- create_species_list_v2(updated_IMP_data = updated_IMP_data_2, all_data$Invasive_Species_Data)
 invasives_results <- check_invasive_status(species_list$Species, prior_invasives_data = all_data$Invasive_Species_Data)
 invasives_report <- create_invasives_report_v2(invasives_results, updated_IMP_data_2)
-all_invasives_data <- save_invasives_data(old_invasives_data = all_data$Invasive_Species_Data, new_invasives_data = invasives_results)
+save_invasives_data(old_invasives_data = all_data$Invasive_Species_Data, new_invasives_data = invasives_results)
 save_invasives_report(invasives_report, invasives_results)
 
 
@@ -642,6 +648,14 @@ save_invasives_report(invasives_report, invasives_results)
 
 
 
+tree_IMP_data <- updated_IMP_data_2 %>% 
+  select(everything(), 
+         -seed_species, 
+         -seed_species_names, 
+         -original_seed_names, 
+         -new_seed_name,
+         -seed_species_count) %>% 
+  filter(tree_species_names != "")
 
 
 
