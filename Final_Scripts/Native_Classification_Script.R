@@ -8,62 +8,78 @@ library(httr)
 
 
 load_data <- function() {
-  # Determine which dataset is being corrected and set path to desired folder
-  answer <- readline(prompt = cat("Which Dataset are analyzing? \n Enter '1' for the Primary Dataset or '2' for the Brazil Dataset:"))
-  if (!answer %in% c("1", "2")) {
-    print("Invalid response, please rerun script and be sure to enter either '1' or '2'")
-  } else if (answer == "1") {
-    raw_data_path <- "Main_Raw_Data"
-  } else if (answer == "2") {
-    raw_data_path <- "Brazil_Raw_Data"
-  }
-  
-  # Get all files that match the pattern "Tree_Data_Uncorrected" in the "Brazil_Raw_Data" folder
-  tree_files <- list.files(path = raw_data_path, pattern = "Final_Tree_Data", full.names = TRUE)
-  
-  # Sort files by modification date to get the most recent and read this into session
-  latest_tree_file <- tree_files[order(file.info(tree_files)$mtime, decreasing = TRUE)[1]]
-  tree_data <- read.csv(latest_tree_file, check.names = FALSE)
-  
+
+  IMP_tree_files <- list.files(path = "Species_Data", pattern = "IMP_planted_trees", full.names = TRUE)
+  latest_tree_file <- IMP_tree_files[order(file.info(IMP_tree_files)$mtime, decreasing = TRUE)[1]]
+  IMP_tree_data <- read.csv(latest_tree_file, check.names = FALSE)
   print(paste0("Latest tree data file: ", latest_tree_file))
   
-  return(list(tree_data = tree_data, raw_data_path = raw_data_path))
+  IMP_seed_files <- list.files(path = "Species_Data", pattern = "IMP_planted_seeds", full.names = TRUE)
+  latest_seed_file <- IMP_seed_files[order(file.info(IMP_seed_files)$mtime, decreasing = TRUE)[1]]
+  IMP_seed_data <- read.csv(latest_seed_file, check.names = FALSE)
+  print(paste0("Latest tree data file: ", latest_seed_file))
+  
+  
+  return(list(tree_data = IMP_tree_data, seed_data = IMP_seed_data))
 }
 
 
 
 
-get_unique_sp_country_combos <- function(tree_data){
-  sp_country_df <- tree_data %>% 
-    distinct(Species, Country)
+get_unique_sp_country_combos <- function(IMP_tree_data, IMP_seed_data){
+  
+  tree_country_combinations <- IMP_tree_data %>% 
+    distinct(project_country, tree_species_names) %>% 
+    rename(species = tree_species_names)
+  
+  seed_country_combinations <- IMP_seed_data %>%
+    distinct(project_country, seed_species_names) %>% 
+    rename(species = seed_species_names)
+  
+  all_sp_combos <- rbind(tree_country_combinations, seed_country_combinations)
+  
+  all_sp_combos <- all_sp_combos %>% distinct() %>% filter(!is.na(species))
+  
+  return(all_sp_combos)
+
 }
 
 
 
 
 # Function to fetch and filter sentences from Wikipedia
-fetch_species_info <- function(species_name) {
-  base_url <- "https://en.wikipedia.org/w/api.php"
-  params <- list(
-    action = "query",
-    prop = "extracts",
-    titles = species_name,
-    format = "json",
-    explaintext = TRUE
-  )
+fetch_species_info_wiki <- function(species_name) {
   
-  response <- GET(base_url, query = params)
-  content <- content(response, "parsed")
-  page_content <- content$query$pages[[1]]$extract
+  out <- name_backbone(species_name)
   
-  if (!is.null(page_content)){
-    sentences <- unlist(strsplit(page_content, "(?<=\\.)\\s+", perl = TRUE))
-    keywords <- c("native", "introduced", "cultivated", "invasive", "cultivation", "cultivar")
-    filtered_sentences <- sentences[grepl(paste(keywords, collapse = "|"), sentences, ignore.case = TRUE)]
-    plant_info <- unique(filtered_sentences)
+  if(length(out) == 4){
+    print(paste0("No species with the name '", species_name, "' could be found."))
+    plant_info <- NULL
+  }else{
     
-  }else if (is.null(page_content)){
-    plant_info <- paste0("No Wikipedia entry could be found for ", species_name)
+    base_url <- "https://en.wikipedia.org/w/api.php"
+    params <- list(
+      action = "query",
+      prop = "extracts",
+      titles = out$canonicalName,
+      format = "json",
+      explaintext = TRUE
+    )
+    
+    response <- GET(base_url, query = params)
+    content <- content(response, "parsed")
+    page_content <- content$query$pages[[1]]$extract
+    
+    if (!is.null(page_content)){
+      sentences <- unlist(strsplit(page_content, "(?<=\\.)\\s+", perl = TRUE))
+      keywords <- c("native", "introduced", "cultivated", "invasive", "cultivation", "cultivar")
+      filtered_sentences <- sentences[grepl(paste(keywords, collapse = "|"), sentences, ignore.case = TRUE)]
+      plant_info <- unique(filtered_sentences)
+      plant_info<- paste(plant_info, collapse = " ")
+    
+    }else if (is.null(page_content)){
+      plant_info <- paste0("No Wikipedia entry could be found for ", species_name)
+    }
   }
   return(plant_info)
 }
@@ -121,7 +137,7 @@ manual_classification <- function(sp_country_combos){
 
 
 all_data <- load_data()
-sp_country_combos <- get_unique_sp_country_combos(all_data$tree_data)
+sp_country_combos <- get_unique_sp_country_combos(all_data$tree_data, all_data$seed_data)
 validated_combos <- manual_classification(sp_country_combos)
 
 

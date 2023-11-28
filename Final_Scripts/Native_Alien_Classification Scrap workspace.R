@@ -63,12 +63,13 @@ print(plants)
 
 
 # Query GBIF for a species
-species_name <- "Albizia lebbeck"
-data_gbif <- occ_search(scientificName = species_name, country = "RE")
+species_name <- "Adenanthera pavonina"
+data_gbif <- occ_data(scientificName = species_name, establishmentMeans = "Introduced")
 data_gbif_latlon <- data_gbif$data %>% select(decimalLatitude, decimalLongitude)
 data_gbif_latlon <- na.omit(data_gbif_latlon)
 # Convert to sf object
 sf_data <- st_as_sf(data_gbif_latlon, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
 
 
 leaflet(sf_data) %>%
@@ -385,10 +386,10 @@ function (sp, where, region = c("america", "europe"), ...)
   }
   data.frame(name = sp, origin = Out, stringsAsFactors = FALSE)
 }
-<bytecode: 0x0000016ded477400>
-  <environment: namespace:originr>
-################
-
+# <bytecode: 0x0000016ded477400>
+#   <environment: namespace:originr>
+# ################
+# 
 
 
 
@@ -403,6 +404,166 @@ name_backbone_checklist(c("Eriobotyra japonica")) # look up multiple names
 
 
 
+
+
+library(rgbif)
+library(dplyr)
+library(leaflet)
+library(sf)
+
+# Query GBIF for a species
+out <- name_backbone("Psidium guajava") # get best match in the GBIF backbone
+# Fetch data
+data_gbif_int <- occ_data(taxonKey =out$speciesKey, establishmentMeans = "Introduced", limit = 1000)
+data_gbif_nat <- occ_data(taxonKey =out$speciesKey, establishmentMeans = "Native", limit = 1000)
+data_gbif_all <- occ_data(taxonKey =out$speciesKey, limit = 1000)
+
+leaflet_map <- leaflet() %>% addTiles()
+
+# Function to process and add data to the map
+process_and_add_data <- function(data, color, fillColor) {
+  if (!is.null(data) && nrow(data) > 0 && 
+      all(c("decimalLatitude", "decimalLongitude") %in% colnames(data))) {
+    latlon_data <- data %>% 
+      select(decimalLatitude, decimalLongitude) %>% 
+      na.omit()
+    sf_data <- st_as_sf(latlon_data, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+    leaflet_map <<- leaflet_map %>% 
+      addCircleMarkers(data = sf_data, color = color, fillColor = fillColor, fillOpacity = 0.8, radius = 3)
+  }
+}
+
+# Process and add all data first (in green)
+process_and_add_data(data_gbif_all$data, "green", "green")
+
+# Then, add introduced data (in red)
+process_and_add_data(data_gbif_int$data, "red", "red")
+
+# Finally, add native data (in blue)
+process_and_add_data(data_gbif_nat$data, "blue", "blue")
+
+# Display the map
+leaflet_map
+
+
+
+
+
+# Define the base URL for the Wikipedia API
+base_url <- "https://en.wikipedia.org/w/api.php"
+
+# Set up the parameters for the API request
+params <- list(
+  action = "query",
+  prop = "extracts",
+  titles = out$canonicalName,
+  format = "json",
+  # exintro = TRUE,       # Extract only the intro section
+  explaintext = TRUE    # Return plain text instead of HTML
+)
+
+# Make the API request
+response <- GET(base_url, query = params)
+
+# Parse the response content as JSON
+content <- content(response, "parsed")
+
+# Extract the page content from the parsed response
+page_content <- content$`query`$`pages`[[1]]$`extract`
+
+
+# Split the result into sentences
+sentences <- unlist(strsplit(page_content, "(?<=\\.)\\s+", perl = TRUE))
+
+# Filter for sentences containing the word "native"
+native_sentences <- sentences[grepl("\\bnative\\b", sentences, ignore.case = TRUE)]
+introduced_sentences <- sentences[grepl("\\bintroduced\\b", sentences, ignore.case = TRUE)]
+cultivated_sentences <- sentences[grepl("\\bcultivated\\b", sentences, ignore.case = TRUE)]
+invasive_sentences <- sentences[grepl("\\binvasive\\b", sentences, ignore.case = TRUE)]
+
+all_sentences <- c(native_sentences, introduced_sentences, cultivated_sentences, invasive_sentences)
+
+all_sentences <- unique(all_sentences)
+
+# Print the result
+print(all_sentences)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+leaflet_map_all <- leaflet() %>% addTiles()
+
+# Function to process and add data to the map
+process_and_add_data_all <- function(data, color, fillColor) {
+  if (!is.null(data) && nrow(data) > 0 && 
+      all(c("decimalLatitude", "decimalLongitude") %in% colnames(data))) {
+    latlon_data <- data %>% 
+      select(decimalLatitude, decimalLongitude) %>% 
+      na.omit()
+    sf_data <- st_as_sf(latlon_data, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+    leaflet_map <<- leaflet_map %>% 
+      addCircleMarkers(data = sf_data, color = color, fillColor = fillColor, fillOpacity = 0.8, radius = 3)
+  }
+}
+
+# Process and add all data
+process_and_add_data_all(data_gbif_all$data, "green", "green")
+
+# Display the map
+leaflet_map_all
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+data_gbif_latlon_int <- data_gbif_int$data %>% select(decimalLatitude, decimalLongitude)
+data_gbif_latlon_int <- na.omit(data_gbif_latlon_int)
+
+data_gbif_latlon_nat<- data_gbif_nat$data %>% select(decimalLatitude, decimalLongitude)
+data_gbif_latlon_nat <- na.omit(data_gbif_latlon_nat)
+
+
+
+# Convert to sf object
+sf_data_int <- st_as_sf(data_gbif_latlon_int, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+sf_data_nat <- st_as_sf(data_gbif_latlon_nat, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
+
+
+
+leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(data = sf_data_int, color = "red", fillColor = "red", fillOpacity = 0.8, radius = 3) %>%
+  addCircleMarkers(data = sf_data_nat, color = "blue", fillColor = "blue", fillOpacity = 0.8, radius = 3)
+
+
 ## Check native in EURO and USA
 
 sp_tsn <- get_tsn("Albizia lebbeck")[1]
@@ -415,13 +576,52 @@ origin <- itis_native(sp_tsn)
 url <- "http://rbg-web2.rbge.org.uk/cgi-bin/nph-readbtree.pl/feout"
 
 cli <- crul::HttpClient$new(url = url)
-args <- list(FAMILY_XREF = "", GENUS_XREF = "Albizia", SPECIES_XREF = "lebbeck", 
+args <- list(FAMILY_XREF = "", GENUS_XREF = "Phragmites", SPECIES_XREF = "australis", 
              TAXON_NAME_XREF = "", RANK = "")
 url_check <- cli$get(query = args)
+doc <- rvest::read_html(url_check$parse("UTF-8"), encoding = "UTF-8")
+tables <- xml2::xml_find_all(doc, "//table")
 
 
-#### NSR
 
 
-url <- "https://nsrapi.xyz/nsr_wsb.php"
 
+############
+
+griis_datasets4 <- dataset_search(query = "Invasive",limit = 1000)$data
+
+
+inv_dataset_keys$datasetKey
+
+
+
+library(crul)
+library(jsonlite)
+
+gbif_find <- function (species_name, dataset_keys) {
+  results <- list()
+  
+  for(key in dataset_keys){
+    args <- list(datasetKey = key, name = species_name)
+    cli <- HttpClient$new(url = "https://api.gbif.org/v1/species")
+    
+    out <- try(cli$get(query = args), silent = TRUE)
+
+    
+    out$raise_for_status()
+    search_result <- fromJSON(out$parse("UTF-8"))$results
+    results[[key]] <- search_result
+  }
+  
+  return(results)
+}
+
+# Example usage
+# Ensure that 'inv_dataset_keys$datasetKey' is defined or pass the dataset keys directly
+
+dataset_keys <- unique(inv_dataset_keys$datasetKey)
+gbif_find_results <- gbif_find("Albizia lebbeck", dataset_keys)
+
+all_results <- bind_rows(gbif_find_results
+                         )
+results_with_names <- left_join(select(all_results, canonicalName, datasetKey), inv_dataset_keys, by = "datasetKey")

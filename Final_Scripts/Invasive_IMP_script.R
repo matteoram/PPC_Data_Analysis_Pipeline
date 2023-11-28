@@ -550,6 +550,49 @@ save_invasives_report <- function(full_invasives_report, new_invasives_data){
 
 }
 
+save_IMP_data <- function(updated_IMP_data_2){
+  
+  tree_IMP_data <- updated_IMP_data_2 %>% 
+    select(everything(), 
+           -seed_species, 
+           -seed_species_names, 
+           -original_seed_names, 
+           -new_seed_name,
+           -seed_species_count) %>% 
+    filter(tree_species_names != "")
+  
+  
+  
+  seed_IMP_data <- updated_IMP_data_2 %>% 
+    select(everything(), 
+           -tree_species, 
+           -tree_species_names, 
+           -original_tree_names, 
+           -new_tree_name,
+           -tree_species_count) %>% 
+    filter(seed_species_names != "")
+  
+  species_data_path <- "Species_Data"
+  
+  # Check if the "Species_Data" directory exists, if not, create it
+  if (!dir.exists(species_data_path)) {
+    dir.create(species_data_path, recursive = TRUE)
+  }
+  
+  # Define the filename with the current date and time
+  date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
+  tree_file_name <- paste0(species_data_path, "/IMP_planted_trees_", date_info, ".csv")
+  seed_file_name <- paste0(species_data_path, "/IMP_planted_seeds_", date_info, ".csv")
+  
+  # Write the corrections to the file
+  write.csv(tree_IMP_data, tree_file_name, row.names = FALSE)
+  print(paste0("IMP planted tree data saved to: ", tree_file_name))
+  write.csv(seed_IMP_data, seed_file_name, row.names = FALSE)
+  print(paste0("IMP planted seed data saved to: ", seed_file_name))
+  
+  return(list(IMP_tree_data = tree_IMP_data, IMP_seed_data = seed_IMP_data))
+}
+
 
 
 
@@ -568,7 +611,7 @@ invasives_results <- check_invasive_status(species_list$Species, prior_invasives
 invasives_report <- create_invasives_report_v2(invasives_results, updated_IMP_data_2)
 save_invasives_data(old_invasives_data = all_data$Invasive_Species_Data, new_invasives_data = invasives_results)
 save_invasives_report(invasives_report, invasives_results)
-
+IMP_data <- save_IMP_data(updated_IMP_data_2)
 
 
 
@@ -647,15 +690,6 @@ save_invasives_report(invasives_report, invasives_results)
 
 
 
-
-tree_IMP_data <- updated_IMP_data_2 %>% 
-  select(everything(), 
-         -seed_species, 
-         -seed_species_names, 
-         -original_seed_names, 
-         -new_seed_name,
-         -seed_species_count) %>% 
-  filter(tree_species_names != "")
 
 
 
