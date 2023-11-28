@@ -588,7 +588,7 @@ tables <- xml2::xml_find_all(doc, "//table")
 
 ############
 
-griis_datasets4 <- dataset_search(query = "Invasive",limit = 1000)$data
+griis_datasets4 <- dataset_search(query = "Native",limit = 1000)$data
 
 
 inv_dataset_keys$datasetKey
@@ -597,6 +597,8 @@ inv_dataset_keys$datasetKey
 
 library(crul)
 library(jsonlite)
+
+inv_dataset_keys <- read.csv("GBIF_dataset_keys.csv")
 
 gbif_find <- function (species_name, dataset_keys) {
   results <- list()
@@ -620,8 +622,71 @@ gbif_find <- function (species_name, dataset_keys) {
 # Ensure that 'inv_dataset_keys$datasetKey' is defined or pass the dataset keys directly
 
 dataset_keys <- unique(inv_dataset_keys$datasetKey)
+
+
 gbif_find_results <- gbif_find("Albizia lebbeck", dataset_keys)
 
-all_results <- bind_rows(gbif_find_results
-                         )
+all_results <- bind_rows(gbif_find_results)
 results_with_names <- left_join(select(all_results, canonicalName, datasetKey), inv_dataset_keys, by = "datasetKey")
+
+full_result_list <- list()
+for(i in 1:3) {
+  species <- all_sps[i]
+  gbif_find_results <- gbif_find(species, dataset_keys)
+  all_results <- bind_rows(gbif_find_results)
+  if(!nrow(all_results) == 0){
+    results_with_names <- left_join(select(all_results, canonicalName, datasetKey), inv_dataset_keys, by = "datasetKey")
+    full_result_list[[i]] <- results_with_names # Assign to the list using index
+  }else {
+    full_result_list[[i]] <- data.frame(species = species) # Assign to the list using index
+  }
+
+}
+
+
+# NEXT STEPS -- map country code to names, parse results strings for names (search?)
+# SEARCH ONLY RELEVANT DATASETS FOR AUTOMATIC DESIGNATION OF INTRODUCED
+library(countrycode)
+countrycode(sp_country_combos$project_country, "iso2c", "country.name")
+
+
+
+
+
+
+
+
+
+
+
+library(RSelenium)
+library(rvest)
+
+# Starting RSelenium (Make sure Selenium Server is running)
+rD <- rsDriver(browser = "chrome", port = 4445L)
+remDr <- rD[["client"]]
+
+# Navigate to the web page
+url <- 'https://www.gbif.org/species/2973215' # example URL
+remDr$navigate(url)
+
+# Wait for the dynamic content to load
+Sys.sleep(5) # Adjust the sleep time as needed
+
+# Extracting page source
+page_source <- remDr$getPageSource()[[1]]
+
+# Parsing the HTML content
+html_content <- read_html(page_source)
+# Now you can use rvest functions to extract the data you need
+# For example:
+titles <- html_content %>% html_nodes("h1") %>% html_text()
+
+# Print the titles
+print(titles)
+
+# Close the RSelenium session
+remDr$close()
+
+
+
