@@ -600,7 +600,7 @@ library(jsonlite)
 
 inv_dataset_keys <- read.csv("GBIF_dataset_keys.csv")
 
-gbif_find <- function (species_name, dataset_keys) {
+check_gbif_introduced_checklists <- function (species_name, dataset_keys) {
   results <- list()
   
   for(key in dataset_keys){
@@ -620,14 +620,14 @@ gbif_find <- function (species_name, dataset_keys) {
 
 # Example usage
 # Ensure that 'inv_dataset_keys$datasetKey' is defined or pass the dataset keys directly
+dataset_keys <- read.csv("Species_Data\\GBIF_dataset_keys.csv")
 
-dataset_keys <- unique(inv_dataset_keys$datasetKey)
 
 
-gbif_find_results <- gbif_find("Albizia lebbeck", dataset_keys)
+gbif_find_results <- check_gbif("Psidium cattleianum",  all_dataset_keys$datasetKey)
 
 all_results <- bind_rows(gbif_find_results)
-results_with_names <- left_join(select(all_results, canonicalName, datasetKey), inv_dataset_keys, by = "datasetKey")
+results_with_names <- left_join(select(all_results, canonicalName, datasetKey), all_dataset_keys, by = "datasetKey")
 
 full_result_list <- list()
 for(i in 1:3) {
@@ -644,49 +644,131 @@ for(i in 1:3) {
 }
 
 
+scan_for_introduced_species <- function(species_list, dataset_keys){
+  for(i in 1:length(species_list)){
+    species <- species_list[i]
+    gbif_results <- check_gbif_introduced_checklists(species, dataset_keys)
+    all_results <- bind_rows(gbif_find_results)
+    if(!nrow(all_results) == 0){
+      results_with_names <- left_join(select(all_results, canonicalName, datasetKey), dataset_keys, by = "datasetKey")
+      full_result_list[[i]] <- results_with_names # Assign to the list using index
+    }else {
+      full_result_list[[i]] <- data.frame(species = species) # Assign to the list using index
+    }
+    
+  }
+}
+
+
 # NEXT STEPS -- map country code to names, parse results strings for names (search?)
 # SEARCH ONLY RELEVANT DATASETS FOR AUTOMATIC DESIGNATION OF INTRODUCED
 library(countrycode)
-countrycode(sp_country_combos$project_country, "iso2c", "country.name")
+
+
+sp_country_combos <- sp_country_combos %>% 
+  mutate(country_name = countrycode(sp_country_combos$project_country, "iso2c", "country.name")) %>% 
+  mutate(country_name = ifelse(country_name == "Congo - Brazzaville", "Democratic Republic of Congo", country_name))
+
+
+dataset_keys_PAs <- dataset_keys %>% filter(grepl("Protected", datasetTitle))
+dataset_keys_reg <- dataset_keys %>% filter(!grepl("Protected", datasetTitle))
+
+
+dataset_keys_PAs <- dataset_keys_PAs %>%
+  mutate(country_name = sapply(datasetTitle, function(title) {
+    parts <- str_split(title, ",") %>% unlist()
+    if (length(parts) > 0) {
+      trimws(parts[length(parts)])  # Trims whitespace and takes the last element
+    } else {
+      NA  
+    }
+  }))
+
+
+dataset_keys_reg <- dataset_keys_reg %>%
+  mutate(country_name = sapply(datasetTitle, function(title) {
+    # Regex pattern to match hyphens and em dashes, with optional spaces
+    parts <- str_split(title, "\\s*[-–—]\\s*") %>% unlist()
+    if (length(parts) > 0) {
+      trimws(parts[length(parts)])  # Trims whitespace and takes the last element
+    } else {
+      NA  # Returns NA if there are no parts after splitting
+    }
+  }))
+
+all_dataset_keys <- rbind(dataset_keys_reg, dataset_keys_PAs)
 
 
 
+check_against_GBIF <- function(sp_country_combos, all_dataset_keys){
+  sp_country_combos$status <- NA
+  results_list <- list()
+  for(i in 1:3){
+    relevant_keys <- all_dataset_keys %>% 
+      filter(country_name == sp_country_combos$country_name[i]) %>% 
+      pull(datasetKey)
+    gbif_results <- check_gbif_introduced_checklists(sp_country_combos$species[i], relevant_keys)
+    all_results <- bind_rows(gbif_results)
+    if(nrow(all_results)>0){
+      results_list[[i]] <- all_results
+    }else{
+      results_list[[i]] <- data.frame(species =  sp_country_combos$species[i])
+    }
+    
+
+  }
+  
+}
 
 
+fetch_species_info_wiki <- function(species_name) {
+  
+  out <- name_backbone(species_name)
+  
+  if(length(out) == 4){
+    print(paste0("No species with the name '", species_name, "' could be found."))
+    return(paste0("No species with the name '", species_name, "' could be found."))
+  } else {
+    base_url <- "https://en.wikipedia.org/w/api.php"
+    search_params <- list(
+      action = "query",
+      list = "search",
+      srsearch = out$canonicalName,
+      format = "json"
+    )
 
+    search_response <- GET(base_url, query = search_params)
+    search_content <- content(search_response, "parsed")
 
+    if (length(search_content$query$search) > 0) {
+      page_title <- search_content$query$search[[1]]$title
 
+      extract_params <- list(
+        action = "query",
+        prop = "extracts",
+        titles = page_title,
+        format = "json",
+        explaintext = TRUE
+      )
 
+      response <- GET(base_url, query = extract_params)
+      content <- content(response, "parsed")
+      page_content <- content$query$pages[[1]]$extract
 
-
-library(RSelenium)
-library(rvest)
-
-# Starting RSelenium (Make sure Selenium Server is running)
-rD <- rsDriver(browser = "chrome", port = 4445L)
-remDr <- rD[["client"]]
-
-# Navigate to the web page
-url <- 'https://www.gbif.org/species/2973215' # example URL
-remDr$navigate(url)
-
-# Wait for the dynamic content to load
-Sys.sleep(5) # Adjust the sleep time as needed
-
-# Extracting page source
-page_source <- remDr$getPageSource()[[1]]
-
-# Parsing the HTML content
-html_content <- read_html(page_source)
-# Now you can use rvest functions to extract the data you need
-# For example:
-titles <- html_content %>% html_nodes("h1") %>% html_text()
-
-# Print the titles
-print(titles)
-
-# Close the RSelenium session
-remDr$close()
-
-
+      if (!is.null(page_content)) {
+        
+        sentences <- unlist(strsplit(page_content, "(?<=\\.)\\s+", perl = TRUE))
+        keywords <- c("native", "introduced", "cultivated", "invasive", "cultivation", "cultivar")
+        filtered_sentences <- sentences[grepl(paste(keywords, collapse = "|"), sentences, ignore.case = TRUE)]
+        plant_info <- unique(filtered_sentences)
+        plant_info<- paste(plant_info, collapse = " ")
+        return(plant_info)
+      } else {
+        return(paste0("No Wikipedia entry could be found for ", species_name))
+      }
+    } else {
+      return(paste0("No Wikipedia entry could be found for ", species_name))
+    }
+  }
+}
 

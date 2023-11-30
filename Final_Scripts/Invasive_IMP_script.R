@@ -488,14 +488,47 @@ create_invasives_report_v2 <- function(invasives_results, updated_IMP_data){
   }else{
     invasives_only <- invasives_results %>% 
       filter(status == 'Invasive')
-    IMP_data_invasives <- updated_IMP_data %>% 
-      filter(tree_species_names %in% invasives_only$species | seed_species_names %in% invasives_only$species)
-    orgs_df <- IMP_data_invasives %>%
-      group_by(tree_species_names) %>% 
-      summarise(org_list = toString(unique(organization_name)),
-                country_list = toString(unique(project_country)))
-    invasives_report <- invasives_only %>% 
-      left_join(orgs_df, by = c('species' ='tree_species_names'))
+    IMP_data_invasives_trees <- updated_IMP_data %>% 
+      filter(tree_species_names %in% invasives_only$species)
+    
+    IMP_data_invasives_seeds <- updated_IMP_data %>% 
+      filter(seed_species_names %in% invasives_only$species)
+    
+    
+    tree_orgs_df <- IMP_data_invasives_trees %>%
+      group_by(tree_species_names, organization_name, project_country) %>%
+      summarise(total_count = sum(as.numeric(tree_species_count)), .groups = 'drop') %>%
+      group_by(tree_species_names) %>%
+      summarise(
+        org_list = toString(sapply(unique(organization_name), function(org) {
+          count_str <- sum(total_count[organization_name == org])
+          paste0(org, ": ", count_str)
+        })),
+        country_list = toString(unique(project_country))
+      ) %>%
+      rename(species = tree_species_names) %>% 
+      left_join(invasives_only, by = 'species')
+    
+    
+    seed_orgs_df <- IMP_data_invasives_seeds %>%
+      group_by(seed_species_names, organization_name, project_country) %>%
+      summarise(total_count = sum(as.numeric(seed_species_count)), .groups = 'drop') %>%
+      group_by(seed_species_names) %>%
+      summarise(
+        org_list = toString(sapply(unique(organization_name), function(org) {
+          count_str <- sum(total_count[organization_name == org])
+          paste0(org, ": ", count_str)
+        })),
+        country_list = toString(unique(project_country))
+      ) %>%
+      rename(species = seed_species_names) %>% 
+      left_join(invasives_only, by = 'species') %>% 
+      mutate(species = paste(species, "(seeds)", sep = " "))
+    
+    
+    invasives_report <- rbind(tree_orgs_df, seed_orgs_df) 
+    
+    
   }
   return(invasives_report)
 }
@@ -688,11 +721,23 @@ IMP_data <- save_IMP_data(updated_IMP_data_2)
 # 
 
 
-
-
-
-
-
-
-
-
+# 
+# 
+# create_invasives_report_v2 <- function(invasives_results, updated_IMP_data){
+#   if (is.null(invasives_results)){
+#     print("Nothing new to add to previous report.")
+#     invasives_report <- all_data$Invasives_Report
+#   }else{
+#     invasives_only <- invasives_results %>% 
+#       filter(status == 'Invasive')
+#     IMP_data_invasives <- updated_IMP_data %>% 
+#       filter(tree_species_names %in% invasives_only$species | seed_species_names %in% invasives_only$species)
+#     orgs_df <- IMP_data_invasives %>%
+#       group_by(tree_species_names) %>% 
+#       summarise(org_list = toString(unique(organization_name)),
+#                 country_list = toString(unique(project_country)))
+#     invasives_report <- invasives_only %>% 
+#       left_join(orgs_df, by = c('species' ='tree_species_names'))
+#   }
+#   return(invasives_report)
+# }
