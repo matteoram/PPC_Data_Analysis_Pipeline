@@ -391,7 +391,7 @@ save_unresolved_names <- function(updated_tree_data, raw_data_path) {
     needs_review <- updated_tree_data %>%
       filter(name_validation == "Needs Review")
     write.csv(needs_review, paste0(raw_data_path, "/Species_for_Review_", date_info, ".csv"))
-    print(paste0("Species in need of review saved to: ", raw_data_path, "/Species_for_Review_", date_info, ".csv"))
+    print(paste0("Species in need of review saved to: ", "Species_Data", "/Species_for_Review_", date_info, ".csv"))
   } else {
     needs_review <- NULL
   }

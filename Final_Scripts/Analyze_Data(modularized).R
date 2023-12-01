@@ -276,7 +276,7 @@ generate_baseline_reports_separated <- function(data) {
       Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
       Tree_Type == "don_t_know" ~ "Unknown"
     )) %>%
-    group_by(Organization_Name, Site_ID, Plot_ID, Tree_Type_Group) %>%
+    group_by(Organization_Name, Site_ID, Plot_ID, Tree_Type_Group, size_class) %>%
     summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
     ungroup() %>%
     pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
@@ -297,7 +297,7 @@ generate_baseline_reports_separated <- function(data) {
       Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
       Tree_Type == "don_t_know" ~ "Unknown"
     )) %>%
-    group_by(Organization_Name, Site_ID, Tree_Type_Group) %>%
+    group_by(Organization_Name, Site_ID, Tree_Type_Group, size_class) %>%
     summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
     ungroup() %>%
     pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
@@ -315,7 +315,7 @@ generate_baseline_reports_separated <- function(data) {
       Timeframe != 'Y0' & (Tree_Type %in% c("Present", "naturally_regenerating")) ~ "Naturally Regenerating",
       Tree_Type == "don_t_know" ~ "Unknown"
     )) %>%
-    group_by(Country, Tree_Type_Group) %>%
+    group_by(Country, Tree_Type_Group, size_class) %>%
     summarise(tree_count = sum(scaled_count, na.rm = TRUE)) %>%
     ungroup() %>%
     pivot_wider(names_from = Tree_Type_Group, values_from = tree_count) %>%
@@ -409,6 +409,6 @@ all_data <- load_data()
 
 scaled_data <- scale_tree_count(all_data$tree_data)
 
-BL_reports <- generate_baseline_reports(scaled_data)
+BL_reports <- generate_baseline_reports_separated(scaled_data)
 
 write_list_to_csv(BL_reports, names(BL_reports),main_dir = all_data$raw_data_path, sub_dir = "Baseline_Reports")

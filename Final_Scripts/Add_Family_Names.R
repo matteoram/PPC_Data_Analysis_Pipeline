@@ -161,8 +161,9 @@ get_family_names <- function(updated_tree_data, existing_family_names) {
   if (length(species_to_lookup) > 0) {
     print(paste0("There are ", length(species_to_lookup), "distinct species being queried. This can take some time to run and will require periodic input from the user."))
     new_family_names <- tax_name(species_to_lookup, get = "family", db = "ncbi")
-    new_family_names <- new_family_names %>%
-      select(-db)
+    new_family_names <- new_family_names 
+    # %>%
+    #   select(-db)
   } else {
     new_family_names <- data.frame(
       query = character(0),
@@ -173,6 +174,34 @@ get_family_names <- function(updated_tree_data, existing_family_names) {
   return(new_family_names)
 }
 
+
+
+manually_find_family_names <- function(new_family_names, old_family_names){
+  all_family_names <- rbind(new_family_names, old_family_names)
+  
+  unresolved_family_names <- all_family_names %>%
+    filter(is.na(family)) %>%
+    distinct(query) %>% 
+    pull(query)
+  
+  total_to_validate <- length(unresolved_family_names)
+  cat(paste("You have", total_to_validate, "unique unresolved family names to check...\n"))
+  count_processed <- 0
+  for (species in unresolved_family_names){
+    
+    count_processed <- count_processed + 1
+    cat(paste("Unable to resolve:", species, "\n"))
+    new_name <- readline(prompt = "Please provide the family name (or press Enter to skip): ")
+    if (new_name != "") {
+      all_family_names$family[all_family_names$query == species] <- new_name
+      all_family_names$db[all_family_names$query == species] <- "Manual validation"
+    }
+    if (count_processed %% 25 == 0) {
+      cat(paste(count_processed, "species processed. You have", total_to_validate - count_processed, "remaining...\n"))
+    }
+  }
+  return(all_family_names)
+}
 
 
 
@@ -205,6 +234,29 @@ add_new_family_names <- function(updated_tree_data, new_family_names, existing_f
 
   return(tree_data_with_family)
 }
+
+
+add_new_family_names_v2 <- function(updated_tree_data, all_family_names, existing_family_names) {
+  if (is.null(existing_family_names)) {
+    tree_data_with_family <- left_join(updated_tree_data,
+                                       all_family_names,
+                                       by = c("Species" = "query")
+    )
+  } else {
+    tree_data_with_family <- left_join(updated_tree_data,
+                                       all_family_names,
+                                       by = c("Species" = "query"),
+                                       suffix = c(".old", ".new")
+    ) %>%
+      mutate(family = coalesce(family.new, family.old),
+             db = coalesce(db.new, db.old)) %>%
+      select(-family.old, -family.new, -db.old, -db.new)
+  }
+  
+  return(tree_data_with_family)
+}
+
+
 
 
 
@@ -253,6 +305,23 @@ save_family_names <- function(existing_family_names, new_family_names) {
   }
 
 
+  file_name <- paste0(species_data_path, "/Family_Names_", date_info, ".csv")
+  write.csv(all_family_names, file_name, row.names = FALSE)
+  print(paste0("Updated family corrections saved to: ", file_name))
+  return(all_family_names)
+}
+
+
+save_family_names_v2 <- function(all_family_names) {
+
+  date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
+  species_data_path <- "Species_Data"
+  
+  if (!dir.exists(species_data_path)) {
+    dir.create(species_data_path, recursive = TRUE)
+  }
+  
+  
   file_name <- paste0(species_data_path, "/Family_Names_", date_info, ".csv")
   write.csv(all_family_names, file_name, row.names = FALSE)
   print(paste0("Updated family corrections saved to: ", file_name))

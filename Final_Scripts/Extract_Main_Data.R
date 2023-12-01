@@ -58,7 +58,7 @@ retrieve_kobo_data <- function(asset_name = "Tree Monitoring") {
 
   asset <- kobo_asset(uid)
 
-  df <- kobo_submissions(asset, all_versions = F)
+  df <- kobo_submissions(asset, all_versions = T)
 
   main_list <- as.list(df)
 
@@ -93,7 +93,8 @@ retrieve_kobo_data <- function(asset_name = "Tree Monitoring") {
 
   # Print table info to check for data structure or naming changes. The number
   # and table names in this check represent the expected values as of last update.
-  # If forms change/new tables appear, this will need to be edited.
+  # If forms change/new tables appear, this will need to be edited to reflect the
+  # new expectations.
   cat(paste0("Number of Expected Tables: 14 \n", "Number of Retrieved Tables: ", length(df), "\n"))
 
   if (all(table_name_mappings$clarified_name %in% names(main_list))) {
