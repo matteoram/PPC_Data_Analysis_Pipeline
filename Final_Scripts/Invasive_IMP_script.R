@@ -14,7 +14,8 @@
 # for further follow-up. In a majority of cases, the species flagged as invasive
 # will be species that are being planted in their native ranges. This tool is 
 # designed as a first step, but follow-up to analyze ranges and potential impact
-# will be necessary.
+# will be necessary. The script was created with inspiration from functions in 
+# deprecated R packages like originR.
 
 # Since species names need to be well formed in order for this to work, this 
 # script also runs through a slightly modified species corrections loop. All 
@@ -58,16 +59,20 @@ load_data <- function() {
 
   # Retrieve files based on character patterns and select most recently modified
   # version to read into R session
-  IMP_files <- list.files(pattern = "ppc_export", full.names = TRUE)
+
+  species_data_path <- "Species_Data"
+  IMP_data_path <- "IMP_Data"
+  
+  IMP_files <- list.files(path = IMP_data_path, pattern = "ppc_export", full.names = TRUE)
   latest_IMP_file <- IMP_files[order(file.info(IMP_files)$mtime, 
                                      decreasing = TRUE)[1]]
   IMP_data <- read.csv(latest_IMP_file, check.names = FALSE)
   
-  species_data_path <- "Species_Data"
-  invasives_files <- list.files(path = species_data_path, 
+  
+  invasives_files <- list.files(path = IMP_data_path, 
                                 pattern = "Invasive_Species_Data", 
                                 full.names = TRUE)
-  invasives_report_files <- list.files(path = species_data_path, 
+  invasives_report_files <- list.files(path = IMP_data_path, 
                                        pattern = "Invasive_Species_Report", 
                                        full.names = TRUE)
   
@@ -117,51 +122,13 @@ load_data <- function() {
 #' 2. Preprocess IMP Data
 #'
 #' This function handles the way species data is stored in the IMP database and 
-#' makes it workable. It first separates out the long strings of species data
-#' @return List with two dataframes: tree data and corrections data--as well as 
-#' a filepath for later reference.
-
-
-# 
-# preprocess_IMP_data <- function(IMP_data){
-#   
-#   IMP_data <- clean_names(IMP_data)
-# 
-#   names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][2] <- "tree_species"
-#   names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][3] <- "seed_species"
-#   
-#   extract_tree_species_names <- function(species_count_str) {
-#     # Replace the ":count" part with an empty string and "|" with ", "
-#     species_names = gsub(":\\d+", "", species_count_str)
-#     gsub("\\|", ", ", species_names)
-#   }
-#   
-#   extract_seed_species_names <- function(species_count_str) {
-#     # Replace the "\\d+:" part with an empty string and "|" with ", "
-#     species_names = gsub("\\d+:", "", species_count_str)
-#     gsub("\\|", ", ", species_names)
-#   }
-#   
-#   IMP_simple <- IMP_data %>% select(project_name, project_country, organization_name, site_id, site_name, tree_species, seed_species)
-#   IMP_modified <- IMP_simple %>% mutate(tree_species_names = extract_tree_species_names(IMP_simple$tree_species),
-#                                         seed_species_names = extract_seed_species_names(IMP_simple$seed_species))
-#   
-#   IMP_data_long <- IMP_modified %>%
-#     mutate(row_id = row_number()) %>%
-#     separate_rows(tree_species_names, sep = ", ") %>%
-#     separate_rows(seed_species_names, sep = ", ") %>% 
-#     mutate(original_tree_names = tree_species_names) %>% 
-#     mutate(original_seed_names = seed_species_names) %>% 
-#     mutate(tree_species_names = trimws(gsub("[\"']", "", tree_species_names))) %>%
-#     mutate(seed_species_names = trimws(gsub("[\"']", "", seed_species_names))) %>%
-#     mutate(tree_species_names = gsub("\n", "", tree_species_names)) %>% 
-#     mutate(seed_species_names = gsub("\n", "", seed_species_names))
-#   
-#   
-#   
-#   return(IMP_data_long)
-#   
-# }
+#' makes it workable. It first separates out the long strings of species data 
+#' as well as their associated counts. Each submission stored species in counts
+#' in a long comma and colon separated list. This creates a larger dataframe where
+#' each row is a species. This is easier to work with and iterate over programatically.
+#' @param IMP_data a raw ppc export file
+#' @return a dataframe of species information along with associated counts and 
+#' site/project reference information
 
 
 preprocess_IMP_data <- function(IMP_data) {
@@ -218,8 +185,14 @@ preprocess_IMP_data <- function(IMP_data) {
 }
 
 
-
-
+#' 3. Update IMP data with existing corrections
+#'
+#' This function shares the species corrections data from the Kobo pipeline. It
+#' applies any species corrections that are known to exist already to the IMP data.
+#' @param species_corrections the shared species corrections file
+#' @param processed_IMP_data the processed IMP dataframe with each row containing
+#' a species entry
+#' @return IMP dataframe where known species corrections have been applied
 
 
 
@@ -243,7 +216,21 @@ update_IMP_data_existing_corrections <- function(processed_IMP_data, species_cor
 }
 
 
-# START HERE! original names are NOT the ones I want. 
+
+
+#' 4. Get unresolved names
+#'
+#' This just identifies species names present in the IMP data that have no existing
+#' correction information. Since I have made a bulk of the corrections, these
+#' will likely be common names, but if the IMP database gets updated, new species
+#' corrections will need to be made.
+#' 
+#' @param updated_IMP_data the IMP data, processed and updated
+#' a species entry
+#' @return a vector containing unresolved species names
+
+
+
 get_unresolved_names <- function(updated_IMP_data){
  unresolved_tree_names <-  updated_IMP_data %>% 
    select(tree_species_names, new_tree_name) %>% 
@@ -269,24 +256,16 @@ get_unresolved_names <- function(updated_IMP_data){
 
 
 
-create_species_list_v2 <- function(updated_IMP_data, invasive_species_data){
-  unique_species_names <- unique(c(updated_IMP_data$tree_species_names, updated_IMP_data$seed_species_names))
-  
-  
-  if(!is.null(invasive_species_data)){
-    species_to_check <- data.frame(Species = unique_species_names[!unique_species_names %in% invasive_species_data$species])
-    
-  }else {
-    species_to_check <- data.frame(Species = unique_species_names)
-  }
-  
-  species_to_check <- species_to_check %>% filter(!Species == "")
-  return(species_to_check)
-}
 
-
-
-
+#' 5. Resolve species names
+#'
+#' This is a wrapper for the same resolve names function used in the Kobo pipeline.
+#' It passes names to the GNR resolver and identifies matches and names that could
+#' not be resolved.
+#' 
+#' @param unresolved_names the shared species corrections file
+#' a species entry
+#' @return a dataframe with resolved and unresolved species names
 
 resolve_species_names <- function(unresolved_names){
   
@@ -311,12 +290,22 @@ resolve_species_names <- function(unresolved_names){
   full_df <- full_df %>% 
     rename(Species = user_supplied_name) %>% 
     select(-submitted_name)
-    
+  
   
   return(full_df)
 }
 
 
+
+#' 6. Manual validation
+#'
+#' This is the same manual validation workflow as in the Kobo pipeline. User will
+#' be prompted for accurate scientific name. Pressing enter to continue will leave
+#' name as NA.
+#' 
+#' @param full_df the full dataframe of resolved and unresolved names
+#' a species entry
+#' @return the same dataframe with any manually added species names included
 
 manual_validation <- function(full_df) {
   # Extract unique unresolved species names
@@ -361,13 +350,25 @@ manual_validation <- function(full_df) {
 
 
 
+
+#' 8. Update corrections file
+#'
+#' If any corrections were made--either automatically with the GNR resolver or
+#' manually--these will be appended to the shared corrections file here.
+#' 
+#' @param old_corrections the prior corrections file
+#' @param new_corrections dataframe with newly made species corrections.
+#' a species entry
+#' @return a dataframe containing the species that need to be checked
+
+
 update_corrections_file <- function(old_corrections, new_corrections){
   new_corrections_filtered <- new_corrections %>% 
     filter(!is.na(matched_name2))
   
   all_corrections <- rbind(new_corrections_filtered, old_corrections) %>% 
     distinct()
-
+  
   species_data_path <- "Species_Data"
   
   # Check if the "Species_Data" directory exists, if not, create it
@@ -388,10 +389,61 @@ update_corrections_file <- function(old_corrections, new_corrections){
 
 
 
-gbif_GISD_find <- function (x, ...) 
+
+#' 9. Create Species List
+#'
+#' This creates a list of species that have not been checked for invasive status.
+#' Any species that has previously been passed to this function will have asssociated
+#' information in the invasives data in the IMP folder. Any unencountered species 
+#' will be identified here for processing.
+#' 
+#' @param updated_IMP_data the processed and updated IMP data
+#' a species entry
+#' @return a dataframe containing the species that need to be checked
+
+
+
+create_species_list <- function(updated_IMP_data, invasive_species_data){
+  unique_species_names <- unique(c(updated_IMP_data$tree_species_names, updated_IMP_data$seed_species_names))
+  
+  
+  if(!is.null(invasive_species_data)){
+    species_to_check <- data.frame(Species = unique_species_names[!unique_species_names %in% invasive_species_data$species])
+    
+  }else {
+    species_to_check <- data.frame(Species = unique_species_names)
+  }
+  
+  species_to_check <- species_to_check %>% filter(!Species == "")
+  return(species_to_check)
+}
+
+
+
+
+#' 10. Check GBIF for presence in GISD
+#'
+#' The main function in this script is the next one--'check_invasive_status'--which
+#' uses web scraping techniques to pull data directly from the html source code 
+#' of the GISD website. Since I am not sure what their servers can handle, I 
+#' wanted to avoid potentially sending too many requests. The GBIF database has 
+#' easy API access and can handle bulk requests. Luckily, they also link with GISD
+#' through a checklist. So this small utility function performs a check to see if
+#' the species actually exists in the GISD database at all and it is called 
+#' internally in the next function, which allows only the invasive species to 
+#' be scraped from GISD's servers.
+#' 
+#' @param species species name
+#' a species entry
+#' @return if species is in the GISD database, a non-empty response to the web 
+#' request. If it is not present, a NULL response.
+
+
+
+gbif_GISD_find <- function (species, ...) 
 {
   args <- list(datasetKey = "b351a324-77c4-41c9-a909-f30f77268bc4", 
-               name = x)
+               name = species)
   cli <- crul::HttpClient$new(url = "https://api.gbif.org", 
                               opts = list(...))
   out <- cli$get("v1/species", query = args)
@@ -401,9 +453,15 @@ gbif_GISD_find <- function (x, ...)
 
 
 
-
-
-
+#' 11. Check Invasive Status
+#'
+#' Checks the GISD database for invasive status and relevant information. Web
+#' scraping targets the alien and native ranges as well as a summary of 
+#' invasiveness (in the case where these elements exist).
+#' 
+#' @param species_to_check species that have not yet been processed
+#' @param prior_invasives_data
+#' @return a new dataframe with prior and new invasives data combined
 
 check_invasive_status <- function (species_to_check, prior_invasives_data, simplify = FALSE, ...) 
 {
@@ -481,7 +539,18 @@ check_invasive_status <- function (species_to_check, prior_invasives_data, simpl
 }
 
 
-create_invasives_report_v2 <- function(invasives_results, updated_IMP_data){
+#' 12. Create Invasives Report
+#'
+#' This takes the results from the check_invasive_status() function and identifies
+#' anywhere in the IMP data where these species are being used. It then makes
+#' a report with ranges, summary, organizations, and country. The report also 
+#' includes the count. 
+#' 
+#' @param invasives_results results from the invasives check function
+#' @param updated_IMP_data The most up to date IMP dataframe
+#' @return a new dataframe a report of flagged species and relevant info
+
+create_invasives_report <- function(invasives_results, updated_IMP_data){
   if (is.null(invasives_results)){
     print("Nothing new to add to previous report.")
     invasives_report <- all_data$Invasives_Report
@@ -533,7 +602,13 @@ create_invasives_report_v2 <- function(invasives_results, updated_IMP_data){
   return(invasives_report)
 }
 
-
+#' 12. Save invasives data
+#'
+#' Combines the new invasives results with the old and, if there are updates, saves
+#' a new file with all of them.
+#' 
+#' @param old_invasives_data prior invasives data
+#' @param new_invasives_data newly added invasives data
 
 save_invasives_data <- function(old_invasives_data, new_invasives_data){
   if(is.null(new_invasives_data)){
@@ -541,16 +616,16 @@ save_invasives_data <- function(old_invasives_data, new_invasives_data){
     return(NULL)
   }
 
-  species_data_path <- "Species_Data"
+  IMP_data_path <- "IMP_Data"
   
   # Check if the "Species_Data" directory exists, if not, create it
-  if (!dir.exists(species_data_path)) {
-    dir.create(species_data_path, recursive = TRUE)
+  if (!dir.exists(IMP_data_path)) {
+    dir.create(IMP_data_path, recursive = TRUE)
   }
   
   # Define the filename with the current date and time
   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
-  file_name <- paste0(species_data_path, "/Invasive_Species_Data_", date_info, ".csv")
+  file_name <- paste0(IMP_data_path, "/Invasive_Species_Data_", date_info, ".csv")
   
   # Write the corrections to the file
   write.csv(new_invasives_data, file_name, row.names = FALSE)
@@ -558,7 +633,12 @@ save_invasives_data <- function(old_invasives_data, new_invasives_data){
 
 }
 
-
+#' 13. Save invasives report
+#'
+#' Saves the full invasives report to the IMP_data folder.
+#' 
+#' @param full_invasives_report the newly created report
+#' @param new_invasives_data if this is NULL, no report is saved
 
 save_invasives_report <- function(full_invasives_report, new_invasives_data){
 
@@ -566,22 +646,30 @@ save_invasives_report <- function(full_invasives_report, new_invasives_data){
     print("No new data to report. Refer to previous report")
     return(NULL)
   }
-  species_data_path <- "Species_Data"
-  
+  IMP_data_path <- "IMP_Data"
+
   # Check if the "Species_Data" directory exists, if not, create it
-  if (!dir.exists(species_data_path)) {
-    dir.create(species_data_path, recursive = TRUE)
+  if (!dir.exists(IMP_data_path)) {
+    dir.create(IMP_data_path, recursive = TRUE)
   }
-  
+
   # Define the filename with the current date and time
   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
-  file_name <- paste0(species_data_path, "/Invasive_Species_Report_", date_info, ".csv")
-  
+  file_name <- paste0(IMP_data_path, "/Invasive_Species_Report_", date_info, ".csv")
+
   # Write the corrections to the file
   write.csv(full_invasives_report, file_name, row.names = FALSE)
   print(paste0("Updated invasive species report saved to: ", file_name))
 
 }
+
+
+#' 13. Save IMP_Data
+#'
+#' Saves the processed IMP_Data to the disk, separated by seeds and trees
+#' 
+#' @param updated_IMP_data_2 the newly updated IMP data
+#' @return a list of two dataframes--seed and tree IMP data
 
 save_IMP_data <- function(updated_IMP_data_2){
   
@@ -605,17 +693,17 @@ save_IMP_data <- function(updated_IMP_data_2){
            -tree_species_count) %>% 
     filter(seed_species_names != "")
   
-  species_data_path <- "Species_Data"
+  IMP_data_path <- "IMP_Data"
   
   # Check if the "Species_Data" directory exists, if not, create it
-  if (!dir.exists(species_data_path)) {
-    dir.create(species_data_path, recursive = TRUE)
+  if (!dir.exists(IMP_data_path)) {
+    dir.create(IMP_data_path, recursive = TRUE)
   }
   
   # Define the filename with the current date and time
   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
-  tree_file_name <- paste0(species_data_path, "/IMP_planted_trees_", date_info, ".csv")
-  seed_file_name <- paste0(species_data_path, "/IMP_planted_seeds_", date_info, ".csv")
+  tree_file_name <- paste0(IMP_data_path, "/IMP_planted_trees_", date_info, ".csv")
+  seed_file_name <- paste0(IMP_data_path, "/IMP_planted_seeds_", date_info, ".csv")
   
   # Write the corrections to the file
   write.csv(tree_IMP_data, tree_file_name, row.names = FALSE)
@@ -629,21 +717,71 @@ save_IMP_data <- function(updated_IMP_data_2){
 
 
 
+#-------------------------------------------------------------------------------
+# The above script defines all the functions. The 'main' script below calls them
+# each in turn. By having distinct modules, errors/bugs that might arise in the
+# future will be easier to diagnose. The print() statements output at each step
+# in the console can help locate where things went wrong, and the relevant 
+# function above will be a good starting point for debugging.
+#-------------------------------------------------------------------------------
+
+
+# 1. Load data
+print("Loading Data.")
 all_data <- load_data()
+
+# 2. Preprocess IMP data
+print("Preprocessing IMP data.")
 processed_IMP_data <- preprocess_IMP_data(all_data$IMP_data)
+
+# 3. Update IMP data with existing species corrections
+print("Updating IMP data with existing species corrections.")
 updated_IMP_data <- update_IMP_data_existing_corrections(processed_IMP_data, all_data$Species_Corrections)
+
+# 4. Get unresolved species names
+print("Identifying unresolved species names.")
 unresolved_names <- get_unresolved_names(updated_IMP_data)
+
+
+# 5. Resolve species names
+print("Passing species names to Global Names Resolver. With many names, this step can take some time.")
 resolved_names <- resolve_species_names(unresolved_names)
+
+# 5. Manually validate unresolved names
+print("Beginning manual validation of unresolved names. This requires user input.")
 finished_names <- manual_validation(resolved_names)
 
+# 6. Update Species Corrections File 
+print("Updating species corrections file with new information.")
 updated_corrections <- update_corrections_file(all_data$Species_Corrections, finished_names)
+
+# 7. Update Species Corrections File 
+print("Updating IMP data with newly made corrections.")
 updated_IMP_data_2 <- update_IMP_data_existing_corrections(updated_IMP_data, updated_corrections)
 
-species_list <- create_species_list_v2(updated_IMP_data = updated_IMP_data_2, all_data$Invasive_Species_Data)
+# 8. Create species list
+print("Identifying species that have not been checked for invasiveness in GISD database.")
+species_list <- create_species_list(updated_IMP_data = updated_IMP_data_2, all_data$Invasive_Species_Data)
+
+# 9. Check Invasive Status
+print("Checking GISD for invasive status of species list.")
 invasives_results <- check_invasive_status(species_list$Species, prior_invasives_data = all_data$Invasive_Species_Data)
-invasives_report <- create_invasives_report_v2(invasives_results, updated_IMP_data_2)
+
+# 10. Create Invasives Report
+print("Mapping results onto IMP data to create invasives report.")
+invasives_report <- create_invasives_report(invasives_results, updated_IMP_data_2)
+
+# 11. Save invasives data
+print("Saving all invasives results.")
 save_invasives_data(old_invasives_data = all_data$Invasive_Species_Data, new_invasives_data = invasives_results)
+
+# 12. Save invasives report
+print("Saving report.")
 save_invasives_report(invasives_report, invasives_results)
+
+
+# 12. Save IMP_data
+print("Saving processed IMP Data.")
 IMP_data <- save_IMP_data(updated_IMP_data_2)
 
 
@@ -741,3 +879,47 @@ IMP_data <- save_IMP_data(updated_IMP_data_2)
 #   }
 #   return(invasives_report)
 # }
+
+
+
+# 
+# preprocess_IMP_data <- function(IMP_data){
+#   
+#   IMP_data <- clean_names(IMP_data)
+# 
+#   names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][2] <- "tree_species"
+#   names(IMP_data)[grep("species", names(IMP_data), ignore.case = T)][3] <- "seed_species"
+#   
+#   extract_tree_species_names <- function(species_count_str) {
+#     # Replace the ":count" part with an empty string and "|" with ", "
+#     species_names = gsub(":\\d+", "", species_count_str)
+#     gsub("\\|", ", ", species_names)
+#   }
+#   
+#   extract_seed_species_names <- function(species_count_str) {
+#     # Replace the "\\d+:" part with an empty string and "|" with ", "
+#     species_names = gsub("\\d+:", "", species_count_str)
+#     gsub("\\|", ", ", species_names)
+#   }
+#   
+#   IMP_simple <- IMP_data %>% select(project_name, project_country, organization_name, site_id, site_name, tree_species, seed_species)
+#   IMP_modified <- IMP_simple %>% mutate(tree_species_names = extract_tree_species_names(IMP_simple$tree_species),
+#                                         seed_species_names = extract_seed_species_names(IMP_simple$seed_species))
+#   
+#   IMP_data_long <- IMP_modified %>%
+#     mutate(row_id = row_number()) %>%
+#     separate_rows(tree_species_names, sep = ", ") %>%
+#     separate_rows(seed_species_names, sep = ", ") %>% 
+#     mutate(original_tree_names = tree_species_names) %>% 
+#     mutate(original_seed_names = seed_species_names) %>% 
+#     mutate(tree_species_names = trimws(gsub("[\"']", "", tree_species_names))) %>%
+#     mutate(seed_species_names = trimws(gsub("[\"']", "", seed_species_names))) %>%
+#     mutate(tree_species_names = gsub("\n", "", tree_species_names)) %>% 
+#     mutate(seed_species_names = gsub("\n", "", seed_species_names))
+#   
+#   
+#   
+#   return(IMP_data_long)
+#   
+# }
+

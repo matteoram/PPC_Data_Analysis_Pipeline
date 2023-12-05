@@ -412,3 +412,4 @@ scaled_data <- scale_tree_count(all_data$tree_data)
 BL_reports <- generate_baseline_reports_separated(scaled_data)
 
 write_list_to_csv(BL_reports, names(BL_reports),main_dir = all_data$raw_data_path, sub_dir = "Baseline_Reports")
+write_to_csv(scaled_data, prefix = "Master_Report_", main_dir = all_data$raw_data_path, sub_dir = "Baseline_Reports")

@@ -9,14 +9,15 @@ library(crul)
 library(countrycode)
 library(jsonlite)
 
+
 load_data <- function() {
 
-  IMP_tree_files <- list.files(path = "Species_Data", pattern = "IMP_planted_trees", full.names = TRUE)
+  IMP_tree_files <- list.files(path = "IMP_Data", pattern = "IMP_planted_trees", full.names = TRUE)
   latest_tree_file <- IMP_tree_files[order(file.info(IMP_tree_files)$mtime, decreasing = TRUE)[1]]
   IMP_tree_data <- read.csv(latest_tree_file, check.names = FALSE)
   print(paste0("Latest IMP data file: ", latest_tree_file))
   
-  IMP_seed_files <- list.files(path = "Species_Data", pattern = "IMP_planted_seeds", full.names = TRUE)
+  IMP_seed_files <- list.files(path = "IMP_Data", pattern = "IMP_planted_seeds", full.names = TRUE)
   latest_seed_file <- IMP_seed_files[order(file.info(IMP_seed_files)$mtime, decreasing = TRUE)[1]]
   IMP_seed_data <- read.csv(latest_seed_file, check.names = FALSE)
   print(paste0("Latest IMP data file: ", latest_seed_file))
@@ -94,7 +95,13 @@ fetch_species_info_wiki <- function(species_name) {
       if (!is.null(page_content)) {
         
         sentences <- unlist(strsplit(page_content, "(?<=\\.)\\s+", perl = TRUE))
-        keywords <- c("native", "endemic", "introduced", "cultivated", "invasive", "cultivation", "cultivar", "occurring", "occurs")
+        keywords <- c("native", "endemic", "introduced", "cultivated", "invasive", 
+                      "cultivation", "cultivar", "occurring", "occurs", "range", 
+                      "ranges", "distribution", "distributed", "originates", "origin",
+                      "Australia", "Kenya", "Brazil", "Philippines", "Democratic Republic of Congo", 
+                      "Cambodia", "Spain", "India", "Mexico", "Colombia", "France", 
+                      "United Arab Emirates", "Portugal", "Malawi", "Madagascar", 
+                      "Guatemala", "United States", "Poland")
         filtered_sentences <- sentences[grepl(paste(keywords, collapse = "|"), sentences, ignore.case = TRUE)]
         plant_info <- unique(filtered_sentences)
         plant_info<- paste(plant_info, collapse = " ")
@@ -129,27 +136,32 @@ manual_classification <- function(sp_country_combos){
   
   sp_country_combos$status <- NA
   for (i in 1:nrow(sp_country_combos)) {
-    cat("Processing:", sp_country_combos$species[i], "-", sp_country_combos$country_name[i], "\n")
+    message("Processing: ", sp_country_combos$species[i], " - ", sp_country_combos$country_name[i], "\n")
     
+    
+    if (!is.na(sp_country_combos$status_notes[i])) {
+      message(paste("This species was included on an a checklist for introduced species in this country. \n",
+          "Checklist:", sp_country_combos$datasetTitle[i], "\n"))
+    }
     # Fetch and filter sentences from Wikipedia
     sentences <- fetch_species_info_wiki(sp_country_combos$species[i])
     gbif_output <- name_backbone(sp_country_combos$species[i]) # get best match in the GBIF backbone
     
-    data_gbif_int <- occ_data(taxonKey =gbif_output$speciesKey, establishmentMeans = "Introduced", limit = 1000)
-    data_gbif_nat <- occ_data(taxonKey =gbif_output$speciesKey, establishmentMeans = "Native", limit = 1000)
-    data_gbif_all <- occ_data(taxonKey =gbif_output$speciesKey, limit = 1000)
+    data_gbif_int <- occ_data(taxonKey =gbif_output$speciesKey, establishmentMeans = "Introduced", limit = 500)
+    data_gbif_nat <- occ_data(taxonKey =gbif_output$speciesKey, establishmentMeans = "Native", limit = 500)
+    data_gbif_all <- occ_data(taxonKey =gbif_output$speciesKey, limit = 500)
     
     leaflet_map <- leaflet() %>% addTiles()
     
     
     # Process and add all data first (in green)
-    process_and_add_data(data_gbif_all$data, "green", "green")
+    process_and_add_data(data_gbif_all$data, "blue", "blue")
     
     # Then, add introduced data (in red)
     process_and_add_data(data_gbif_int$data, "red", "red")
     
     # Finally, add native data (in blue)
-    process_and_add_data(data_gbif_nat$data, "blue", "blue")
+    process_and_add_data(data_gbif_nat$data, "green", "green")
     
     # Display the map
     print(leaflet_map)
@@ -163,7 +175,7 @@ manual_classification <- function(sp_country_combos){
     }
     
     # Prompt user for decision
-    cat("Classify as (1) Native, (2) Non-native, (3) Invasive: ")
+    message("Classify as (1) Native, (2) Non-native, (3) Invasive: ")
     decision <- readline()
     if (decision == '1'){
       decision <- "Native"
@@ -210,7 +222,17 @@ scan_for_introduced_species <- function(sp_country_combos, all_dataset_keys, tre
     relevant_keys <- all_dataset_keys %>% 
       filter(country_name == sp_country_combos$country_name[i]) %>% 
       pull(datasetKey)
+    
+    relevant_key_names <- all_dataset_keys %>% 
+      filter(country_name == sp_country_combos$country_name[i]) %>% 
+      pull(datasetTitle)
+    
+    message(paste("Processing", sp_country_combos$species[i], "in", 
+                   sp_country_combos$project_country[i], "\n", "Checking following databases:",
+                  relevant_key_names, "\n"))
+            
     gbif_results <- check_gbif_introduced_checklists(sp_country_combos$species[i], relevant_keys)
+    
     all_results <- bind_rows(gbif_results)
     if(nrow(all_results)>0){
       results_list[[i]] <- all_results
@@ -252,6 +274,7 @@ manual_results <- manual_classification(scan_results$updated_sp_country_combos)
 
 
 
+# NEXT STEPS:\
 
 
 
@@ -260,9 +283,9 @@ manual_results <- manual_classification(scan_results$updated_sp_country_combos)
 
 # ONE TIME data creation loop:
 # Main loop
-unique_sps <- unique(sp_country_combos$species)
+unique_sps <- unique(scan_results$updated_sp_country_combos$species)
 
-sp_country_combos$wiki_info <- NA
+scan_results$updated_sp_country_combos$wiki_info <- NA
 for (i in 1:length(unique_sps)) {
   cat("Processing:", unique_sps[i], '\n')
   
@@ -275,7 +298,7 @@ for (i in 1:length(unique_sps)) {
 
   # Record decision
   combined_sentences <- paste(sentences, collapse = " ")
-  sp_country_combos$wiki_info[i] <- combined_sentences
+  scan_results$updated_sp_country_combos$wiki_info[i] <- combined_sentences
 }
 
 

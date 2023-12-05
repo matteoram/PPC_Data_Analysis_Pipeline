@@ -70,7 +70,7 @@ load_data <- function() {
   if (length(family_names_files) > 0) {
     latest_fam_name_file <- family_names_files[order(file.info(family_names_files)$mtime, decreasing = TRUE)[1]]
     existing_family_names <- read.csv(latest_fam_name_file)
-    print(paste0("Latest taxonomic rank file: ", latest_fam_name_file))
+    print(paste0("Latest Family Names file: ", latest_fam_name_file))
   } else {
     existing_family_names <- NULL
     print(paste0("No taxonomic rank file found. Starting from scratch."))
@@ -176,6 +176,25 @@ get_family_names <- function(updated_tree_data, existing_family_names) {
 
 
 
+
+#' 4. Manually add new family names
+#'
+#' This function takes all species that still have no associated family name data
+#' and shows the user the species one by one. Often no family name data will be 
+#' due to common names being used, but there are examples where even well formed
+#' scientific names may not return a match. Users can do these manually. This
+#' can become pretty time intensive depending on the amount of new data since
+#' last the last time it was run. Since I will have done a bulk of the major species
+#' pool, though, this should be manageable unless there are suddenly numerous new
+#' species appearing in monitoring plots.
+#'
+#'
+#' @param  new_family_names The new automatically found names from the tax_name()
+#' function in the prior module
+#' @param old_family_names Any prior family names corrections dataframe (loaded into
+#' the all_data object)
+#' @return a dataframe with all new corrections, automatic and manual, that will
+#' be used to update tree data and the family names CSV.
 manually_find_family_names <- function(new_family_names, old_family_names){
   all_family_names <- rbind(new_family_names, old_family_names)
   
@@ -205,7 +224,7 @@ manually_find_family_names <- function(new_family_names, old_family_names){
 
 
 
-#' 4. Add New Family Names
+#' 5. Add New Family Names
 #'
 #' This function adds the new family names just found to the tree data so that
 #' all possible matches have been updated.
@@ -216,24 +235,24 @@ manually_find_family_names <- function(new_family_names, old_family_names){
 #' joins with duplicate column names)
 #' @return Dataframe with tree data and all new and previously existing family
 #' names added
-add_new_family_names <- function(updated_tree_data, new_family_names, existing_family_names) {
-  if (is.null(existing_family_names)) {
-    tree_data_with_family <- left_join(updated_tree_data,
-      select(new_family_names, query, family),
-      by = c("Species" = "query")
-    )
-  } else {
-    tree_data_with_family <- left_join(updated_tree_data,
-      select(new_family_names, query, family),
-      by = c("Species" = "query"),
-      suffix = c(".old", ".new")
-    ) %>%
-      mutate(family = coalesce(family.new, family.old)) %>%
-      select(-family.old, -family.new)
-  }
-
-  return(tree_data_with_family)
-}
+# add_new_family_names <- function(updated_tree_data, new_family_names, existing_family_names) {
+#   if (is.null(existing_family_names)) {
+#     tree_data_with_family <- left_join(updated_tree_data,
+#       select(new_family_names, query, family),
+#       by = c("Species" = "query")
+#     )
+#   } else {
+#     tree_data_with_family <- left_join(updated_tree_data,
+#       select(new_family_names, query, family),
+#       by = c("Species" = "query"),
+#       suffix = c(".old", ".new")
+#     ) %>%
+#       mutate(family = coalesce(family.new, family.old)) %>%
+#       select(-family.old, -family.new)
+#   }
+# 
+#   return(tree_data_with_family)
+# }
 
 
 add_new_family_names_v2 <- function(updated_tree_data, all_family_names, existing_family_names) {
@@ -293,23 +312,23 @@ add_genus_species_cols <- function(updated_tree_data) {
 #' @return Dataframe with all known corrections and record of all names
 #' unresolvable by the function.
 
-save_family_names <- function(existing_family_names, new_family_names) {
-  # new_resolved_names <- new_family_names %>% filter(!is.na(family))
-  all_family_names <- rbind(new_family_names, existing_family_names) %>%
-    distinct()
-  date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
-  species_data_path <- "Species_Data"
-
-  if (!dir.exists(species_data_path)) {
-    dir.create(species_data_path, recursive = TRUE)
-  }
-
-
-  file_name <- paste0(species_data_path, "/Family_Names_", date_info, ".csv")
-  write.csv(all_family_names, file_name, row.names = FALSE)
-  print(paste0("Updated family corrections saved to: ", file_name))
-  return(all_family_names)
-}
+# save_family_names <- function(existing_family_names, new_family_names) {
+#   # new_resolved_names <- new_family_names %>% filter(!is.na(family))
+#   all_family_names <- rbind(new_family_names, existing_family_names) %>%
+#     distinct()
+#   date_info <- format(Sys.time(), "%Y-%m-%d_%H%M")
+#   species_data_path <- "Species_Data"
+# 
+#   if (!dir.exists(species_data_path)) {
+#     dir.create(species_data_path, recursive = TRUE)
+#   }
+# 
+# 
+#   file_name <- paste0(species_data_path, "/Family_Names_", date_info, ".csv")
+#   write.csv(all_family_names, file_name, row.names = FALSE)
+#   print(paste0("Updated family corrections saved to: ", file_name))
+#   return(all_family_names)
+# }
 
 
 save_family_names_v2 <- function(all_family_names) {
@@ -367,21 +386,42 @@ updated_tree_data <- add_existing_family_names(all_data$tree_data, all_data$exis
 
 # 3. Get Family Names
 print("Getting New Family Names. This takes time and requires user input.")
-new_family_names <- get_family_names(updated_tree_data, all_data$existing_family_names)
+auto_family_names <- get_family_names(updated_tree_data, all_data$existing_family_names)
 
+# 4. Manually add unresolved family names
+print("Beginning interactive loop to manually add family names. This requires user input.")
+all_family_names <- manually_find_family_names(new_family_names = auto_family_names, old_family_names = all_data$existing_family_names)
 
-# 3. Add New Family Names
-print("Adding Newly Found Matches to Tree Data")
-tree_data_with_family <- add_new_family_names(updated_tree_data, new_family_names, all_data$existing_family_names)
+# 5. Add New Family Names
+print("Adding new family name matches to tree data")
+tree_data_with_family <- add_new_family_names_v2(updated_tree_data, all_family_names, all_data$existing_family_names)
 
-# 4. Add Genus and Species Columns
-print("Splitting name into genus and species")
+# 6. Add Genus and Species Columns
+print("Splitting species name name into genus and speciific epithet")
 tree_data_with_ranks <- add_genus_species_cols(tree_data_with_family)
 
-# 5. Save Family Names
-print("Combining and saving family names corrections")
-all_family_names <- save_family_names(all_data$existing_family_names, new_family_names)
+# 7. Save Family Names
+all_family_names <- save_family_names_v2(all_family_names)
 
-# 5. Save Updated Tree Data
+# 8. Save Updated Tree Data
 print("Saving Final Tree Data")
 save_updated_tree_data(tree_data_with_ranks, all_data$raw_data_path)
+
+
+### END DEV ###
+# 
+# # 4. Add New Family Names
+# # print("Adding Newly Found Matches to Tree Data")
+# # tree_data_with_family <- add_new_family_names(updated_tree_data, new_family_names, all_data$existing_family_names)
+# 
+# # # 5. Add Genus and Species Columns
+# # print("Splitting name into genus and species")
+# # tree_data_with_ranks <- add_genus_species_cols(tree_data_with_family)
+# 
+# # # 6. Save Family Names
+# # print("Combining and saving family names corrections")
+# # all_family_names <- save_family_names(all_data$existing_family_names, new_family_names)
+# 
+# # 7. Save Updated Tree Data
+# print("Saving Final Tree Data")
+# save_updated_tree_data(tree_data_with_ranks, all_data$raw_data_path)
