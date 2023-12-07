@@ -513,6 +513,106 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
 }
 
 
+
+#' 7a Find Missing Tree Data
+#'
+#' This function locates plots that should have tree data but do not have any. It
+#' uses filters and logic specific to different monitoring scenarios.
+#' @param tree_data The final full tree data object
+#' @param main_data The final main data object
+#' @return a named list of dataframes, one for each table/plot type
+
+find_missing_data_plots <- function(tree_data, main_data){
+  
+  # Filter for 30x30 plots that should have tree data--i.e. those that were not
+  # resampled at all, those that were resampled once, and those that were resampled
+  # twice AND had trees present within the final resampled plot.
+  Plots_30x30_tree <- main_data %>% 
+    filter((Resample_Main_Plot %in% c(0, 1)) | (Resample_Main_Plot == 2 & TreesPresent == "Yes"))
+  
+  # Filter tree data for only 30x30, >10cm plots
+  tree_data_3030 <- tree_data %>% filter(origin_table %in% c("Normal_30x30", "Normal_30x30_2")) 
+  
+  # Identify which Site-Plot combinations that should have trees do not have trees.
+  # Returns all rows in the first dataframe that do not have Site-Plot matches in the 
+  # second dataframe.
+  plots_with_missing_data_30x30 <- anti_join(Plots_30x30_tree, tree_data_3030, by = c("Site_ID", "Plot_ID"))
+  
+  
+  # Same process as above, applied to 3x3 tables
+  Plots_3x3_tree <- main_data %>% 
+    filter((Resample_3x3_Subplot %in% c(0, 1)) | (Resample_3x3_Subplot == 2 & LittleTreesPresent == "Yes"))
+  
+  tree_data_3x3 <- tree_data %>% filter(origin_table %in% c("Nested_3x3_within_30x30", "Nested_3x3_within_10x10_Control",
+                                                            "Nested_3x3_within_30x30_2", "Nested_3x3_within_10x10_Control_2")) 
+  
+  plots_with_missing_data_3x3 <- anti_join(Plots_3x3_tree, tree_data_3x3, by = c("Site_ID", "Plot_ID"))
+  
+  
+  # Same process as above, applied to the 10x0 control table
+  Plots_10x10_tree <- main_data %>% filter(ControlSize == "Yes")
+  tree_data_10x10 <- tree_data %>% filter(origin_table %in% c("Control_10x10", "Control_10x10_2")) 
+  plots_with_missing_data_10x10 <- anti_join(Plots_10x10_tree, tree_data_10x10, by = c("Site_ID", "Plot_ID"))
+  
+  # Same process as above, applied to plots too small for a 30x30 plot
+  Plots_3x3_small <- main_data %>% filter(SiteSize == "No")
+  tree_data_3x3_small <- tree_data %>% filter(origin_table %in% c("Small_3x3")) 
+  plots_with_missing_data_3x3_small <- anti_join(tree_data_3x3_small, tree_data_3x3_small, by = c("Site_ID", "Plot_ID"))
+  
+  
+  # Same process as above, but for census tables (Twice resampled 3x3 and still no trees)
+  census_plots <- main_data %>% filter(Resample_3x3_Subplot == 2 & LittleTreesPresent == "No") 
+  tree_data_census <- tree_data %>% filter(origin_table %in% c("Census_30x30")) 
+  plots_with_missing_data_census <- anti_join(census_plots, tree_data_census, by = c("Site_ID", "Plot_ID"))
+  
+  missing_data_list <- list(Missing_Data_30x30 = plots_with_missing_data_30x30,
+                            Missing_Data_3x3 = plots_with_missing_data_3x3,
+                            Missing_Data_10x10 = plots_with_missing_data_10x10,
+                            Missing_Data_3x3_small = plots_with_missing_data_3x3_small,
+                            Missing_Data_census = plots_with_missing_data_census)
+  write_list_to_csv(missing_data_list, prefix_list = names(missing_data_list), sub_dir = "QC_outputs")
+  return(missing_data_list)
+
+  
+}
+
+
+#' 7b Find Misplaced Tree Data
+#'
+#' This checks all tree data submitted at year 0, and returns a dataframe containing
+#' all the tree data that waas labelled 'planted' and stored in a table reserved 
+#' for trees that were greater than 10cm DBH. 
+#' 
+#' @param tree_data The final full tree data object
+#' @param main_data The final main data object
+#' @return a list with two items: a dataframe of misplaced tree data and another
+#' list of dataframes with missing data by plot type
+
+find_misplaced_tree_data <- function(tree_data) {
+  misplaced_tree_data <- tree_data %>% 
+    filter(Timeframe == 'Y0'& (Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2")))
+  write_to_csv(misplaced_tree_data, prefix = "Misplaced_Tree_Data", sub_dir = "QC_outputs")
+  return(misplaced_tree_data)
+}
+
+#' 7c Find Misplaced Tree Data
+#'
+#' A wrapper to call all QC functions. This will make it easy to add more or to 
+#' remove unwanted QC functions as time goes on.
+#' 
+#' @param tree_data The final full tree data object
+#' @return a dataframe with misplaced tree data
+
+produce_QC_files <- function(tree_data, main_data){
+  response <- tolower(readline(prompt = "Would you like to save files showing missing and misplaced tree data? Enter 'y' or 'n': "))
+  if (response == 'y'){
+    missing_data_list <- find_missing_data_plots(tree_data, main_data)
+    misplaced_tree_data <- find_misplaced_tree_data(tree_data)
+  }
+  return(list(Misplaced_Tree_Data = misplaced_tree_data, Missing_Data = missing_data_list))
+}
+
+
 #---------------------------------------------------------------------------------
 # The above script defines all these functions. The 'main' script below calls them
 # each in turn. By having distinct modules, errors/bugs that might arise in the
@@ -552,3 +652,5 @@ write_list_to_csv(main_geo_photo[2:3], names(main_geo_photo[2:3]))
 
 
 cat("Data processing and export complete!\n")
+
+QC_data <- produce_QC_files(tree_data = final_full_tree_table, main_data = final_main_table)

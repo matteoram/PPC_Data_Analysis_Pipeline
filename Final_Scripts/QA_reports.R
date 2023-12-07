@@ -125,5 +125,10 @@ find_missing_data_plots <- function(tree_data, main_data){
 
 
 
-
+find_misplaced_tree_data <- function(tree_data) {
+  misplaced_tree_data <- tree_data %>% 
+    filter(Timeframe == 'Y0'& (Tree_Type == "planted" & !origin_table %in% c("Planted_30x30", "Planted_30x30_2")))
+  
+  return(misplaced_tree_data)
+}
 
