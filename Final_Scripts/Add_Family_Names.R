@@ -176,6 +176,51 @@ get_family_names <- function(updated_tree_data, existing_family_names) {
 
 
 
+get_family_from_GBIF <- function(updated_tree_data, existing_family_names){
+  if ("family" %in% names(updated_tree_data)) {
+    species_to_lookup <- updated_tree_data %>%
+      filter(is.na(family)) %>%
+      distinct(Species) %>%
+      pull(Species)
+  } else {
+    # If the 'family' column does not exist, use all Species
+    species_to_lookup <- updated_tree_data %>%
+      distinct(Species) %>%
+      pull(Species)
+  }
+  
+  if (!is.null(existing_family_names)) {
+    species_to_skip <- existing_family_names %>%
+      filter(is.na(family)) %>%
+      distinct(query) %>%
+      pull(query)
+    
+    species_to_lookup <- setdiff(species_to_lookup, species_to_skip)
+
+    
+  }
+  species_to_lookup <- species_to_lookup[!species_to_lookup %in% c(".", ",", "")]
+  species_to_lookup <- species_to_lookup[!is.na(species_to_lookup)]
+  
+  new_family_names <- data.frame(species = species_to_lookup, family = NA, db = "GBIF")
+  if (length(species_to_lookup) > 0) {
+    print(paste0("There are ", length(species_to_lookup), "distinct species being queried. This can take some time to run and will require periodic input from the user."))
+    for (i in 1:length(species_to_lookup)){
+      message(paste("Processing: ", species_to_lookup[i],"..."))
+      out <- name_backbone(species_to_lookup[i])
+      if(!is.null(out$family)){
+        new_family_names$family[i] <- out$family
+        cat("Match found for", species_to_lookup[i], "Family name: ", out$family)
+        
+        }else {
+          cat("No family name found for", species_to_lookup[i], "...")
+          new_family_names$family[i] <- NA
+        }
+    }
+  }
+  return(new_family_names)
+}
+
 
 #' 4. Manually add new family names
 #'
@@ -195,13 +240,15 @@ get_family_names <- function(updated_tree_data, existing_family_names) {
 #' the all_data object)
 #' @return a dataframe with all new corrections, automatic and manual, that will
 #' be used to update tree data and the family names CSV.
-manually_find_family_names <- function(new_family_names, old_family_names){
+manually_find_family_names <- function(new_family_names, old_family_names, tree_data){
   all_family_names <- rbind(new_family_names, old_family_names)
   
-  unresolved_family_names <- all_family_names %>%
+  all_unresolved_family_names <- all_family_names %>%
     filter(is.na(family)) %>%
     distinct(query) %>% 
     pull(query)
+  
+  unresolved_family_names <- all_unresolved_family_names[all_unresolved_family_names %in% tree_data$Species]
   
   total_to_validate <- length(unresolved_family_names)
   cat(paste("You have", total_to_validate, "unique unresolved family names to check...\n"))
@@ -390,7 +437,7 @@ auto_family_names <- get_family_names(updated_tree_data, all_data$existing_famil
 
 # 4. Manually add unresolved family names
 print("Beginning interactive loop to manually add family names. This requires user input.")
-all_family_names <- manually_find_family_names(new_family_names = auto_family_names, old_family_names = all_data$existing_family_names)
+all_family_names <- manually_find_family_names(new_family_names = auto_family_names, old_family_names = all_data$existing_family_names, tree_data = updated_tree_data)
 
 # 5. Add New Family Names
 print("Adding new family name matches to tree data")

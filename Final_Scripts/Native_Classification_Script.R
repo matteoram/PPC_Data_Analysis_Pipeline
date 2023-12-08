@@ -1,24 +1,69 @@
-library(rgbif)
-library(dplyr)
-library(sf)
-library(leaflet)
-library(wikifacts)
-library(httr)
-library(stringr)
-library(crul)
-library(countrycode)
-library(jsonlite)
+# --------------------------------------------------------------------------------
+# Project: Priceless Planet Coalition
+# Author: Johannes Nelson
+# Input: IMP seed and tree data (processed during invasives script), a CSV of 
+# prior checklist scans, and a CSV of prior manual review data
+# Output: Primary output will be manually reviewed and labelled classification
+# decisions. Script will also update any checklist scans.
+
+# This script is primarily a workflow to streamline and bolster manual validation
+# processes--enabling someone to make status decisions about a species--"native"
+# or "alien"--given relevant information. The relevant information comes in two or
+# three primary forms. First, each species is automatically checked against 
+# Global Register of Introduced and Invasive Species (GRIIS) checklists for the 
+# specific country under review. If the plant is present on the checklist for that
+# country, it is potentially introduced there and a note is made. However, this is
+# not definitive or exhaustive, so this information should be used in conjunction
+# with the other pieces of evidence when deciding. The second bit of relevant 
+# information comes from the Global Biodiversity Information Facility (GBIF)
+# database in the form of mapped occurrence data. This includes occurrence data, 
+# where--if available--occurrence points are color coded to indicate native or 
+# introduced designations. The third source of information comes form Wikipedia.
+# The species names are searched for and the top match is extracted (sometimes 
+# this match might be irrelevant). Then, the text is parsed for keywords such as
+# 'native', 'alien', 'introduced', etc. Only sentences with these keywords are
+# printed in the console for the user to see. The user can then make a choice
+# by following input instructions.
+
+# -------------------------------------------------------------------------------
 
 
-# TOMOROW: Add previous scan results functionality. Create same functionality for
-# overall validation file. Potential LLM integration. 
+# Install and load necessary packages
+necessary_packages <- c("rgbif", "dplyr", "sf", "leaflet", "httr", 
+                        "stringr","crul", "countrycode", "jsonlite")
 
+for (pkg in necessary_packages) {
+  if (!require(pkg, character.only = TRUE)) {
+    cat(pkg, "not found. Installing now...\n")
+    install.packages(pkg)
+    library(pkg, character.only = TRUE)
+  }
+}
+
+
+
+#' 1. Load Data
+#'
+#' This function loads in all data it needs to work properly. It assumes the file
+#' and directory structures have not been renamed or tampered with and that the 
+#' invasives species script has been run (because this is the script that
+#' preprocesses the raw IMP export)
+#' 
+#'
+#' @return List with of five dataframes: Tree data, Seed data, prior checklist 
+#' scan results, prior manual review results, and a dataframe of GRIIS dataset 
+#' keys.
 load_data <- function() {
 
-  IMP_tree_files <- list.files(path = "IMP_Data", pattern = "IMP_planted_trees", full.names = TRUE)
+  IMP_tree_files <- list.files(path = "IMP_Data", 
+                               pattern = "IMP_planted_trees", 
+                               full.names = TRUE)
   
   if (length(IMP_tree_files) > 0) {
-    latest_tree_file <- IMP_tree_files[order(file.info(IMP_tree_files)$mtime, decreasing = TRUE)[1]]
+    
+    latest_tree_file <- IMP_tree_files[order(file.info(IMP_tree_files)$mtime, 
+                                             decreasing = TRUE)[1]]
+    
     IMP_tree_data <- read.csv(latest_tree_file, check.names = FALSE)
     print(paste0("Latest IMP data file: ", latest_tree_file))
   } else {
@@ -40,7 +85,7 @@ load_data <- function() {
   }
   
   
-  dataset_key_file <- list.files(path = "Species_Data", pattern = "GBIF_dataset", full.names = TRUE)
+  dataset_key_file <- list.files(path = "IMP_Data", pattern = "GBIF_dataset", full.names = TRUE)
   dataset_key_df <- read.csv(dataset_key_file, check.names = FALSE)
 
   
@@ -80,6 +125,15 @@ load_data <- function() {
 
 
 
+#' 2. Get Unique Species-Coountry Combinations
+#'
+#' This generates a dataframe that shows all unique species country combinations
+#' that need to be reviewed for status.
+#' 
+#' @param IMP_tree_data The preprocessed IMP planted tree data
+#' @param IMP_seed_data The preprocessed IMP planted seed data
+#' @return shortened dataframe showing only unique species-country combinations
+
 get_unique_sp_country_combos <- function(IMP_tree_data, IMP_seed_data){
   
   tree_country_combinations <- IMP_tree_data %>% 
@@ -105,8 +159,25 @@ get_unique_sp_country_combos <- function(IMP_tree_data, IMP_seed_data){
 
 
 
-
-# Function to fetch and filter sentences from Wikipedia
+#' 3. Fetch species info from Wikipedia
+#'
+#' This is used internally within the manual validation function below, but could
+#' also be used as standalone, as it only takes a species name as its argument.
+#' This function finds the most relevant wikipedia page and parses its contents
+#' for certain key words to hone in on relevant information for classification 
+#' decisions. Note that each country in the PPC portfolio is a keyword. With new
+#' project additions, it might be beneficial to add these countries to the list 
+#' within this function.
+#' 
+#' Another important note is that in an attempt to rectify minor erros, the species
+#' name is first passed to the GBIF database, and the canonicalName of this object
+#' is what is ultimately passed to wikipedia. This can result in some unexpected
+#' content. In addition to this, when there is no wikipedia information available,
+#' the most relevant page might be completely irrelevant (one of the plant searches
+#' gives you exhaustive biographical information about a racecar driver!)
+#' 
+#' @param species_name A character string with a species name
+#' @return a character string of concatenated sentences from wikipedia.
 fetch_species_info_wiki <- function(species_name) {
   
   out <- name_backbone(species_name)
@@ -154,6 +225,8 @@ fetch_species_info_wiki <- function(species_name) {
         filtered_sentences <- sentences[grepl(paste(keywords, collapse = "|"), sentences, ignore.case = TRUE)]
         plant_info <- unique(filtered_sentences)
         plant_info<- paste(plant_info, collapse = " ")
+        plant_info <- str_replace_all(plant_info, "[\n\t\r]", " ")
+        
         return(plant_info)
       } else {
         return(paste0("No Wikipedia entry could be found for ", species_name))
@@ -166,6 +239,29 @@ fetch_species_info_wiki <- function(species_name) {
 
 
 
+
+#' 4. Check GBIF/GRIIS Introduced Species Checklists
+#'
+#' This function matches the species country combo with relevant country GRIIS 
+#' checklists and checks if the species is present on them. It is only as 
+#' comprehensive as the checklists are complete, which is difficult to verify. 
+#' Species might be introduced in one part of the country and not another, 
+#' especially for large countries like Brazil. So, this can be seen as more of a
+#' potential flag. Positive results from this scan will be included in the relevant
+#' information printed into the console during manual classification. 
+#' 
+#' This also produces a CSV file of all scan results (in order to avoid 
+#' redundant reprocessing of the same species-country combinations). This file 
+#' could be used to view the potential introduced species if desired.
+#' 
+#' @param species_name A character string with a species name
+#' @param datasaet_keys A preexisting dataframe of dataset keys. This was curated
+#' by me prior to pipeline delivery and sits in the IMP_Data folder. It should not
+#' be deleted or this script will not work.
+#' @return a list of dataframes: updated_sp_country_combos updates the prior 
+#' dataframe with scan results, tree_data and seed_data with added scan results, 
+#' and the scan results themselves which serve to speed up later script runs and
+#' as reference for looking into introduced species.
 check_gbif_introduced_checklists <- function (species_name, dataset_keys) {
   results <- list()
   
@@ -341,6 +437,20 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
 
 
 
+#' 5. Manual classifciation
+#'
+#' This function is interactive, requiring constant user input. For each species
+#' country combination, it shows the user a map of occurrence data color coded as
+#' green = native, red = introduced, and blue = unknown; relevant informatoin parsed
+#' from wikipedia using the above function; and any note about results from the 
+#' database scan. 
+#' 
+#' 
+#' @param sp_country_combos the updated dataframe of species country combinations
+#' with scan results.
+#' @param prior_results dataframe of prior results. If any prior classification 
+#' that has already been done in order to not repeat combinations.
+#' @return a dataframe with the results of the manual classification process.
 
 manual_classification <- function(sp_country_combos, prior_results) {
   
@@ -379,24 +489,33 @@ manual_classification <- function(sp_country_combos, prior_results) {
     sentences <- fetch_species_info_wiki(sp_country_combos$species[i])
     gbif_output <- name_backbone(sp_country_combos$species[i]) # get best match in the GBIF backbone
     
-    data_gbif_int <- occ_data(taxonKey =gbif_output$speciesKey, establishmentMeans = "Introduced", limit = 500)
-    data_gbif_nat <- occ_data(taxonKey =gbif_output$speciesKey, establishmentMeans = "Native", limit = 500)
-    data_gbif_all <- occ_data(taxonKey =gbif_output$speciesKey, limit = 500)
+    if(!is.null(gbif_output$speciesKey)){
+      data_gbif_int <- occ_data(taxonKey =gbif_output$speciesKey, establishmentMeans = "Introduced", limit = 500)
+      data_gbif_nat <- occ_data(taxonKey =gbif_output$speciesKey, establishmentMeans = "Native", limit = 500)
+      data_gbif_all <- occ_data(taxonKey =gbif_output$speciesKey, limit = 500)
+      
+      leaflet_map <- leaflet() %>% addTiles()
+      
+      
+      # Process and add all data first (in green)
+      process_and_add_data(data_gbif_all$data, "blue", "blue")
+      
+      # Then, add introduced data (in red)
+      process_and_add_data(data_gbif_int$data, "red", "red")
+      
+      # Finally, add native data (in blue)
+      process_and_add_data(data_gbif_nat$data, "green", "green")
+      
+      # Display the map
+      print(leaflet_map)
+      
+    }else {
+      print(paste("No occurrence information exists for",sp_country_combos$species[i]))
+      leaflet_map <- leaflet() %>% addTiles()
+      print(leaflet_map)
+      
+    }
     
-    leaflet_map <- leaflet() %>% addTiles()
-    
-    
-    # Process and add all data first (in green)
-    process_and_add_data(data_gbif_all$data, "blue", "blue")
-    
-    # Then, add introduced data (in red)
-    process_and_add_data(data_gbif_int$data, "red", "red")
-    
-    # Finally, add native data (in blue)
-    process_and_add_data(data_gbif_nat$data, "green", "green")
-    
-    # Display the map
-    print(leaflet_map)
     
     
     # Display sentences to the user
@@ -477,23 +596,23 @@ manual_results <- manual_classification(scan_results$updated_sp_country_combos, 
 # 
 # ONE TIME data creation loop:
 # Main loop
-unique_sps <- unique(scan_results$updated_sp_country_combos$species)
-
-scan_results$updated_sp_country_combos$wiki_info <- NA
-for (i in 1:nrow(scan_results$updated_sp_country_combos)) {
-  cat("Processing:", scan_results$updated_sp_country_combos$species[i], '\n')
-
-  # Fetch and filter sentences from Wikipedia
-  sentences <- fetch_species_info_wiki(scan_results$updated_sp_country_combos$species[i])
-
-  if (grepl("No Wikipedia entry", sentences[1]) | grepl("No species with", sentences[1])){
-    sentences <- "No info found."
-  }
-
-  # Record decision
-  combined_sentences <- paste(sentences, collapse = " ")
-  scan_results$updated_sp_country_combos$wiki_info[i] <- combined_sentences
-}
+# unique_sps <- unique(scan_results$updated_sp_country_combos$species)
+# 
+# scan_results$updated_sp_country_combos$wiki_info <- NA
+# for (i in 1:nrow(scan_results$updated_sp_country_combos)) {
+#   cat("Processing:", scan_results$updated_sp_country_combos$species[i], '\n')
+# 
+#   # Fetch and filter sentences from Wikipedia
+#   sentences <- fetch_species_info_wiki(scan_results$updated_sp_country_combos$species[i])
+# 
+#   if (grepl("No Wikipedia entry", sentences[1]) | grepl("No species with", sentences[1])){
+#     sentences <- "No info found."
+#   }
+# 
+#   # Record decision
+#   combined_sentences <- paste(sentences, collapse = " ")
+#   scan_results$updated_sp_country_combos$wiki_info[i] <- combined_sentences
+# }
 
 # 
 # 

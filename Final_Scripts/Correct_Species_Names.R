@@ -409,11 +409,11 @@ save_unresolved_names <- function(updated_tree_data, raw_data_path) {
 
 # 1. Load Data
 print("Loading Data")
-data <- load_data()
+all_data <- load_data()
 
 # 2. Update Tree Data with Existing Corrections
 print("Updating Data with Existing Corrections")
-updated_data <- update_tree_data_with_existing_corrections(data$tree_data, data$corrected_names)
+updated_data <- update_tree_data_with_existing_corrections(all_data$tree_data, all_data$corrected_names)
 
 # 3. Resolve Uncorrected Names
 print(paste0(
@@ -424,7 +424,7 @@ resolved_dataframe <- resolve_uncorrected_names(updated_data)
 
 # 4. Create Complete Corrections Dataframe
 print("Adding newly found matches to existing corrections data.")
-complete_df <- create_complete_corrections_df(updated_data, resolved_dataframe, data$corrected_names)
+complete_df <- create_complete_corrections_df(updated_data, resolved_dataframe, all_data$corrected_names)
 
 # 5. Manual Validation
 print("Beginning manual validation...")
@@ -432,11 +432,58 @@ final_df <- manual_validation(complete_df)
 
 # 6. Save Updated Corrections
 print("Saving Updated Corrections")
-all_corrections <- save_updated_corrections(final_df, data$corrected_names)
+all_corrections <- save_updated_corrections(final_df, all_data$corrected_names)
 
 # 7. Save Corrected Tree Data
 print("Saving Corrected Tree Data")
-updated_tree_data <- save_corrected_tree_data(updated_data, all_corrections, data$raw_data_path)
+updated_tree_data <- save_corrected_tree_data(updated_data, all_corrections, all_data$raw_data_path)
 
 # 8. Save Unresolved Names
-needing_review <- save_unresolved_names(updated_tree_data, data$raw_data_path)
+needing_review <- save_unresolved_names(updated_tree_data, all_data$raw_data_path)
+
+
+
+
+
+
+
+
+
+get_species_from_GBIF <- function(updated_tree_data, existing_corrections){
+
+    species_to_lookup <- unique(updated_tree_data$Species)
+    
+    if(!is.null(existing_corrections)){
+      species_to_lookup <- species_to_lookup[!species_to_lookup %in% existing_corrections$Species]
+    }else{
+      species_to_lookup <- species_to_lookup
+    }
+    
+  species_to_lookup <- species_to_lookup[!species_to_lookup %in% c(".", ",", "")]
+  species_to_lookup <- species_to_lookup[!is.na(species_to_lookup)]
+  
+  new_species_names <- data.frame(species = species_to_lookup, corrected_species = NA, db = "GBIF")
+  if (length(species_to_lookup) > 0) {
+    print(paste0("There are ", length(species_to_lookup), "distinct species being queried. This can take some time to run and will require periodic input from the user."))
+    for (i in 1:length(species_to_lookup)){
+      message(paste("Processing: ", species_to_lookup[i],"... \n"))
+      out <- name_backbone(species_to_lookup[i])
+      if(!is.null(out$species)){
+        new_species_names$corrected_species[i] <- out$species
+        cat("Match found for", species_to_lookup[i], "Family name: ", out$species, "\n")
+        
+      }else {
+        cat("No family name found for", species_to_lookup[i], "... \n")
+        new_species_names$family[i] <- NA
+      }
+    }
+    }
+  return(new_species_names)
+  }
+
+
+
+
+
+
+
