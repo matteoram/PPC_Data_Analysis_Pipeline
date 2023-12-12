@@ -576,9 +576,9 @@ scan_results <- scan_for_introduced_species(sp_country_combos,
                                             tree_data = all_data$tree_data, 
                                             all_data$seed_data, 
                                             prior_scan_results = all_data$checklist_scan_results)
+manual_results <- manual_classification(scan_results$updated_sp_country_combos, 
+                                        all_data$prior_review_results)
 
-# This is where to start tomorrow. Implement scan results in classification loop. Decide on how to save or make it so that no
-manual_results <- manual_classification(scan_results$updated_sp_country_combos, prior_results = all_data$prior_review_results)
 
 
 
