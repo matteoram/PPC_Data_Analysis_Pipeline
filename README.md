@@ -20,6 +20,6 @@ If you are familiar with git, you can clone the repository in a directory of you
 choice. If not, the simplest way is to click on the green code button in the top
 right corner of the repository page, and then 'Download Zip'. Here is a screenshot:
 
-![Example Image](imaged/download_instructions_1.png)
+![Example Image](images/download_instructions_1.png)
 
 
