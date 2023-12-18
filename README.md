@@ -37,13 +37,37 @@ will need to re-download the zip.
 ## What is in this repository?
 
 * **Scripts:** This folder houses the scripts that perform all the functions:
-  * Extract_Main_Data.R: a script to extract data from Kobo toolbox, process it, 
+  * **Extract_Main_Data.R:** a script to extract data from Kobo toolbox, process it, 
   and create CSV files.
-  * Extract_Brazil_Data.R: This script does the same as the above, but handles the
+  * **Extract_Brazil_Data.R:** This script does the same as the above, but handles the
   particularities of the Brazil data accordingly. 
-  * Correct_Species_Names.R: This script automatically corrects most species names
+  * **Correct_Species_Names.R:** This script automatically corrects most species names
   and provides functionality for the user to correct the rest.
-* **Species_Data** This folder houses the taxonomic corrections data
+  * **Add_Family_Names.R:** This script uses online databases to search for and add
+  taxonomic family names to the dataset.
+  * **Analyze_Data.R:** This processes the cleaned and wrangled dataset to generate
+  baseline reports, as well as data pertaining to the PPC indicators such as 
+  trees restored, trees naturally regenerated, and survival rate of planted trees.
+  * **IMP_Invasive_species_scanner.R:** This script takes an exported IMP data file, 
+  preprocesses it, and then scans the planted species for potential invasives.
+  * **IMP_Native_Alien_Classification.R:** This script aids in the process of 
+  classifying native and alien species.
+  * **Invasive_Species_Scanner.R:** This is a standalone version of the invasives 
+  scanner that can be used on a simply formatted species list.
+  
+  
+* **Species_Data** This folder houses the taxonomic corrections data.
+  * **Taxonomic_Corrections_YYYY-MM-DD_HHMM.csv:** Files with this naming convention
+  will be generated each time certain scripts are run. These are cumulative records
+  of species name corrections. At handover, the file here contains thousands of corrections,
+  and it will serve as the base for future corrections. 
+  * **Family_Names_YYYY-MM-DD_HHMM.csv:** This is a similar file, only it has up
+  to date family names information.
+
+* **IMP_Data** This folder houses the exported IMP planting data, as well as the
+folders and files associated with processing it.
+  
+
 
 NOTE: If you've made new species corrections or family names corrections, you 
 will want to save those files and manually copy them over to the updated repo.
