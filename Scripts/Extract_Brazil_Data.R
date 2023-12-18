@@ -125,7 +125,13 @@ process_main_table <- function(main_table) {
   main_table <- main_table %>%
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling), 0, Resampling)) %>%
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resample_3x3_Subplot), 0, Resample_3x3_Subplot)) %>%
-    mutate(Monitoring_Plot_Size = ifelse(SiteSize == "Yes", "30x30", "30x15"))
+    mutate(Monitoring_Plot_Size = case_when(
+      SiteSize == "Yes" ~ "30x30",
+      SiteSize == "No" ~ "30x15",
+      SiteType == "Control" ~ "10x10"
+      
+    )
+    )
 
 
 

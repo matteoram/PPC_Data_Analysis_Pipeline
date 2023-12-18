@@ -206,16 +206,16 @@ get_family_from_GBIF <- function(updated_tree_data, existing_family_names){
   
   if (length(species_to_lookup) > 0) {
     new_family_names <- data.frame(query = species_to_lookup, family = NA, db = "GBIF")
-    print(paste0("There are ", length(species_to_lookup), "distinct species being queried. This can take some time to run and will require periodic input from the user."))
+    print(paste0("There are ", length(species_to_lookup), " distinct species being queried. This can take some time to run and will require periodic input from the user."))
     for (i in 1:length(species_to_lookup)){
-      message(paste("Processing: ", species_to_lookup[i],"..."))
+      message(paste("Processing: ", species_to_lookup[i],"... \n"))
       out <- name_backbone(species_to_lookup[i])
       if(!is.null(out$family)){
         new_family_names$family[i] <- out$family
-        cat("Match found for", species_to_lookup[i], "Family name: ", out$family)
+        cat("Match found for", species_to_lookup[i], "Family name: ", out$family, "\n")
         
         }else {
-          cat("No family name found for", species_to_lookup[i], "...")
+          cat("No family name found for", species_to_lookup[i], "... \n")
           new_family_names$family[i] <- NA
         }
     }

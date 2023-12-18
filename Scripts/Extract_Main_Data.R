@@ -29,9 +29,6 @@ for (pkg in necessary_packages) {
   }
 }
 
-# Ensure working directory is set as desired
-master_dir <- choose.dir(caption = "Choose project parent directory")
-setwd(master_dir)
 
 #' 1. Retrieve Kobo Data
 #'
@@ -134,7 +131,11 @@ process_main_table <- function(main_table) {
   main_table <- main_table %>%
     mutate(Resample_Main_Plot = ifelse(is.na(Resampling1), 0, Resampling1)) %>%
     mutate(Resample_3x3_Subplot = ifelse(is.na(Resampling2), 0, Resampling2)) %>%
-    mutate(Monitoring_Plot_Size = ifelse(SiteSize == "Yes", "30x30", "3x3")) %>%
+    mutate(Monitoring_Plot_Size = case_when(
+      SiteSize == "Yes" ~ "30x30",
+      SiteSize == "No" ~ "3x3",
+      Plot_Type == "Control" ~ "10x10"
+    )) %>% 
     select(-Resampling1, -Resampling2) %>%
     # Fix issue where different forms designated 'Uciri' organization differently
     mutate(
@@ -611,8 +612,11 @@ produce_QC_files <- function(tree_data, main_data){
   if (response == 'y'){
     missing_data_list <- find_missing_data_plots(tree_data, main_data)
     misplaced_tree_data <- find_misplaced_tree_data(tree_data)
+    return(list(Misplaced_Tree_Data = misplaced_tree_data, Missing_Data = missing_data_list))
+    
+  }else{
+    return(NULL)
   }
-  return(list(Misplaced_Tree_Data = misplaced_tree_data, Missing_Data = missing_data_list))
 }
 
 

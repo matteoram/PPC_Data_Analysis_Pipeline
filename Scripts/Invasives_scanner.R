@@ -141,6 +141,6 @@ check_invasive_status <- function (...)
 
 
 
-# Main Scriot: Call the function, store results in scan_results for continued 
+# Main Script: Call the function, store results in scan_results for continued 
 # use in R if desired.
 scan_results <- check_invasive_status()
