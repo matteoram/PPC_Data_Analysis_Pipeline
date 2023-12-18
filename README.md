@@ -15,6 +15,11 @@ search for necessary files, if they are renamed or moved, they will not be able 
 run.
 
 
-## Folder Descriptions
+## How to download
+If you are familiar with git, you can clone the repository in a directory of your 
+choice. If not, the simplest way is to click on the green code button in the top
+right corner of the repository page, and then 'Download Zip'. Here is a screenshot:
+
+![Example Image](download_instructions_1.png)
 
 
