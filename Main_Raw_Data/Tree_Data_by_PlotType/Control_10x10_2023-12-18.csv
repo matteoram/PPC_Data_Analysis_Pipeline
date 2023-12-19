@@ -1,5 +1,0 @@
-"Species","Tree_Type","Tree_Count","size_class","Site_ID","Plot_ID","Country","Organization_Name","SiteType","Plot_Type","Plot_Size","tree_index","main_index","_parent_table_name","origin_table","destination_table","Resample_Main_Plot","Resample_3x3_Subplot","Timeframe"
-"Quercus","Present",1,">10cm","334","27","France","Reforest Action","Control","Control","10x10",1,30,"main","Control_10x10",NA,"0","0","Y0"
-"Pinus sp","Present",1,">10cm","334","27","France","Reforest Action","Control","Control","10x10",2,30,"main","Control_10x10",NA,"0","0","Y0"
-"Prunus avium","Present",4,">10cm","333","41","France","Reforest Action","Control","Control","10x10",NA,8,NA,"main","Control_10x10","0","0","Y0"
-"Quercus","Present",2,">10cm","329","35","France","Reforest Action","Control","Control","10x10",NA,13,NA,"main","Control_10x10","0","0","Y0"

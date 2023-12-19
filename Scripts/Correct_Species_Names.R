@@ -62,12 +62,12 @@ load_data <- function() {
   if (!answer %in% c("1", "2")) {
     print("Invalid response, please rerun script and be sure to enter either '1' or '2'")
   } else if (answer == "1") {
-    raw_data_path <- "Main_Raw_Data"
+    raw_data_path <- "Main_Data"
   } else if (answer == "2") {
-    raw_data_path <- "Brazil_Raw_Data"
+    raw_data_path <- "Brazil_Data"
   }
 
-  # Get all files that match the pattern "Tree_Data_Uncorrected" in the "Brazil_Raw_Data" folder
+  # Get all files that match the pattern "Tree_Data_Uncorrected" in the "Brazil_Data" folder
   tree_files <- list.files(path = raw_data_path, pattern = "Tree_Data_Uncorrected", full.names = TRUE)
 
   # Sort files by modification date to get the most recent and read this into session

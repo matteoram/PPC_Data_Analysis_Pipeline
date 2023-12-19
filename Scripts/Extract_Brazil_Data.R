@@ -598,7 +598,7 @@ combine_tree_tables <- function(tree_tables_list) {
 
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
-  main_dir <- "Brazil_Raw_Data"
+  main_dir <- "Brazil_Data"
 
   # Check if the main directory exists, if not, create it
   if (!dir.exists(main_dir)) {

@@ -474,7 +474,7 @@ remove_NA_columns <- function(tables_list) {
 #' sub directory by default.
 
 write_to_csv <- function(data, prefix, date_stamp = TRUE, sub_dir = NULL) {
-  main_dir <- "Main_Raw_Data"
+  main_dir <- "Main_Data"
 
   # Check if the main directory exists, if not, create it
   if (!dir.exists(main_dir)) {

@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 # Priceless Planet Coalition Data Analysis Pipeline
 
 ## Overview
@@ -48,7 +53,7 @@ will need to re-download the zip.
   * **Analyze_Data.R:** This processes the cleaned and wrangled dataset to generate
   baseline reports, as well as data pertaining to the PPC indicators such as 
   trees restored, trees naturally regenerated, and survival rate of planted trees.
-  * **IMP_Invasive_species_scanner.R:** This script takes an exported IMP data file, 
+  * **IMP_Invasive_Species_Scanner.R:** This script takes an exported IMP data file, 
   preprocesses it, and then scans the planted species for potential invasives.
   * **IMP_Native_Alien_Classification.R:** This script aids in the process of 
   classifying native and alien species.
@@ -66,6 +71,75 @@ will need to re-download the zip.
 
 * **IMP_Data** This folder houses the exported IMP planting data, as well as the
 folders and files associated with processing it.
+  * **ppc_export_site_submissions_....csv:** This is a direct IMP export. I did not 
+  change the naming convention here, assuming that all exports would follow the
+  same convention. The important pattern that my code will look for is "ppc_export."
+  This export contains site information and planting data for tree and seed species.
+  * **GBIF_dataset_keys.csv: ** These are manually curated dataset keys for 
+  introduced species checklists in the GBIF database. Leave this as is. Part of
+  a script will use these keys to check for potentially introduced species. 
+  * **IMP_planted_trees_YYY-MM-DD_HHMM.csv:** Files of this naming convention are
+  produced after running the IMP_Invasive_Species_Scanner.R script. This one shows
+  an expanded, but more easily analyzed version of the tree planting data from the
+  IMP.
+  * **IMP_planted_seeds_YYY-MM-DD_HHMM.csv:** Same as above, but for seed planting
+  data.
+  * **Checklist_Scan_Results_YYYY-MM-DD_HHMM.csv:** This keeps track of scans for 
+  introduced species (which happen as a part of the IMP_Native_Alien_Classification.R
+  script. The script will run without it, but it will take longer since it will
+  run scans on things it has already processed.)
+  * **Manually_Reviewed_Planting_Data_YYYY-MM-DD_HHMM.csv:** Files of this naming
+  convention are produced after running the native/alien classification script, if 
+  the user chose to manually review species/country pairs and label plant status.
+  Like other such scripts, this will have cumulative results, so the most up to 
+  date version should always be kept in the folder.
+  * **Invasives_Data:** This folder houses the results from invasive species scans.
+    * **Invasive_Species_Data_YYYY-MM-DD_HHMM.csv:** Files like this represent 
+    the results of invasive species scans, including those species for which no
+    invasive species data was found. This helps future runs move more quickly by
+    not reprocessing names that have been processed.
+    * **Invasive_Species_Report_YYYY-MM-DD_HHMM.csv:** Files like this represent
+    the actual report--only showing potentially invasive species and the related
+    information. 
+* **Main_Data:** This folder houses the the project data pertaining to all projects
+not in Brazil. Every time scripts are run, this folder will be updated with files
+that have date stamps in their names. Regular cleaning of old files is not 
+necessary, but is recommended.
+  * **Main_Data_YYYY-MM-DD.csv:** This file contains the primary submission data
+  from Kobo. Each row represents a submission and should correspond to a monitoring
+  plot. 
+  * **Geo_Data_YYYY-MM-DD.csv:** This file contains geolocation data for each 
+  submission.
+  * **Photo_Data_YYYY-MM-DD.csv:** This file contains photo data for each 
+  submission.
+  * **Tree_Data_Uncorrected_YYYY-MM-DD.csv:** This file contains the extracted
+  tree data from Kobo in a single csv. The species names have not yet been 
+  corrected. This file becomes input for that correction script.
+  * **Corrected_Tree_Data_YYYY-MM-DD_HHMM.csv:** This file contains tree data
+  with corrected names (or at least corrected as much as possible.)
+  * **Final_Tree_Data_YYYY-MM-DD_HHMM.csv:** This is the final tree data file
+  before it is passed to the analysis script. It has species names corrected and
+  family names added.
+  * **Tree_Data_by_PlotType:** This folder contains raw extractions from Kobo,
+  broken down to the table they came from. It is primarily produced for help 
+  with QC. The data here does not undergo species corrections or family name
+  additions. 
+  * **QC_Reports:** This folder is optionally created and populated at the end
+  of the extraction scripts. It houses data intended to facilitate the identification
+  of missing or misplaced tree data.
+* **Brazil_Data:** This folder houses the the project data pertaining to all projects
+within Brazil, since their data collection form is different. Many of the files
+in this folder are analogous to the files in the Main_Data folder, so I will
+only explicitly describe differences below.
+  * **PACTO_data_YYYY-MM-DD.csv:** This file contains information about the PACTO
+  indicators that only Brazil teams collected.
+  * **DBH_data:** This folder contains the information about DBH measurements
+  that only the Brazil team collected. 
+
+  
+  
+  
+## How to use the scripts?
   
 
 
