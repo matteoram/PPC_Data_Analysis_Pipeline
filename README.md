@@ -1,8 +1,4 @@
----
-output:
-  pdf_document: default
-  html_document: default
----
+
 # Priceless Planet Coalition Data Analysis Pipeline
 
 ## Overview
