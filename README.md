@@ -17,7 +17,7 @@ as the working directory, and as such when they search for necessary
 files, if they are renamed or moved, they will not be able to run.
 
 ## Setup Video
-[![Setup Instructions]](https://www.dropbox.com/scl/fi/1afhgfbfgumwidz30df7k/Setup.mp4?rlkey=on7zm8e0qq34v66gyzii6tas8&dl=0 "Setup Instructions")
+[Setup Instructions](https://www.dropbox.com/scl/fi/1afhgfbfgumwidz30df7k/Setup.mp4?rlkey=on7zm8e0qq34v66gyzii6tas8&dl=0 "Setup Instructions")
 
 ## How to download
 
