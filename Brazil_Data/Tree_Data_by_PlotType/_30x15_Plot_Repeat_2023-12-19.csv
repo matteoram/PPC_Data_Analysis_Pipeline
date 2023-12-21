@@ -1,8 +1,0 @@
-"Species","Tree_Type","size_class","Timeframe","Country","Organization_Name","Site_ID","SiteType","Plot_Size","tree_index","main_index","_parent_table_name","origin_table","Resample_Main_Plot","Resample_3x3_Subplot"
-"Pata de vaca","planted",">10cm","Y2.5","Brazil","GANB","#Teste Henrique","Restoration","30x15",1,2,"main","_30x15_Plot_Repeat","0","0"
-"Manga","planted",">10cm","Y2.5","Brazil","GANB","#Teste Henrique","Restoration","30x15",2,2,"main","_30x15_Plot_Repeat","0","0"
-"Angico","planted",">10cm","Y2.5","Brazil","GANB","#Teste Henrique","Restoration","30x15",3,2,"main","_30x15_Plot_Repeat","0","0"
-"Manga","planted",">10cm","Y2.5","Brazil","GANB","#Teste Henrique","Restoration","30x15",4,2,"main","_30x15_Plot_Repeat","0","0"
-"Angico","Present",">10cm","Y2.5","Brazil","GANB","#Teste Henrique","Restoration","30x15",5,2,"main","_30x15_Plot_Repeat","0","0"
-"Christmas tree","Present",">10cm","Y0","Brazil","EMA","888","Restoration","30x15",6,25,"main","_30x15_Plot_Repeat","0","2"
-"Palm tree","Present",">10cm","Y0","Brazil","EMA","888","Restoration","30x15",7,25,"main","_30x15_Plot_Repeat","0","2"

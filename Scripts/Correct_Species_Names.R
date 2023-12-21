@@ -52,9 +52,9 @@ for (pkg in necessary_packages) {
 #'
 #' This function prompts the user to designate the desired dataset (Primary or
 #' Brazil), and loads in the relevant tree data. It also checks the corrections
-#' folder for the most recent corrections data. 
+#' folder for the most recent corrections data.
 #'
-#' @return List with two dataframes: tree data and corrections data--as well as 
+#' @return List with two dataframes: tree data and corrections data--as well as
 #' a filepath for later reference.
 load_data <- function() {
   # Determine which dataset is being corrected and set path to desired folder
@@ -403,7 +403,7 @@ save_unresolved_names <- function(updated_tree_data, raw_data_path) {
 # The above script defines all the functions. The 'main' script below calls them
 # each in turn. By having distinct modules, errors/bugs that might arise in the
 # future will be easier to diagnose. The print() statements output at each step
-# in the console can help locate where things went wrong, and the relevant 
+# in the console can help locate where things went wrong, and the relevant
 # function above will be a good starting point for debugging.
 #-------------------------------------------------------------------------------
 
@@ -440,50 +440,4 @@ updated_tree_data <- save_corrected_tree_data(updated_data, all_corrections, all
 
 # 8. Save Unresolved Names
 needing_review <- save_unresolved_names(updated_tree_data, all_data$raw_data_path)
-
-
-
-
-
-
-
-
-
-get_species_from_GBIF <- function(updated_tree_data, existing_corrections){
-
-    species_to_lookup <- unique(updated_tree_data$Species)
-    
-    if(!is.null(existing_corrections)){
-      species_to_lookup <- species_to_lookup[!species_to_lookup %in% existing_corrections$Species]
-    }else{
-      species_to_lookup <- species_to_lookup
-    }
-    
-  species_to_lookup <- species_to_lookup[!species_to_lookup %in% c(".", ",", "")]
-  species_to_lookup <- species_to_lookup[!is.na(species_to_lookup)]
-  
-  new_species_names <- data.frame(species = species_to_lookup, corrected_species = NA, db = "GBIF")
-  if (length(species_to_lookup) > 0) {
-    print(paste0("There are ", length(species_to_lookup), "distinct species being queried. This can take some time to run and will require periodic input from the user."))
-    for (i in 1:length(species_to_lookup)){
-      message(paste("Processing: ", species_to_lookup[i],"... \n"))
-      out <- name_backbone(species_to_lookup[i])
-      if(!is.null(out$species)){
-        new_species_names$corrected_species[i] <- out$species
-        cat("Match found for", species_to_lookup[i], "Family name: ", out$species, "\n")
-        
-      }else {
-        cat("No family name found for", species_to_lookup[i], "... \n")
-        new_species_names$family[i] <- NA
-      }
-    }
-    }
-  return(new_species_names)
-  }
-
-
-
-
-
-
 

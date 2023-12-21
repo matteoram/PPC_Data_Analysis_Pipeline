@@ -1,0 +1,5 @@
+"Species","Tree_Type","size_class","Timeframe","Country","Organization_Name","Site_ID","Plot_ID","SiteType","Tree_Count","tree_index","_parent_table_name","origin_table","Plot_Permanence","Resample_Main_Plot","Resample_3x3_Subplot","Restoration_Technique","Plot_Size"
+"Big Tree","Present","1 - 9.9cm","Y0","Brazil","EMA","888",NA,"Restoration",16,1,"main","_30x30_Plot_Repeat_Census_10cm",NA,"0","2",NA,"30x15"
+"Bigger Tree","Present","1 - 9.9cm","Y0","Brazil","EMA","888",NA,"Restoration",14,2,"main","_30x30_Plot_Repeat_Census_10cm",NA,"0","2",NA,"30x15"
+"little tree census test","Present","1 - 9.9cm","Y0","Brazil","EMA","777","777-1","Restoration",3,3,"main","_30x30_Plot_Repeat_Census_10cm","Permanent","1","2","6x3","30x30"
+"litte tree census test 2","Present","1 - 9.9cm","Y0","Brazil","EMA","777","777-1","Restoration",12,4,"main","_30x30_Plot_Repeat_Census_10cm","Permanent","1","2","6x3","30x30"

@@ -1,5 +1,0 @@
-"Species","Tree_Type","Tree_Count","size_class","Site_ID","Plot_ID","Country","Organization_Name","SiteType","Plot_Type","Plot_Size","tree_index","main_index","_parent_table_name","origin_table","destination_table","Resample_Main_Plot","Resample_3x3_Subplot","Timeframe"
-"Quercus","Present",2,"1 - 9.9cm","334","27","France","Reforest Action","Control","Control","3x3",1,30,"main","Nested_3x3_within_10x10_Control",NA,"0","0","Y0"
-"Populus","Present",2,"1 - 9.9cm","334","27","France","Reforest Action","Control","Control","3x3",2,30,"main","Nested_3x3_within_10x10_Control",NA,"0","0","Y0"
-"Quercus robur","planted",3,"<10cm planted","333","41","France","Reforest Action","Control","Control","3x3",NA,8,NA,"main","Nested_3x3_within_10x10_Control","0","0","Y0"
-"Quercus","naturally_regenerating",3,"1 - 9.9cm","329","35","France","Reforest Action","Control","Control","3x3",NA,13,NA,"main","Nested_3x3_within_10x10_Control","0","0","Y0"

@@ -129,9 +129,7 @@ process_main_table <- function(main_table) {
       SiteSize == "Yes" ~ "30x30",
       SiteSize == "No" ~ "30x15",
       SiteType == "Control" ~ "10x10"
-      
-    )
-    )
+    ))
 
 
   # Separate out geolocation data based on pattern in column names
@@ -160,7 +158,7 @@ process_main_table <- function(main_table) {
     by = c("_id" = "instance")
   )
 
-  # Separate out PACTO data 
+  # Separate out PACTO data
   PACTO_cols <- names(main_table)[grep("pacto", names(main_table), ignore.case = TRUE)]
   PACTO_data <- main_table %>%
     select(
@@ -285,8 +283,8 @@ clean_tree_tables <- function(tree_tables, main_table) {
           ifelse(grepl("census", origin_table, ignore.case = TRUE), "1 - 9.9cm", "<1cm")
         )
       )) %>%
-      # If it is a baseline year, any tree marked as planted should be small. In 
-      # later years, planted trees will have grown. 
+      # If it is a baseline year, any tree marked as planted should be small. In
+      # later years, planted trees will have grown.
       mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == "Y0", "<10cm planted", size_class))
 
 
@@ -445,8 +443,8 @@ adjust_census_table <- function(tree_tables, main_table) {
   # Adjusting the dataframe by referencing the main_table for Monitoring_Plot_Size
   df_fixed <- df %>%
     left_join(select(main_table, main_index, Monitoring_Plot_Size), by = "main_index") %>%
-    select(-main_index) %>% 
-    mutate(Plot_Size = Monitoring_Plot_Size) %>% 
+    select(-main_index) %>%
+    mutate(Plot_Size = Monitoring_Plot_Size) %>%
     select(-Monitoring_Plot_Size)
 
   # Updating the list with the modified dataframe
@@ -616,61 +614,60 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
 #' @param main_data The final main data object
 #' @return a named list of dataframes, one for each table/plot type
 
-find_missing_data_plots <- function(tree_data, main_data){
-  
+find_missing_data_plots <- function(tree_data, main_data) {
   # Filter for 30x30 plots that should have tree data--i.e. those that were not
   # resampled at all, those that were resampled once, and those that were resampled
   # twice AND had trees present within the final resampled plot.
-  Plots_30x30_30x15_tree <- main_data %>% 
+  Plots_30x30_30x15_tree <- main_data %>%
     filter((Resample_Main_Plot %in% c(0, 1)) | (Resample_Main_Plot == 2 & TreesPresent == "Yes"))
-  
+
   # Filter tree data for only 30x30, >10cm plots
-  tree_data_3030 <- tree_data %>% filter(origin_table %in% c("_30x30_Plot_Repeat", "_30x15_Plot_Repeat")) 
-  
+  tree_data_3030 <- tree_data %>% filter(origin_table %in% c("_30x30_Plot_Repeat", "_30x15_Plot_Repeat"))
+
   # Identify which Site-Plot combinations that should have trees do not have trees.
-  # Returns all rows in the first dataframe that do not have Site-Plot matches in the 
+  # Returns all rows in the first dataframe that do not have Site-Plot matches in the
   # second dataframe.
   plots_with_missing_data_30x30_30x15 <- anti_join(Plots_30x30_30x15_tree, tree_data_3030, by = c("Site_ID", "Plot_ID"))
-  
-  
+
+
   # Same process as above, applied to 3x3 tables
-  Plots_3x3_tree <- main_data %>% 
+  Plots_3x3_tree <- main_data %>%
     filter((Resample_3x3_Subplot %in% c(0, 1)) | (Resample_3x3_Subplot == 2 & TreesPresent_3x3_Subplot == "Yes"))
-  
-  tree_data_3x3 <- tree_data %>% filter(origin_table %in% c("_3x3_Subplot_Repeat")) 
-  
+
+  tree_data_3x3 <- tree_data %>% filter(origin_table %in% c("_3x3_Subplot_Repeat"))
+
   plots_with_missing_data_3x3 <- anti_join(Plots_3x3_tree, tree_data_3x3, by = c("Site_ID", "Plot_ID"))
-  
-  
+
+
   # Same process as above, but for census tables (Twice resampled 3x3 and still no trees)
-  census_plots <- main_data %>% filter(Resample_3x3_Subplot == 2 & TreesPresent_3x3_Subplot == "No") 
-  tree_data_census <- tree_data %>% filter(origin_table %in% c("_30x30_Plot_Repeat_Census_10cm")) 
+  census_plots <- main_data %>% filter(Resample_3x3_Subplot == 2 & TreesPresent_3x3_Subplot == "No")
+  tree_data_census <- tree_data %>% filter(origin_table %in% c("_30x30_Plot_Repeat_Census_10cm"))
   plots_with_missing_data_census <- anti_join(census_plots, tree_data_census, by = c("Site_ID", "Plot_ID"))
-  
-  missing_data_list <- list(Missing_Data_30x30_30x15 = plots_with_missing_data_30x30_30x15,
-                            Missing_Data_3x3 = plots_with_missing_data_3x3,
-                            Missing_Data_census = plots_with_missing_data_census)
+
+  missing_data_list <- list(
+    Missing_Data_30x30_30x15 = plots_with_missing_data_30x30_30x15,
+    Missing_Data_3x3 = plots_with_missing_data_3x3,
+    Missing_Data_census = plots_with_missing_data_census
+  )
   write_list_to_csv(missing_data_list, prefix_list = names(missing_data_list), sub_dir = "QC_outputs")
   return(missing_data_list)
-  
-  
 }
 
 
 #' 10b Find Misplaced Tree Data
 #'
 #' This checks all tree data submitted at year 0, and returns a dataframe containing
-#' all the tree data that waas labelled 'planted' and stored in a table reserved 
-#' for trees that were greater than 10cm DBH. 
-#' 
+#' all the tree data that waas labelled 'planted' and stored in a table reserved
+#' for trees that were greater than 10cm DBH.
+#'
 #' @param tree_data The final full tree data object
 #' @param main_data The final main data object
 #' @return a list with two items: a dataframe of misplaced tree data and another
 #' list of dataframes with missing data by plot type
 
 find_misplaced_tree_data <- function(tree_data) {
-  misplaced_tree_data <- tree_data %>% 
-    filter(Timeframe == 'Y0'& (Tree_Type == "planted" & !origin_table %in% c("_30x30_Plot_Repeat_Planted_10cm", "_30x15_Plot_Repeat_Planted_10c_001")))
+  misplaced_tree_data <- tree_data %>%
+    filter(Timeframe == "Y0" & (Tree_Type == "planted" & !origin_table %in% c("_30x30_Plot_Repeat_Planted_10cm", "_30x15_Plot_Repeat_Planted_10c_001")))
   write_to_csv(misplaced_tree_data, prefix = "Misplaced_Tree_Data", sub_dir = "QC_outputs")
   return(misplaced_tree_data)
 }
@@ -692,10 +689,10 @@ find_problem_rows_30x30 <- function(DBH_table) {
     filter(sum(`_30X30_Plot_TreeTrunk` == 1) > 1) %>%
     pull(tree_index) %>%
     unique()
-  
+
   problematic_rows <- df %>%
     filter(tree_index %in% problematic_tree_indices)
-  
+
   return(problematic_rows)
 }
 
@@ -707,10 +704,10 @@ find_problem_rows_30x15 <- function(DBH_table) {
     filter(sum(`_30X15_Plot_TreeTrunk` == 1) > 1) %>%
     pull(tree_index) %>%
     unique()
-  
+
   problematic_rows <- df %>%
     filter(tree_index %in% problematic_tree_indices)
-  
+
   return(problematic_rows)
 }
 
@@ -720,24 +717,23 @@ find_problem_rows_30x15 <- function(DBH_table) {
 
 #' 10c Produce QC Files
 #'
-#' A wrapper to call all QC functions. This will make it easy to add more or to 
+#' A wrapper to call all QC functions. This will make it easy to add more or to
 #' remove unwanted QC functions as time goes on.
-#' 
+#'
 #' @param tree_data The final full tree data object
 #' @return a dataframe with misplaced tree data
 
-produce_QC_files <- function(tree_data, main_data){
+produce_QC_files <- function(tree_data, main_data) {
   response <- tolower(readline(prompt = "Would you like to save files showing missing and misplaced tree data? Enter 'y' or 'n': "))
-  if (response == 'y'){
+  if (response == "y") {
     problematic_trunks_30x30 <- find_problem_rows_30x30(DBH_table = adjusted_DBH_tables[[1]])
     problematic_trunks_30x15 <- find_problem_rows_30x15(DBH_table = adjusted_DBH_tables[[2]])
-    flagged_trunk_data <- list(problematic_trunks_30x30 = problematic_trunks_30x30,problematic_trunks_30x15= problematic_trunks_30x15)
+    flagged_trunk_data <- list(problematic_trunks_30x30 = problematic_trunks_30x30, problematic_trunks_30x15 = problematic_trunks_30x15)
     write_list_to_csv(flagged_trunk_data, prefix_list = names(flagged_trunk_data), sub_dir = "QC_outputs")
     missing_data_list <- find_missing_data_plots(tree_data, main_data)
     misplaced_tree_data <- find_misplaced_tree_data(tree_data)
     return(list(Misplaced_Tree_Data = misplaced_tree_data, Missing_Data = missing_data_list, Trunk_Data_Mistakes = flagged_trunk_data))
-    
-  }else{
+  } else {
     return(NULL)
   }
 }
