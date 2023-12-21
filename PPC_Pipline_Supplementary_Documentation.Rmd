@@ -12,11 +12,17 @@ In addition to the documentation within the scripts in the form of comments,
 this file provides a higher level overview of each script, highlighting key 
 points for functionality, as well as any key assumptions being made.
 
+
 ## Extract_Main_Data.R
 
 ### General
 This scripts purpose is to take the data out of Kobo, process it and clean it, and
 produce organized, easily-legible files for further analysis. 
+
+## Video Link
+
+[Click here for Extraction Overview Video](https://www.dropbox.com/scl/fi/bmb4lanvf40g1dot1vvpp/Extraction_Video.mp4?rlkey=rsaplvh66dnxplcoocbtgo3jo&dl=0 "Extraction Overview")
+
 
 ### Inputs/Requirements
 Since this is the first stage, there are no local inputs. However, the user will
@@ -27,7 +33,7 @@ user's permissions need to be such that they can extract data in this way.
 The outputs of this script are files for submission data, tree data, photo data, 
 and geolocation data. They will be stored in a folder called 'Main_Data'. 
 
-### Assumptions
+### Assumptions/Notes
 There are some assumptions hard-coded into this script. 
 * The script assumes that the name mappings in the 'Kobo_Key' document are accurate.
 * The script assumes naming conventions within Kobo fields does not change with 
@@ -54,6 +60,12 @@ of its name, this will try to label that column with the uniform labels incorrec
 dataset that mostly correspond to fields that are not inputs but descriptions of 
 parts of the Kobo form. The assumption here is that if there is not a single piece
 of information from any of the submissions, it is likely one of these technical fields.
+* This script labels key information that is used for analysis like monitoring plot
+sizes (which are summed to get total area monitored) and size class of trees. Both
+of these labels are created using logic that considers responses in the forms (e.g.
+If the SiteSize answer is "No" it is a 10x10 plot.) Trees marked as planted at Y0
+are given their own size class of '<10cm planted', since they were ending up in 
+many other tables. 
 
 
 ### Troubleshooting
@@ -90,14 +102,24 @@ appear, you can locate which module created the error easily and address the iss
 ## Extract_Brazil_Data.R
 ### General
 This does the same thing as the above script, and everything above pertains to this
-one as well, with one note I would like to add.
+one as well. I will talk only about the things that are unique to this script here.
 
 Because of the relatively small amount of submissions present in the database at 
 the time of creating the script, I feel less certain that the submissions (including 
-my test submissions) cover all bases of what might get put into the database. 
+my test submissions) cover all bases of what might get put into the database in the future. 
 Since the main data is full of strange tables, I assume that with time, some of 
 these peculiarities may appear in the Brazil dataset as well. If this happens, 
-the script will need to be altered to accomodate the changes. 
+the script will need to be altered to accommodate the changes. 
+
+## Video
+[Click here for Brazil Extraction Video](https://www.dropbox.com/scl/fi/u9q1ve6p1u29wm7wkq7p3/Extract-Brazil.mp4?rlkey=1l2dl8qi1znfrabkj444iokrr&dl=0 "Brazil Extraction Video")
+
+
+## Assumptions/Notes
+* The Brazil Kobo form was designed differently than the primary form. This was
+to accommodate collection of different data. There are also differences, however, 
+even in the areas that overlap. The video will go into these differences in more
+detail and highlight areas of potential concern. 
 
 
 ## Correct_Species_Names.R
@@ -105,6 +127,12 @@ the script will need to be altered to accomodate the changes.
 This script uses the 'taxize' package to facilitate connection the the Global Names
 Resolver while attempting to map species names present in the Kobo database with
 accpeted species names in known scientific databases.
+
+## Video Link
+
+[Click here for Species Name Correction Video](https://www.dropbox.com/scl/fi/e236nppc94kfjmxdfv87d/Species_Name_Corrections.mp4?rlkey=hzernadyz994rp1nfti5jr5jj&dl=0 "Correct Species Names Video")
+
+
 
 ### Inputs/Requirements
 * It will take the extracted data from the previous scripts as input--primarily the
@@ -151,6 +179,13 @@ an obnoxious step that each user would have to do before running the first time)
 I choose the GBIF route. It there is interest in the other way, I can facilitate 
 that too.
 
+
+## Video Link
+
+[Click here for Add Family Names Video](https://www.dropbox.com/scl/fi/6riq005wlfdki6eayhejn/Add_Family_Names.mp4?rlkey=2h378yy65e6a0lwcmucn3ib1p&dl=0 "Add Family Names Video")
+
+
+
 ### Inputs
 * Tree_Data_Corrected_YYYY-MM-DD_HHMM.csv: the output from the previous script with 
 corrected species names.
@@ -162,7 +197,7 @@ names for each species.
 to analysis), with correct species names and family names added. 
 * Family_Names_YYYY-MM-DD_HHMM.csv: An up to date family names file.
 
-### Assumptions
+### Assumptions/Notes
 * No major assumptions other than the reliability of the GBIF database.
 
 ### Troubleshooting
@@ -175,8 +210,117 @@ time it is run.
 
 
 ## Analyze_Data.R
+### General
+This script takes the final tree data, with corrected species names and added family names,
+and it uses logic based on table names, size class, and resampling to first scale
+the tree counts to a uniform 30x30m (900m^2) size, and then further scales the counts
+to the size of the total site (if that size information was available.)
+
+## Video Link
+
+[Click here for Analyze Data Video ](https://www.dropbox.com/scl/fi/fo7yzsjes77kh78dgrtol/Analyze_Data.mp4?rlkey=mziq65kavxomkh3dzxxlyxa19&dl=0 "Analyze Data Video")
+
+### Inputs
+* Final_Tree_Data_YYYY-MM-DD_HHMM.csv: the output from the previous script with 
+corrected species names.
+* site_size_data.csv: this is a manually saved and located csv that contains site
+size information.
+* Main_Data_YYYY-MM-DD.csv: the main data file created during extraction
+
+### Outputs
+* Baseline Reports: A folder containing baseline counts of different tree types
+and different size classes at the site and the species level.
+* Indicator Reports: A folder containing files showing planted tree survival rates,
+trees restored, and trees naturally regenerated--each indicator broken down to the 
+site level and the species level. 
+
+### Assumptions/Notes
+* Trees at Y0 that were marked as planted but that were NOT in the planted tables
+are ignored.
+* Trees at Y0 that were marked as naturally regenerating are included in the counts
+for 'already present' in both the baseline reports and the trees restored reports 
+(where the Y0 count is subtracted)
+* There were still some unresolved questions about how to deal with different tree
+types during later timeframes (e.g. What about trees marked as 'present' in later time
+frames? Are the monitors supposed to remember what trees were already there? What 
+about naturally regenerating?) Questions like this will likely need to be addressed
+as the data comes in.
+* Site IDs that are shared within countries and organizations are actually the same
+sites.
+
+### Troubleshooting
+The outputs will appear short or blank (depending on which report), in the absence
+of data from various timeframes. The script has been tested with randomly generated
+data for Y25 and Y5, and it runs. Until organizations add data from these timeframes,
+though, the outputs will not be complete. 
+
 
 ## IMP_Invasive_Species_Scanner.R
 
+### General
+This script scans the IMP planted tree and seed data for potentially invasive species.
+
+## Video Link
+
+[Click here for IMP Invasive Scanner Video ](https://www.dropbox.com/scl/fi/535xy001g3k9oefc32kjz/IMP_Invasives.mp4?rlkey=oxd1mrk1yg261krijqq0jfd2f&dl=0 "IMP Invasive Scanner Video")
+
+### Inputs
+* ppc_export_xxx...csv: The csv export with planting data from the IMP that is 
+manually exported from the IMP and placed in the IMP_Data folder of this repo
+
+### Outputs
+* Invasive_Species_Data_YYYY-MM-DD_HHMM.csv: a record of all species passed to the
+script for processing.
+* Invasive_Species_Report_YYY-MM-DD_HHMM.csv: The report that contains all flagged
+species, organizations, countries, and relevant info from the GISD database. 
+  
+### Assumptions/Notes
+* ppc_export file exists (this has to be manually downloaded and placed in the
+IMP_Data folder)
+* Common names are not going to return any results. There is a built-in species
+correction module here as a part of the preprocessing step. There are still
+common names present in the IMP data, and these will not get flagged even if
+they are invasive.
+
+### Troubleshooting
+No known issues. 
+
 ## IMP_Native_Alien_Classification.R
+
+### General
+
+
+This script enables the labeling of species-country pairs as Native, Alien, or 
+Needing further review. If more options are desired, they can  be pretty easily
+coded in. This is a workflow that requires user input, and it can take a long time.
+If you don't want to do them all at once, you can type 'save' into the response, 
+and this will break the loop and save what you've done. The subsequent run will 
+then check the manually reviewed file and be able to pick up where you left off. 
+
+## Video Link
+
+[Click here for IMP Native Alien Classification Video ](https://www.dropbox.com/scl/fi/sqbsqi58obdz466gzqxbt/Native_Classifcation.mp4?rlkey=crcl5f05fms8awydsfdos1dqh&dl=0 "IMP Native Alien Classification Video")
+
+
+### Inputs
+* IMP_planted_trees_YYYY-MM-DD_HHMM.csv: preprocessed IMP data output by the Invasive Scanner script
+* IMP_planted_seeds_YYYY-MM-DD_HHMM.csv: preprocessed IMP data output by the Invasive Scanner script
+* GBIF_dataset_keys.csv: file with GRIIS datasets and their relevant keys for lookup in the GBIF database
+* Taxonomic_Corrections_YYYY-MM-DD_HHMM.csv: the most recent species corrections.
+
+
+### Outputs
+* Checklist_Scan_Results_YYYY-MM-DD_HHMM.csv: results of checks against GRIIS databases.
+Though supplementary. While these results are mainly displayed during the manual
+validation process, this output could also be used as a potential introduced species
+flagged by checking for what species had matches.
+* Taxonomic_Corrections_YYYY-MM-DD_HHMM.csv: an updated species correction file
+* Manually_Reviewed_Planting_Data_YYYY-MM-DD_HHMM.csv: a dataset containing the 
+reviewed and labelled data after manual validation.
+  
+### Assumptions/Notes
+* GBIF occurrence data is used for mapping--assumption here is about accuracy and validity
+
+### Troubleshooting
+* Wikipedia is source for relevant info--sometimes the query might grab an irrelevant page
 

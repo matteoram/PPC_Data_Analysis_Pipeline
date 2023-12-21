@@ -134,7 +134,7 @@ process_main_table <- function(main_table) {
     )
 
 
-
+  # Separate out geolocation data based on pattern in column names
   geo_cols <- names(main_table)[grep("Corner|Centroid", names(main_table), ignore.case = TRUE)]
   geo_data <- main_table %>%
     select(
@@ -145,7 +145,7 @@ process_main_table <- function(main_table) {
     select(-names(.)[grep("Photo|001", names(.), ignore.case = TRUE)])
 
 
-
+  # Separate out photo attachment data and join with relevant plot data
   photo_attachments <- main_table$`_attachments`
   full_attachments_df <- bind_rows(photo_attachments)
   final_attachments <- left_join(
@@ -160,7 +160,7 @@ process_main_table <- function(main_table) {
     by = c("_id" = "instance")
   )
 
-
+  # Separate out PACTO data 
   PACTO_cols <- names(main_table)[grep("pacto", names(main_table), ignore.case = TRUE)]
   PACTO_data <- main_table %>%
     select(
@@ -170,8 +170,7 @@ process_main_table <- function(main_table) {
     )
 
 
-  # Organize into more helpful order, remove 'attachments'. Note: these attachments
-  # are links to photo downloads. If desired in output, script can be added.
+  # Organize into more helpful order, remove the above separated data fields.
   main_table <- main_table %>%
     select(
       Plot_ID,
@@ -288,7 +287,7 @@ clean_tree_tables <- function(tree_tables, main_table) {
       )) %>%
       # If it is a baseline year, any tree marked as planted should be small. In 
       # later years, planted trees will have grown. 
-      mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == "Y0", "small (planted)", size_class))
+      mutate(size_class = ifelse(Tree_Type == "planted" & Timeframe == "Y0", "<10cm planted", size_class))
 
 
     # Reordering columns -- relevant first.
@@ -418,7 +417,7 @@ adjust_DBH_tables <- function(DBH_tables, tree_tables) {
 #' 6. Adjust Census Table
 #'
 #' This function handles a mistake in form creation, where only a single census
-#' table is generated, wheter or not the monitoring plot is 30x30 or 30x15. This
+#' table is generated, whether or not the monitoring plot is 30x30 or 30x15. This
 #' function uses parent index values to edit the plot size and ensure that any
 #' tree data coming from a 30x15 plot is labeled correctly. I left this separate
 #' in case the form is ever fixed, in which case this could be easily deleted with
@@ -446,7 +445,9 @@ adjust_census_table <- function(tree_tables, main_table) {
   # Adjusting the dataframe by referencing the main_table for Monitoring_Plot_Size
   df_fixed <- df %>%
     left_join(select(main_table, main_index, Monitoring_Plot_Size), by = "main_index") %>%
-    select(-main_index)
+    select(-main_index) %>% 
+    mutate(Plot_Size = Monitoring_Plot_Size) %>% 
+    select(-Monitoring_Plot_Size)
 
   # Updating the list with the modified dataframe
   tree_tables[[census_table_name]] <- df_fixed
@@ -455,44 +456,6 @@ adjust_census_table <- function(tree_tables, main_table) {
 }
 
 
-
-#' 6.5 Find problematic rows
-#'
-#' The following two functions will not output new data. Rather, they identify
-#' potentially problematic rows wihtin the dataset where Trunk/Tree labeling has
-#' not gone as expected. Because there are a handful of ways this can be done, it
-#' is best to clean it up on the data entry side. Since this input error would
-#' directly impact tree counts, though, output is added here to help identify
-#' problematic entries.
-
-find_problem_rows_30x30 <- function(DBH_table) {
-  df <- DBH_table
-  problematic_tree_indices <- df %>%
-    group_by(Plot_ID, Timeframe, `_30x30_Plot_TreeIDNumber`) %>%
-    filter(sum(`_30X30_Plot_TreeTrunk` == 1) > 1) %>%
-    pull(tree_index) %>%
-    unique()
-
-  problematic_rows <- df %>%
-    filter(tree_index %in% problematic_tree_indices)
-
-  return(problematic_rows)
-}
-
-
-find_problem_rows_30x15 <- function(DBH_table) {
-  df <- DBH_table
-  problematic_tree_indices <- df %>%
-    group_by(Plot_ID, Timeframe, `_30x15_Plot_TreeIDNumber`) %>%
-    filter(sum(`_30X15_Plot_TreeTrunk` == 1) > 1) %>%
-    pull(tree_index) %>%
-    unique()
-
-  problematic_rows <- df %>%
-    filter(tree_index %in% problematic_tree_indices)
-
-  return(problematic_rows)
-}
 
 
 
@@ -590,7 +553,7 @@ combine_tree_tables <- function(tree_tables_list) {
 
 
 
-#' 8. Write CSVs to disk
+#' 9. Write CSVs to disk
 #'
 #' These are some simple helper functions to make writing lists of dataframes and
 #' single dataframes to the disk. They add date stamps and assume no
@@ -642,6 +605,146 @@ write_list_to_csv <- function(data_list, prefix_list, date_stamp = TRUE, sub_dir
 
 
 
+
+
+
+#' 10a Find Missing Tree Data
+#'
+#' This function locates plots that should have tree data but do not have any. It
+#' uses filters and logic specific to different monitoring scenarios.
+#' @param tree_data The final full tree data object
+#' @param main_data The final main data object
+#' @return a named list of dataframes, one for each table/plot type
+
+find_missing_data_plots <- function(tree_data, main_data){
+  
+  # Filter for 30x30 plots that should have tree data--i.e. those that were not
+  # resampled at all, those that were resampled once, and those that were resampled
+  # twice AND had trees present within the final resampled plot.
+  Plots_30x30_30x15_tree <- main_data %>% 
+    filter((Resample_Main_Plot %in% c(0, 1)) | (Resample_Main_Plot == 2 & TreesPresent == "Yes"))
+  
+  # Filter tree data for only 30x30, >10cm plots
+  tree_data_3030 <- tree_data %>% filter(origin_table %in% c("_30x30_Plot_Repeat", "_30x15_Plot_Repeat")) 
+  
+  # Identify which Site-Plot combinations that should have trees do not have trees.
+  # Returns all rows in the first dataframe that do not have Site-Plot matches in the 
+  # second dataframe.
+  plots_with_missing_data_30x30_30x15 <- anti_join(Plots_30x30_30x15_tree, tree_data_3030, by = c("Site_ID", "Plot_ID"))
+  
+  
+  # Same process as above, applied to 3x3 tables
+  Plots_3x3_tree <- main_data %>% 
+    filter((Resample_3x3_Subplot %in% c(0, 1)) | (Resample_3x3_Subplot == 2 & TreesPresent_3x3_Subplot == "Yes"))
+  
+  tree_data_3x3 <- tree_data %>% filter(origin_table %in% c("_3x3_Subplot_Repeat")) 
+  
+  plots_with_missing_data_3x3 <- anti_join(Plots_3x3_tree, tree_data_3x3, by = c("Site_ID", "Plot_ID"))
+  
+  
+  # Same process as above, but for census tables (Twice resampled 3x3 and still no trees)
+  census_plots <- main_data %>% filter(Resample_3x3_Subplot == 2 & TreesPresent_3x3_Subplot == "No") 
+  tree_data_census <- tree_data %>% filter(origin_table %in% c("_30x30_Plot_Repeat_Census_10cm")) 
+  plots_with_missing_data_census <- anti_join(census_plots, tree_data_census, by = c("Site_ID", "Plot_ID"))
+  
+  missing_data_list <- list(Missing_Data_30x30_30x15 = plots_with_missing_data_30x30_30x15,
+                            Missing_Data_3x3 = plots_with_missing_data_3x3,
+                            Missing_Data_census = plots_with_missing_data_census)
+  write_list_to_csv(missing_data_list, prefix_list = names(missing_data_list), sub_dir = "QC_outputs")
+  return(missing_data_list)
+  
+  
+}
+
+
+#' 10b Find Misplaced Tree Data
+#'
+#' This checks all tree data submitted at year 0, and returns a dataframe containing
+#' all the tree data that waas labelled 'planted' and stored in a table reserved 
+#' for trees that were greater than 10cm DBH. 
+#' 
+#' @param tree_data The final full tree data object
+#' @param main_data The final main data object
+#' @return a list with two items: a dataframe of misplaced tree data and another
+#' list of dataframes with missing data by plot type
+
+find_misplaced_tree_data <- function(tree_data) {
+  misplaced_tree_data <- tree_data %>% 
+    filter(Timeframe == 'Y0'& (Tree_Type == "planted" & !origin_table %in% c("_30x30_Plot_Repeat_Planted_10cm", "_30x15_Plot_Repeat_Planted_10c_001")))
+  write_to_csv(misplaced_tree_data, prefix = "Misplaced_Tree_Data", sub_dir = "QC_outputs")
+  return(misplaced_tree_data)
+}
+
+
+#' 6.5 Find problematic rows
+#'
+#' The following two functions will not output new data. Rather, they identify
+#' potentially problematic rows wihtin the dataset where Trunk/Tree labeling has
+#' not gone as expected. Because there are a handful of ways this can be done, it
+#' is best to clean it up on the data entry side. Since this input error would
+#' directly impact tree counts, though, output is added here to help identify
+#' problematic entries.
+
+find_problem_rows_30x30 <- function(DBH_table) {
+  df <- DBH_table
+  problematic_tree_indices <- df %>%
+    group_by(Plot_ID, Timeframe, `_30x30_Plot_TreeIDNumber`) %>%
+    filter(sum(`_30X30_Plot_TreeTrunk` == 1) > 1) %>%
+    pull(tree_index) %>%
+    unique()
+  
+  problematic_rows <- df %>%
+    filter(tree_index %in% problematic_tree_indices)
+  
+  return(problematic_rows)
+}
+
+
+find_problem_rows_30x15 <- function(DBH_table) {
+  df <- DBH_table
+  problematic_tree_indices <- df %>%
+    group_by(Plot_ID, Timeframe, `_30x15_Plot_TreeIDNumber`) %>%
+    filter(sum(`_30X15_Plot_TreeTrunk` == 1) > 1) %>%
+    pull(tree_index) %>%
+    unique()
+  
+  problematic_rows <- df %>%
+    filter(tree_index %in% problematic_tree_indices)
+  
+  return(problematic_rows)
+}
+
+
+
+
+
+#' 10c Produce QC Files
+#'
+#' A wrapper to call all QC functions. This will make it easy to add more or to 
+#' remove unwanted QC functions as time goes on.
+#' 
+#' @param tree_data The final full tree data object
+#' @return a dataframe with misplaced tree data
+
+produce_QC_files <- function(tree_data, main_data){
+  response <- tolower(readline(prompt = "Would you like to save files showing missing and misplaced tree data? Enter 'y' or 'n': "))
+  if (response == 'y'){
+    problematic_trunks_30x30 <- find_problem_rows_30x30(DBH_table = adjusted_DBH_tables[[1]])
+    problematic_trunks_30x15 <- find_problem_rows_30x15(DBH_table = adjusted_DBH_tables[[2]])
+    flagged_trunk_data <- list(problematic_trunks_30x30 = problematic_trunks_30x30,problematic_trunks_30x15= problematic_trunks_30x15)
+    write_list_to_csv(flagged_trunk_data, prefix_list = names(flagged_trunk_data), sub_dir = "QC_outputs")
+    missing_data_list <- find_missing_data_plots(tree_data, main_data)
+    misplaced_tree_data <- find_misplaced_tree_data(tree_data)
+    return(list(Misplaced_Tree_Data = misplaced_tree_data, Missing_Data = missing_data_list, Trunk_Data_Mistakes = flagged_trunk_data))
+    
+  }else{
+    return(NULL)
+  }
+}
+
+
+
+
 #---------------------------------------------------------------------------------
 # The above script defines all these functions. The 'main' script below calls them
 # each in turn. By having distinct modules, errors/bugs that might arise in the
@@ -676,27 +779,10 @@ adjusted_DBH_tables <- adjust_DBH_tables(cleaned_DBH_tables, cleaned_tree_tables
 print("Addressing census table issue.")
 adjusted_tree_tables <- adjust_census_table(tree_tables = cleaned_tree_tables, main_table = main_geo_photo_pacto$Main_Data)
 
-
-# 6.5 This block and the associated functions would ideally be deleted. There
-problematic_rows_30x30 <- find_problem_rows_30x30(DBH_table = adjusted_DBH_tables[[1]])
-print(paste0(
-  "There are inconsistencies with trunk data for the following tree_index,",
-  "values in the 30x30 DBH table: ", problematic_rows_30x30$tree_index
-))
-
-problematic_rows_30x15 <- find_problem_rows_30x15(DBH_table = adjusted_DBH_tables[[2]])
-print(paste0(
-  "There are inconsistencies with trunk data for the following tree_index,",
-  "values in the 30x15 DBH table: ", problematic_rows_30x15$tree_index
-))
-
-problem_entries_30x30 <- problematic_rows_30x30
-problem_entries_30x15 <- problematic_rows_30x15
-
 # 7. Remove NA columns
 print("Removing empty columns.")
 final_DBH_tables <- remove_NA_columns(tables_list = adjusted_DBH_tables)
-final_tree_tables <- remove_NA_columns(tables_list = cleaned_tree_tables)
+final_tree_tables <- remove_NA_columns(tables_list = adjusted_tree_tables)
 
 # 8. Combine Tree Tables
 print("Combining tree tables and processing tree counts.")
@@ -709,5 +795,8 @@ write_list_to_csv(main_geo_photo_pacto, names(main_geo_photo_pacto))
 write_list_to_csv(final_DBH_tables, names(final_DBH_tables), sub_dir = "DBH_data")
 write_list_to_csv(final_tree_tables, names(final_tree_tables), sub_dir = "Tree_Data_by_PlotType") # This may not even be a necessary output
 write_to_csv(final_combined_tree_tables, "Tree_Data_Uncorrected_Brazil")
+
+
+QC_data <- produce_QC_files(tree_data = final_combined_tree_tables, main_data = main_geo_photo_pacto$Main_Data)
 
 cat("Data processing and export complete!\n")

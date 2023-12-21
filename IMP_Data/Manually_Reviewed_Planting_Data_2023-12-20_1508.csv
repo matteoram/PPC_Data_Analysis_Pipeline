@@ -1,0 +1,868 @@
+"project_country","species","country_name","datasetKey","scientificName","datasetTitle","status_notes","status"
+"AU","Acacia dealbata","Australia",NA,NA,NA,NA,"Native"
+"AU","Acacia mearnsii","Australia",NA,NA,NA,NA,"Native"
+"AU","Eucalyptus amplifolia","Australia",NA,NA,NA,NA,"Native"
+"AU","Eucalyptus cinerea","Australia",NA,NA,NA,NA,"Native"
+"AU","Eucalyptus dives","Australia",NA,NA,NA,NA,"Native"
+"AU","Eucalyptus macrorhyncha","Australia",NA,NA,NA,NA,"Native"
+"AU","Eucalyptus melliodora","Australia",NA,NA,NA,NA,"Native"
+"KE","trees","Kenya",NA,NA,NA,NA,"Needs further review"
+"AU","Allocasuarina verticillata","Australia",NA,NA,NA,NA,"Native"
+"AU","Bursaria spinosa","Australia",NA,NA,NA,NA,"Native"
+"AU","Eucalyptus ovata","Australia",NA,NA,NA,NA,"Native"
+"AU","Eucalyptus viminalis","Australia",NA,NA,NA,NA,"Native"
+"AU","Leptospermum continentale","Australia",NA,NA,NA,NA,"Native"
+"AU","Leptospermum lanigerum","Australia",NA,NA,NA,NA,"Native"
+"AU","Acacia pycnantha","Australia",NA,NA,NA,NA,"Native"
+"BR","Alchornea triplinervia","Brazil",NA,NA,NA,NA,"Native"
+"BR","Allophylus edulis","Brazil",NA,NA,NA,NA,"Native"
+"BR","Andira fraxinifolia","Brazil",NA,NA,NA,NA,"Native"
+"BR","Annona coriacea","Brazil",NA,NA,NA,NA,"Native"
+"BR","Annona mucosa","Brazil",NA,NA,NA,NA,"Native"
+"BR","Annona muricata","Brazil",NA,NA,NA,NA,"Native"
+"BR","Araça","Brazil",NA,NA,NA,NA,"Needs further review"
+"BR","Arapatiella psilophylla","Brazil",NA,NA,NA,NA,"Native"
+"BR","Astronium fraxinifolium","Brazil",NA,NA,NA,NA,"Native"
+"BR","Bauhinia forficata","Brazil",NA,NA,NA,NA,"Native"
+"BR","Bixa arborea","Brazil",NA,NA,NA,NA,"Native"
+"BR","Bixa orellana","Brazil",NA,NA,NA,NA,NA
+"BR","Byrsonima sericea","Brazil",NA,NA,NA,NA,NA
+"BR","Caderno de capoeira","Brazil",NA,NA,NA,NA,NA
+"BR","Caesalpinia echinata","Brazil",NA,NA,NA,NA,NA
+"BR","Caesalpinia ferrea","Brazil",NA,NA,NA,NA,NA
+"BR","Calophyllum brasiliense","Brazil",NA,NA,NA,NA,NA
+"BR","Cambui vermelho","Brazil",NA,NA,NA,NA,NA
+"BR","Capororoca","Brazil",NA,NA,NA,NA,NA
+"BR","Cariniana legalis","Brazil",NA,NA,NA,NA,NA
+"BR","Cecropia","Brazil",NA,NA,NA,NA,NA
+"BR","Cedrella odorata","Brazil",NA,NA,NA,NA,NA
+"BR","Centrolobium robustum","Brazil",NA,NA,NA,NA,NA
+"BR","Chloroleucon tortum","Brazil",NA,NA,NA,NA,NA
+"BR","Clarisia racemosa","Brazil",NA,NA,NA,NA,NA
+"BR","Copaifera lucens","Brazil",NA,NA,NA,NA,NA
+"BR","Cordia magnoliifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Cordia trichotoma","Brazil",NA,NA,NA,NA,NA
+"BR","Croton urucurana","Brazil",NA,NA,NA,NA,NA
+"BR","Citharexylum myrianthum","Brazil",NA,NA,NA,NA,NA
+"BR","Dalbergia nigra","Brazil",NA,NA,NA,NA,NA
+"BR","Embauba","Brazil",NA,NA,NA,NA,NA
+"BR","Embiruçu","Brazil",NA,NA,NA,NA,NA
+"BR","Enterolobium contortisiliquum","Brazil",NA,NA,NA,NA,NA
+"BR","Eschweilera ovata","Brazil",NA,NA,NA,NA,NA
+"BR","Eugenia florida","Brazil",NA,NA,NA,NA,NA
+"BR","Eugenia uniflora","Brazil",NA,NA,NA,NA,NA
+"BR","Farinha seca","Brazil",NA,NA,NA,NA,NA
+"BR","Ficus enormis","Brazil",NA,NA,NA,NA,NA
+"BR","Folheiro","Brazil",NA,NA,NA,NA,NA
+"BR","Gallesia integrifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Gameleira preta","Brazil",NA,NA,NA,NA,NA
+"BR","Genipa americana","Brazil",NA,NA,NA,NA,NA
+"BR","Gonçalo Alves","Brazil",NA,NA,NA,NA,NA
+"BR","Graviola","Brazil",NA,NA,NA,NA,NA
+"BR","Guazuma ulmifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Handroanthus albus","Brazil",NA,NA,NA,NA,NA
+"BR","Hymenaea courbaril","Brazil",NA,NA,NA,NA,NA
+"BR","Inga marginata","Brazil",NA,NA,NA,NA,NA
+"BR","Inga","Brazil",NA,NA,NA,NA,NA
+"BR","Ipê 5 folhas","Brazil",NA,NA,NA,NA,NA
+"BR","Jacaranda","Brazil",NA,NA,NA,NA,NA
+"BR","Janauba","Brazil",NA,NA,NA,NA,NA
+"BR","Joannesia princeps","Brazil",NA,NA,NA,NA,NA
+"BR","Libidibia ferrea","Brazil",NA,NA,NA,NA,NA
+"BR","Loro Pardo","Brazil",NA,NA,NA,NA,NA
+"BR","Loro canela","Brazil",NA,NA,NA,NA,NA
+"BR","Machaerium nictitans","Brazil",NA,NA,NA,NA,NA
+"BR","Macrolobium bifolium","Brazil",NA,NA,NA,NA,NA
+"BR","Manilkara salzmannii","Brazil",NA,NA,NA,NA,NA
+"BR","Mozê","Brazil",NA,NA,NA,NA,NA
+"BR","Mozer","Brazil",NA,NA,NA,NA,NA
+"BR","Mudas sem indentificação","Brazil",NA,NA,NA,NA,NA
+"BR","Mussambê","Brazil",NA,NA,NA,NA,NA
+"BR","Mutamba","Brazil",NA,NA,NA,NA,NA
+"BR","Myrcia rostrata","Brazil",NA,NA,NA,NA,NA
+"BR","Nectandra rubra","Brazil",NA,NA,NA,NA,NA
+"BR","Oleo Copaiba","Brazil",NA,NA,NA,NA,NA
+"BR","Pata de vaca c/m espinho","Brazil",NA,NA,NA,NA,NA
+"BR","Pau jangada","Brazil",NA,NA,NA,NA,NA
+"BR","Pau sangue","Brazil",NA,NA,NA,NA,NA
+"BR","Paubrasilia echinata","Brazil",NA,NA,NA,NA,NA
+"BR","Peltophorum dubium","Brazil",NA,NA,NA,NA,NA
+"BR","Peschiera fuchsiaefolia","Brazil",NA,NA,NA,NA,NA
+"BR","Plathymenia foliolosa","Brazil",NA,NA,NA,NA,NA
+"BR","Pouteria bapeba","Brazil",NA,NA,NA,NA,NA
+"BR","Pouteria caimito","Brazil",NA,NA,NA,NA,NA
+"BR","Protium heptaphyllum","Brazil",NA,NA,NA,NA,NA
+"BR","Pseudobombax grandiflorum","Brazil",NA,NA,NA,NA,NA
+"BR","Psidium cattleianum","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Psidium guajava","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Pterygota brasiliensis","Brazil",NA,NA,NA,NA,NA
+"BR","Pterocarpus rohrii","Brazil",NA,NA,NA,NA,NA
+"BR","Pterocarpus violaceus","Brazil",NA,NA,NA,NA,NA
+"BR","Pterogyne nitens","Brazil",NA,NA,NA,NA,NA
+"BR","Sangra Dágua","Brazil",NA,NA,NA,NA,NA
+"BR","Sapucaia","Brazil",NA,NA,NA,NA,NA
+"BR","Schinus terebinthifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Schinus terebinthifolius","Brazil",NA,NA,NA,NA,NA
+"BR","Schizolobium parahyba","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Senna macranthera","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Spondias lutea","Brazil",NA,NA,NA,NA,NA
+"BR","Swartzia langsdorffii","Brazil",NA,NA,NA,NA,NA
+"BR","Tabebuia heptaphylla","Brazil",NA,NA,NA,NA,NA
+"BR","Tabebuia impetiginosa","Brazil",NA,NA,NA,NA,NA
+"BR","Tabebuia roseoalba","Brazil",NA,NA,NA,NA,NA
+"BR","Tabebuia serratifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Tapirira guianensis","Brazil",NA,NA,NA,NA,NA
+"BR","Vataireopsis araroba","Brazil",NA,NA,NA,NA,NA
+"BR","Zanthoxylum rhoifolium","Brazil",NA,NA,NA,NA,NA
+"BR","Zeyheria tuberculosa","Brazil",NA,NA,NA,NA,NA
+"AU","Eucalyptus blakelyi","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus polyanthemos","Australia",NA,NA,NA,NA,NA
+"BR","Andira legalis","Brazil",NA,NA,NA,NA,NA
+"BR","Himatanthus drasticus","Brazil",NA,NA,NA,NA,NA
+"BR","Albizia polycephala","Brazil",NA,NA,NA,NA,NA
+"BR","Talisia esculenta","Brazil",NA,NA,NA,NA,NA
+"BR","Euterpe oleracea","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Bactris gasipaes","Brazil",NA,NA,NA,NA,NA
+"BR","Cedrela fissilis","Brazil",NA,NA,NA,NA,NA
+"BR","Tabebuia","Brazil",NA,NA,NA,NA,NA
+"BR","Theobroma grandiflorum","Brazil",NA,NA,NA,NA,NA
+"BR","Anacardium occidentale","Brazil",NA,NA,NA,NA,NA
+"BR","Schizolobium amazonicum","Brazil",NA,NA,NA,NA,NA
+"BR","Carapa guianensis","Brazil",NA,NA,NA,NA,NA
+"BR","Theobroma cacao","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Dipteryx","Brazil",NA,NA,NA,NA,NA
+"BR","Andira","Brazil",NA,NA,NA,NA,NA
+"BR","Cordia","Brazil",NA,NA,NA,NA,NA
+"BR","Spondias mombin","Brazil",NA,NA,NA,NA,NA
+"BR","Swietenia macrophylla","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Copaifera","Brazil",NA,NA,NA,NA,NA
+"BR","Trema micrantha","Brazil",NA,NA,NA,NA,NA
+"BR","Inga edulis","Brazil",NA,NA,NA,NA,NA
+"BR","Inga cylindrica","Brazil",NA,NA,NA,NA,NA
+"BR","Unha d cabra c/m espinho (sem identificação)","Brazil",NA,NA,NA,NA,NA
+"BR","Sparattanthelium botocudorum","Brazil",NA,NA,NA,NA,NA
+"BR","Piptadenia paniculata","Brazil",NA,NA,NA,NA,NA
+"BR","Thyrsodium schomburgkianum","Brazil",NA,NA,NA,NA,NA
+"BR","Canela folha longa","Brazil",NA,NA,NA,NA,NA
+"BR","Jacaranda micrantha","Brazil",NA,NA,NA,NA,NA
+"BR","Pradosia atroviolacea","Brazil",NA,NA,NA,NA,NA
+"BR","Combuja","Brazil",NA,NA,NA,NA,NA
+"BR","Sorocea bonplandii","Brazil",NA,NA,NA,NA,NA
+"BR","Eugenia brasiliensis","Brazil",NA,NA,NA,NA,NA
+"BR","Ipê verde","Brazil",NA,NA,NA,NA,NA
+"BR","Jabuti de macaco","Brazil",NA,NA,NA,NA,NA
+"BR","Cariniana","Brazil",NA,NA,NA,NA,NA
+"BR","Nectandra rigida","Brazil",NA,NA,NA,NA,NA
+"BR","Jaracatia spinosa","Brazil",NA,NA,NA,NA,NA
+"BR","Eugenia candolleana","Brazil",NA,NA,NA,NA,NA
+"BR","Inga laurina","Brazil",NA,NA,NA,NA,NA
+"BR","Unha de cabra","Brazil",NA,NA,NA,NA,NA
+"BR","Andira anthelmia","Brazil",NA,NA,NA,NA,NA
+"BR","Psidium rufum","Brazil",NA,NA,NA,NA,NA
+"BR","Macrosamanea pedicellaris","Brazil",NA,NA,NA,NA,NA
+"BR","Dinizia excelsa","Brazil",NA,NA,NA,NA,NA
+"BR","Swartzia euxylophora","Brazil",NA,NA,NA,NA,NA
+"BR","Euphorbia grantii","Brazil",NA,NA,NA,NA,NA
+"PH","Pouteria villamilii","Philippines",NA,NA,NA,NA,NA
+"PH","Intsia bijuga","Philippines",NA,NA,NA,NA,NA
+"PH","Pterocarpus indicus","Philippines",NA,NA,NA,NA,NA
+"PH","Eugenia montalbanica","Philippines",NA,NA,NA,NA,NA
+"PH","Pometia pinnata","Philippines",NA,NA,NA,NA,NA
+"CG","Millettia laurentii","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Bobgunnia fistuloides","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Dialium pachyphyllum","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Hevea brasiliensis","Democratic Republic of Congo","f6e7601b-3457-4a1b-b5a8-01490566a3b8",NA,"Global Register of Introduced and Invasive Species - Democratic Republic of Congo","potentially introduced",NA
+"CG","Uapaca mole","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Pentaclethra macrophylla","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Piptadeniastrum africanum","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"KH","Barringtonia acutangula","Cambodia",NA,NA,NA,NA,NA
+"KH","Diospyros cambodiana","Cambodia",NA,NA,NA,NA,NA
+"ES","Juniperus thurifera","Spain",NA,NA,NA,NA,NA
+"ES","Pinus pinea","Spain",NA,NA,NA,NA,NA
+"ES","Juniperus oxycedrus","Spain",NA,NA,NA,NA,NA
+"ES","Spartium","Spain",NA,NA,NA,NA,NA
+"ES","Pinus halepensis","Spain","c7873d63-4c63-419f-8d84-a7a6cb29c5e8",NA,"Global Register of Introduced and Invasive Species - Spain","potentially introduced",NA
+"ES","Pinus nigra","Spain",NA,NA,NA,NA,NA
+"ES","Quercus ilex","Spain","c7873d63-4c63-419f-8d84-a7a6cb29c5e8",NA,"Global Register of Introduced and Invasive Species - Spain","potentially introduced",NA
+"ES","Quercus faginea","Spain",NA,NA,NA,NA,NA
+"PH","Dracontomelon dao","Philippines",NA,NA,NA,NA,NA
+"PH","Artocarpus blancoi","Philippines",NA,NA,NA,NA,NA
+"PH","Swietenia","Philippines",NA,NA,NA,NA,NA
+"IN","Mangifera indica","India",NA,NA,NA,NA,NA
+"IN","Syzygium cumini","India",NA,NA,NA,NA,NA
+"IN","Citrus x limon","India",NA,NA,NA,NA,NA
+"IN","Acacia","India",NA,NA,NA,NA,NA
+"IN","Dalbergia sissoo","India",NA,NA,NA,NA,NA
+"IN","Millettia pinnata","India",NA,NA,NA,NA,NA
+"IN","Mahua","India",NA,NA,NA,NA,NA
+"IN","Annona squamosa","India","b09c3987-af9a-4658-9bfd-19cf712ac3d1",NA,"Global Register of Introduced and Invasive Species - India","potentially introduced",NA
+"IN","Bombax ceiba","India",NA,NA,NA,NA,NA
+"IN","Tectona grandis","India",NA,NA,NA,NA,NA
+"IN","Pongamia pinnata","India",NA,NA,NA,NA,NA
+"IN","Custard Apple","India",NA,NA,NA,NA,NA
+"KH","Terminalia cambodiana","Cambodia",NA,NA,NA,NA,NA
+"KH","Crateva religiosa","Cambodia",NA,NA,NA,NA,NA
+"KH","Bridelia cambodiana","Cambodia",NA,NA,NA,NA,NA
+"KH","Xanthophyllum glaucum","Cambodia",NA,NA,NA,NA,NA
+"KH","Cynometra ramiflora","Cambodia",NA,NA,NA,NA,NA
+"KH","Madhuca elliptica","Cambodia",NA,NA,NA,NA,NA
+"KH","Combretum trifoliatum","Cambodia",NA,NA,NA,NA,NA
+"KH","Derris trifoliata","Cambodia",NA,NA,NA,NA,NA
+"KH","Ficus heterophylla","Cambodia",NA,NA,NA,NA,NA
+"KH","Gmelina asiatica","Cambodia",NA,NA,NA,NA,NA
+"MX","Coffea arabica","Mexico",NA,NA,NA,NA,NA
+"MX","Guazuma ulmifolia","Mexico",NA,NA,NA,NA,NA
+"MX","Gliricidia sepium","Mexico",NA,NA,NA,NA,NA
+"MX","Diphysa americana","Mexico",NA,NA,NA,NA,NA
+"MX","Swietenia humilis","Mexico",NA,NA,NA,NA,NA
+"MX","Pinus oocarpa","Mexico",NA,NA,NA,NA,NA
+"MX","Brosimum alicastrum","Mexico",NA,NA,NA,NA,NA
+"MX","Enterolobium cyclocarpum","Mexico",NA,NA,NA,NA,NA
+"MX","Cordia alliodora","Mexico",NA,NA,NA,NA,NA
+"MX","Leucaena leucocephala","Mexico",NA,NA,NA,NA,NA
+"MX","Cordia dodecandra","Mexico",NA,NA,NA,NA,NA
+"CO","Samanea saman","Colombia",NA,NA,NA,NA,NA
+"CO","Swietenia macrophylla","Colombia",NA,NA,NA,NA,NA
+"CO","Anacardium excelsum","Colombia",NA,NA,NA,NA,NA
+"CO","Cedrela odorata","Colombia",NA,NA,NA,NA,NA
+"CO","Maclura tinctoria","Colombia",NA,NA,NA,NA,NA
+"CO","Inga","Colombia",NA,NA,NA,NA,NA
+"CO","Guazuma ulmifolia","Colombia",NA,NA,NA,NA,NA
+"CO","Enterolobium cyclocarpum","Colombia",NA,NA,NA,NA,NA
+"CO","Sabal mauritiiformis","Colombia",NA,NA,NA,NA,NA
+"CO","Tabebuia rosea","Colombia",NA,NA,NA,NA,NA
+"CO","Guarea guidonia","Colombia",NA,NA,NA,NA,NA
+"CO","Vitex cymosa","Colombia",NA,NA,NA,NA,NA
+"CO","Persea americana","Colombia",NA,NA,NA,NA,NA
+"CO","Hymenaea courbaril","Colombia",NA,NA,NA,NA,NA
+"CO","Artocarpus altilis","Colombia","168568e7-eb5f-4ef6-8c59-f73ceaf57e91",NA,"Global Register of Introduced and Invasive Species - Colombia","potentially introduced",NA
+"CO","Aspidosperma desmanthum","Colombia",NA,NA,NA,NA,NA
+"CO","Cassia grandis","Colombia",NA,NA,NA,NA,NA
+"CO","Astronium graveolens","Colombia",NA,NA,NA,NA,NA
+"CO","Nectandra","Colombia",NA,NA,NA,NA,NA
+"CO","Schizolobium parahyba","Colombia",NA,NA,NA,NA,NA
+"CO","Caesalpinia coriaria","Colombia",NA,NA,NA,NA,NA
+"CO","Zygia","Colombia",NA,NA,NA,NA,NA
+"CO","Moringa oleifera","Colombia",NA,NA,NA,NA,NA
+"CO","Protium","Colombia",NA,NA,NA,NA,NA
+"CO","Tamarindus indica","Colombia",NA,NA,NA,NA,NA
+"CO","Brosimum alicastrum","Colombia",NA,NA,NA,NA,NA
+"CO","Annona","Colombia",NA,NA,NA,NA,NA
+"CO","Anacardium occidentale","Colombia",NA,NA,NA,NA,NA
+"CO","Annona cherimola","Colombia","168568e7-eb5f-4ef6-8c59-f73ceaf57e91",NA,"Global Register of Introduced and Invasive Species - Colombia","potentially introduced",NA
+"CO","Albizia","Colombia",NA,NA,NA,NA,NA
+"CO","Inga edulis","Colombia",NA,NA,NA,NA,NA
+"CO","Mangifera","Colombia",NA,NA,NA,NA,NA
+"CO","Pterygota colombiana","Colombia",NA,NA,NA,NA,NA
+"CO","Syzygium","Colombia",NA,NA,NA,NA,NA
+"CO","Pouteria sapota","Colombia",NA,NA,NA,NA,NA
+"CO","Cariniana pyriformis","Colombia",NA,NA,NA,NA,NA
+"CO","Pachira quinata","Colombia",NA,NA,NA,NA,NA
+"CO","Manilkara zapota","Colombia",NA,NA,NA,NA,NA
+"CO","Tabebuia chrysantha","Colombia",NA,NA,NA,NA,NA
+"CO","Brosimum","Colombia",NA,NA,NA,NA,NA
+"CO","Mammea americana","Colombia",NA,NA,NA,NA,NA
+"CO","Mfsp 2","Colombia",NA,NA,NA,NA,NA
+"CO","Mfsp 1","Colombia",NA,NA,NA,NA,NA
+"CO","Trema","Colombia",NA,NA,NA,NA,NA
+"CO","Ficus","Colombia",NA,NA,NA,NA,NA
+"AU","Acacia melanoxylon","Australia",NA,NA,NA,NA,NA
+"AU","Acacia verticillata","Australia",NA,NA,NA,NA,NA
+"AU","Allocasuarina littoralis","Australia",NA,NA,NA,NA,NA
+"AU","Allocasuarina paludosa","Australia",NA,NA,NA,NA,NA
+"AU","Allocasuarina pusilla","Australia",NA,NA,NA,NA,NA
+"AU","Banksia integrifolia","Australia",NA,NA,NA,NA,NA
+"AU","Banksia marginata","Australia",NA,NA,NA,NA,NA
+"AU","Cassia aculeata","Australia",NA,NA,NA,NA,NA
+"AU","Coprosma quadrifida","Australia",NA,NA,NA,NA,NA
+"AU","Correa alba","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus pryoriana","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus obliqua","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus radiata","Australia",NA,NA,NA,NA,NA
+"AU","Goodenia ovata","Australia",NA,NA,NA,NA,NA
+"AU","Gynatrix pulchella","Australia",NA,NA,NA,NA,NA
+"AU","Hakea decurrens","Australia",NA,NA,NA,NA,NA
+"AU","Indigofera australis","Australia",NA,NA,NA,NA,NA
+"AU","Leptospermum laevigatum","Australia","3e91d127-1448-438d-bc83-4b6e5b6a5935",NA,"Protected Areas - Global Register of Introduced and Invasive Species - Lord Howe Island, Australia","potentially introduced",NA
+"AU","Leptospermum myrsinoides","Australia",NA,NA,NA,NA,NA
+"AU","Melaleuca ericifolia","Australia",NA,NA,NA,NA,NA
+"AU","Melaleuca squarrosa","Australia",NA,NA,NA,NA,NA
+"AU","Melicytus dentatus","Australia",NA,NA,NA,NA,NA
+"AU","Olearia lirata","Australia",NA,NA,NA,NA,NA
+"AU","Olearia phlogopappa","Australia",NA,NA,NA,NA,NA
+"AU","Pomaderris aspera","Australia",NA,NA,NA,NA,NA
+"AU","Viminaria juncea","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus viminalis pryoriana","Australia",NA,NA,NA,NA,NA
+"AU","Kunzea ericoides","Australia",NA,NA,NA,NA,NA
+"AU","Acacia dealbata dealbata","Australia",NA,NA,NA,NA,NA
+"AU","Cassinia aculeata","Australia",NA,NA,NA,NA,NA
+"AU","Cassinia trinerva","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus cypellocarpa","Australia",NA,NA,NA,NA,NA
+"AU","Goodia lotifolia","Australia",NA,NA,NA,NA,NA
+"AU","Hedycarya angustifolia","Australia",NA,NA,NA,NA,NA
+"AU","Myrsine howittiana","Australia",NA,NA,NA,NA,NA
+"AU","Olearia argophylla","Australia",NA,NA,NA,NA,NA
+"AU","Ozothamnus ferrugineus","Australia",NA,NA,NA,NA,NA
+"AU","Prostanthera lasianthos","Australia",NA,NA,NA,NA,NA
+"AU","Solanum aviculare","Australia",NA,NA,NA,NA,NA
+"AU","Bedfordia arborescens","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus regnans","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus strzeleckii","Australia",NA,NA,NA,NA,NA
+"AU","Pittosporum bicolor","Australia",NA,NA,NA,NA,NA
+"AU","Polyscias sambucifolia","Australia",NA,NA,NA,NA,NA
+"AU","Tasmannia lanceolata","Australia",NA,NA,NA,NA,NA
+"AU","Zieria arborescens","Australia",NA,NA,NA,NA,NA
+"AU","Acacia rubida","Australia",NA,NA,NA,NA,NA
+"AU","Dodonaea viscosa","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus bridgesiana","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus rubida","Australia",NA,NA,NA,NA,NA
+"AU","Acacia deanei","Australia",NA,NA,NA,NA,NA
+"AU","Acacia decora","Australia",NA,NA,NA,NA,NA
+"AU","Acacia hakeoides","Australia",NA,NA,NA,NA,NA
+"AU","Acacia implexa","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus albens","Australia",NA,NA,NA,NA,NA
+"AU","Acacia decurrens","Australia",NA,NA,NA,NA,NA
+"AU","Acacia falcata","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus crebra","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus eugenioides","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus tereticornis","Australia",NA,NA,NA,NA,NA
+"AU","Melaleuca styphelioides","Australia",NA,NA,NA,NA,NA
+"AU","Acacia parramattensis","Australia",NA,NA,NA,NA,NA
+"AU","Ozothamnus diosmifolius","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus diversifolia","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus leucoxylon","Australia",NA,NA,NA,NA,NA
+"AU","Melaleuca lanceolata","Australia",NA,NA,NA,NA,NA
+"CG","Maesopsis eminii","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Cassia floribunda","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Ricinodendron heudelotii","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Gilbertiodendron","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Canarium schweinfurtii","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Guibourtia demeusei","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"PH","Diospyros blancoi","Philippines",NA,NA,NA,NA,NA
+"PH","Dipterocarpus grandiflorus","Philippines",NA,NA,NA,NA,NA
+"PH","Mangifera altissima","Philippines",NA,NA,NA,NA,NA
+"CG","Cassia","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Gilbertiodendron dewevrei","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Prioria balsamifera","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Millettia drastica","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Staudtia","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Ongokea gore","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Leucena lecena","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Staudtia kamerunensis","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"FR","Prunus avium","France","692a0aec-70e2-4038-ac9c-9a1d7acc025f",NA,"Global Register of Introduced and Invasive Species - France","potentially introduced",NA
+"FR","Quercus robur","France",NA,NA,NA,NA,NA
+"FR","Quercus petraea","France",NA,NA,NA,NA,NA
+"FR","Sorbus terminalis","France",NA,NA,NA,NA,NA
+"MX","Theobroma cacao","Mexico",NA,NA,NA,NA,NA
+"AU","Eucalyptus mannifera","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus pauciflora","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus rossii","Australia",NA,NA,NA,NA,NA
+"AU","Leptospermum obovatum","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus camaldulensis","Australia",NA,NA,NA,NA,NA
+"AU","Acacia buxifolia","Australia",NA,NA,NA,NA,NA
+"AU","Acacia penninervis","Australia",NA,NA,NA,NA,NA
+"AU","Acacia vestita","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus goniocalyx","Australia",NA,NA,NA,NA,NA
+"AU","Brachychiton populneus","Australia",NA,NA,NA,NA,NA
+"KE","Croton megalocarpus","Kenya",NA,NA,NA,NA,NA
+"KE","Ficus sycomorus","Kenya",NA,NA,NA,NA,NA
+"KE","Psidium guajava","Kenya","68c1fc2d-4b61-4e88-b9f1-d086ce9a8ffd",NA,"Global Register of Introduced and Invasive Species - Kenya","potentially introduced",NA
+"KE","Balanites aegyptica","Kenya",NA,NA,NA,NA,NA
+"KE","Kigelia africana","Kenya",NA,NA,NA,NA,NA
+"KE","tamarinds","Kenya",NA,NA,NA,NA,NA
+"KE","Markhamia lutea","Kenya",NA,NA,NA,NA,NA
+"KE","Acokanthera oppositifolia","Kenya",NA,NA,NA,NA,NA
+"KE","Syzygium cumini","Kenya","68c1fc2d-4b61-4e88-b9f1-d086ce9a8ffd",NA,"Global Register of Introduced and Invasive Species - Kenya","potentially introduced",NA
+"KE","Acacia gerrardii","Kenya",NA,NA,NA,NA,NA
+"KE","Ficus thonningii","Kenya",NA,NA,NA,NA,NA
+"KE","Croton macrostachyus","Kenya",NA,NA,NA,NA,NA
+"KE","Cordia africana","Kenya",NA,NA,NA,NA,NA
+"AE","Avicennia marina","United Arab Emirates",NA,NA,NA,NA,NA
+"MX","Tabebuia rosea","Mexico",NA,NA,NA,NA,NA
+"MX","Tabebuia donnell-smithii","Mexico",NA,NA,NA,NA,NA
+"MX","Caesalpinia ebano","Mexico",NA,NA,NA,NA,NA
+"MX","Homalium trichostemon","Mexico",NA,NA,NA,NA,NA
+"MX","Ceiba aesculifolia","Mexico",NA,NA,NA,NA,NA
+"MX","Haematoxylum brasiletto","Mexico",NA,NA,NA,NA,NA
+"MX","Tecoma stans","Mexico",NA,NA,NA,NA,NA
+"MX","Thevetia peruviana","Mexico",NA,NA,NA,NA,NA
+"MX","Cordia elaeagnoides","Mexico",NA,NA,NA,NA,NA
+"MX","Heliocarpus","Mexico",NA,NA,NA,NA,NA
+"MX","Caesalpinia eriostachys","Mexico",NA,NA,NA,NA,NA
+"MX","Acacia","Mexico",NA,NA,NA,NA,NA
+"MX","Amphipterygium adstringens","Mexico",NA,NA,NA,NA,NA
+"MX","Bursera","Mexico",NA,NA,NA,NA,NA
+"BR","Anadenanthera colubrina","Brazil",NA,NA,NA,NA,NA
+"CG","Canarium","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"AU","Acacia elongata","Australia",NA,NA,NA,NA,NA
+"AU","Acacia binervia","Australia",NA,NA,NA,NA,NA
+"AU","Acacia floribunda","Australia",NA,NA,NA,NA,NA
+"AU","Acacia linifolia","Australia",NA,NA,NA,NA,NA
+"AU","Acacia myrtifolia","Australia",NA,NA,NA,NA,NA
+"AU","Acacia suaveolens","Australia",NA,NA,NA,NA,NA
+"AU","Acacia ulicifolia","Australia",NA,NA,NA,NA,NA
+"AU","Banksia oblongifolia","Australia",NA,NA,NA,NA,NA
+"AU","Banksia serrata","Australia",NA,NA,NA,NA,NA
+"AU","Banksia spinulosa","Australia",NA,NA,NA,NA,NA
+"AU","Breynia oblongifolia","Australia",NA,NA,NA,NA,NA
+"AU","Dodonaea triquetra","Australia",NA,NA,NA,NA,NA
+"AU","Daviesia genistifolia","Australia",NA,NA,NA,NA,NA
+"AU","Daviesia ulicifolia","Australia",NA,NA,NA,NA,NA
+"AU","Daviesia acicularis","Australia",NA,NA,NA,NA,NA
+"AU","Dillwynia sieberi","Australia",NA,NA,NA,NA,NA
+"AU","Hakea sericea","Australia",NA,NA,NA,NA,NA
+"AU","Jacksonia scoparia","Australia",NA,NA,NA,NA,NA
+"AU","Kunzea","Australia",NA,NA,NA,NA,NA
+"AU","Kunzea ambigua","Australia",NA,NA,NA,NA,NA
+"AU","Leptospermum","Australia",NA,NA,NA,NA,NA
+"AU","Leptospermum polygalifolium","Australia",NA,NA,NA,NA,NA
+"AU","Melaleuca decora","Australia",NA,NA,NA,NA,NA
+"AU","Melaleuca thymifolia","Australia",NA,NA,NA,NA,NA
+"AU","Acacia stricta","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus baxteri","Australia",NA,NA,NA,NA,NA
+"MX","Cedrela odorata","Mexico",NA,NA,NA,NA,NA
+"MX","Tabebuia","Mexico",NA,NA,NA,NA,NA
+"PT","Pinus pinaster","Portugal",NA,NA,NA,NA,NA
+"PT","Quercus suber","Portugal",NA,NA,NA,NA,NA
+"MW","Khaya anthotheca","Malawi",NA,NA,NA,NA,NA
+"MW","Xeroderris stuhlmannii","Malawi",NA,NA,NA,NA,NA
+"MW","Lonchocarpus capassa","Malawi",NA,NA,NA,NA,NA
+"MW","Afzelia quanzensis","Malawi",NA,NA,NA,NA,NA
+"MW","Faidherbia albida","Malawi",NA,NA,NA,NA,NA
+"MW","Xanthocercis zambesiaca","Malawi",NA,NA,NA,NA,NA
+"MW","Azanza garckeana","Malawi",NA,NA,NA,NA,NA
+"MW","Senegalia polyacantha","Malawi",NA,NA,NA,NA,NA
+"MW","Pseudolachnostylis maprouneifolia","Malawi",NA,NA,NA,NA,NA
+"MW","Erythrophleum suaveolens","Malawi",NA,NA,NA,NA,NA
+"MW","Khaya nyasica","Malawi",NA,NA,NA,NA,NA
+"MW","Colophospermum mopane","Malawi",NA,NA,NA,NA,NA
+"MW","Senegalia galpinii","Malawi",NA,NA,NA,NA,NA
+"MW","Sterculia","Malawi",NA,NA,NA,NA,NA
+"MW","Piliostigma thonningii","Malawi",NA,NA,NA,NA,NA
+"MW","Brachystegia","Malawi",NA,NA,NA,NA,NA
+"MW","Brachylaena hutchinsii","Malawi",NA,NA,NA,NA,NA
+"MW","Albizia lebbeck","Malawi","d9b8781d-94c6-447e-976e-d8aba57d1dd2",NA,"GRIIS Checklist of Introduced and Invasive Species - Malawi","potentially introduced",NA
+"MW","Combretum molle","Malawi",NA,NA,NA,NA,NA
+"MW","Vangeulia indica","Malawi",NA,NA,NA,NA,NA
+"MX","Inga vera","Mexico",NA,NA,NA,NA,NA
+"MX","Quirisiña","Mexico",NA,NA,NA,NA,NA
+"CO","ARECACEAE ","Colombia",NA,NA,NA,NA,NA
+"CO","Ocotea calophylla","Colombia",NA,NA,NA,NA,NA
+"CO","Jacaranda","Colombia",NA,NA,NA,NA,NA
+"CO","Pseudosamanea","Colombia",NA,NA,NA,NA,NA
+"CO","Ceiba pentandra","Colombia",NA,NA,NA,NA,NA
+"CO","Aspidosperma polyneuron","Colombia",NA,NA,NA,NA,NA
+"CO","Bursera simaruba","Colombia",NA,NA,NA,NA,NA
+"CO","Calophyllum","Colombia",NA,NA,NA,NA,NA
+"CO","Platymiscium","Colombia",NA,NA,NA,NA,NA
+"CO","Oenocarpus minor","Colombia",NA,NA,NA,NA,NA
+"CO","Tabebuia billbergii","Colombia",NA,NA,NA,NA,NA
+"CO","Parinari pachyphylla","Colombia",NA,NA,NA,NA,NA
+"CO","Persea","Colombia",NA,NA,NA,NA,NA
+"CO","Cordia","Colombia",NA,NA,NA,NA,NA
+"CO","Mfsp 4","Colombia",NA,NA,NA,NA,NA
+"CO","Podocarpus","Colombia",NA,NA,NA,NA,NA
+"CO","Calliandra","Colombia",NA,NA,NA,NA,NA
+"CO","Melicoccus","Colombia",NA,NA,NA,NA,NA
+"CO","Ochroma pyramidale","Colombia",NA,NA,NA,NA,NA
+"CO","Lafoensia","Colombia",NA,NA,NA,NA,NA
+"CO","Pachira","Colombia",NA,NA,NA,NA,NA
+"CO","Cavanillesia platanifolia","Colombia",NA,NA,NA,NA,NA
+"CO","Erythrina berteroana","Colombia",NA,NA,NA,NA,NA
+"CO","Mfsp 4º","Colombia",NA,NA,NA,NA,NA
+"CO","Senna","Colombia",NA,NA,NA,NA,NA
+"CO","Erythrina poeppigiana","Colombia",NA,NA,NA,NA,NA
+"CO","Arecaceae","Colombia","168568e7-eb5f-4ef6-8c59-f73ceaf57e91",NA,"Global Register of Introduced and Invasive Species - Colombia","potentially introduced",NA
+"CO","Sterculia apetala","Colombia",NA,NA,NA,NA,NA
+"CO","Triplaris americana","Colombia",NA,NA,NA,NA,NA
+"CO","Mfsp 5","Colombia",NA,NA,NA,NA,NA
+"CO","Vismia macrophylla","Colombia",NA,NA,NA,NA,NA
+"CO","Platymiscium pinnatum","Colombia",NA,NA,NA,NA,NA
+"CO","Ziziphus","Colombia",NA,NA,NA,NA,NA
+"CO","Erythrina edulis","Colombia",NA,NA,NA,NA,NA
+"CO","Spondias mombin","Colombia",NA,NA,NA,NA,NA
+"CO","Pouteria","Colombia",NA,NA,NA,NA,NA
+"CO","Cecropia","Colombia",NA,NA,NA,NA,NA
+"CO","Zanthoxylum","Colombia",NA,NA,NA,NA,NA
+"CO","Machaerium","Colombia",NA,NA,NA,NA,NA
+"CO","Matisia cordata","Colombia",NA,NA,NA,NA,NA
+"CO","Caesalpinia","Colombia",NA,NA,NA,NA,NA
+"CO","Mfsp 10","Colombia",NA,NA,NA,NA,NA
+"CO","Peltogyne purpurea","Colombia",NA,NA,NA,NA,NA
+"CO","Tabebuia chrysea","Colombia",NA,NA,NA,NA,NA
+"CO","Croton malambo","Colombia",NA,NA,NA,NA,NA
+"CO","Pouteria caimito","Colombia",NA,NA,NA,NA,NA
+"CO","Psidium guajava","Colombia",NA,NA,NA,NA,NA
+"CO","Genipa americana","Colombia",NA,NA,NA,NA,NA
+"CO","Gliricidia sepium","Colombia","168568e7-eb5f-4ef6-8c59-f73ceaf57e91",NA,"Global Register of Introduced and Invasive Species - Colombia","potentially introduced",NA
+"CO","Miconia","Colombia",NA,NA,NA,NA,NA
+"CO","Mfsp 3","Colombia",NA,NA,NA,NA,NA
+"CO","Clusia","Colombia",NA,NA,NA,NA,NA
+"MX","Maclura tinctoria","Mexico",NA,NA,NA,NA,NA
+"MX","Comocladia macrophylla","Mexico",NA,NA,NA,NA,NA
+"MX","Bursera simaruba","Mexico",NA,NA,NA,NA,NA
+"MX","Hintonia latiflora","Mexico",NA,NA,NA,NA,NA
+"MX","Bursera graveolens","Mexico",NA,NA,NA,NA,NA
+"MX","Pereskiopsis rotundifolia","Mexico",NA,NA,NA,NA,NA
+"MX","Dendropanax arboreus","Mexico",NA,NA,NA,NA,NA
+"MX","Plumeria rubra","Mexico",NA,NA,NA,NA,NA
+"MX","Cordia dentata","Mexico",NA,NA,NA,NA,NA
+"MX","Senna alata","Mexico",NA,NA,NA,NA,NA
+"MX","Pithecellobium dulce","Mexico",NA,NA,NA,NA,NA
+"MX","Leucaena lanceolata","Mexico",NA,NA,NA,NA,NA
+"MX","Ceiba pentandra","Mexico",NA,NA,NA,NA,NA
+"MX","Crateva tapia","Mexico",NA,NA,NA,NA,NA
+"MX","Acacia farnesiana","Mexico",NA,NA,NA,NA,NA
+"MX","Cedrela mexicana","Mexico",NA,NA,NA,NA,NA
+"MW","Faiderbia albida","Malawi",NA,NA,NA,NA,NA
+"KE","Acacia mellifera","Kenya",NA,NA,NA,NA,NA
+"KE","Balanites aegyptiaca","Kenya",NA,NA,NA,NA,NA
+"KE","Melia","Kenya",NA,NA,NA,NA,NA
+"CG","Ceiba pentandra","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Pericopsis elata","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Dacryodes normandii","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Leplaea cedrata","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Cassia siamea","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Adenanthera pavonina","Democratic Republic of Congo","f6e7601b-3457-4a1b-b5a8-01490566a3b8",NA,"Global Register of Introduced and Invasive Species - Democratic Republic of Congo","potentially introduced",NA
+"CG","Pycnanthus angolensis","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Treculia africana","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Autranella congolensis","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Afzelia","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"BR","Oenocarpus bacaba","Brazil",NA,NA,NA,NA,NA
+"BR","Eremanthus erythropappus","Brazil",NA,NA,NA,NA,NA
+"CG","Nauclea diderrichii","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Baillonella toxisperma","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Pachira aquatica","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Milicia excelsa","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Paramacrolobium coeruleum","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Paramacrolobium","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"MW","Cordyla africana","Malawi",NA,NA,NA,NA,NA
+"CG","Celtis tessmannii","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Prioria oxyphylla","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Tetrapleura tetraptera","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Entandrophragma cylindricum","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Entandrophragma candollei","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"BR","Couma utilis","Brazil",NA,NA,NA,NA,NA
+"BR","Dipteryx odorata","Brazil",NA,NA,NA,NA,NA
+"BR","Mezilaurus itauba","Brazil",NA,NA,NA,NA,NA
+"BR","Oenocarpus bataua","Brazil",NA,NA,NA,NA,NA
+"BR","Parkia pendula","Brazil",NA,NA,NA,NA,NA
+"BR","Pouteria macrophylla","Brazil",NA,NA,NA,NA,NA
+"BR","Simarouba amara","Brazil",NA,NA,NA,NA,NA
+"BR","Copaifera langsdorffii","Brazil",NA,NA,NA,NA,NA
+"BR","Enterolobium maximum","Brazil",NA,NA,NA,NA,NA
+"BR","Piptadenia gonoacantha","Brazil",NA,NA,NA,NA,NA
+"BR","Theobroma speciosum","Brazil",NA,NA,NA,NA,NA
+"MG","Intsia","Madagascar",NA,NA,NA,NA,NA
+"MG","Trachylobium","Madagascar",NA,NA,NA,NA,NA
+"MG","Cafe","Madagascar",NA,NA,NA,NA,NA
+"MG","Mangifera","Madagascar",NA,NA,NA,NA,NA
+"MG","Citrus","Madagascar",NA,NA,NA,NA,NA
+"MG","Papaya","Madagascar",NA,NA,NA,NA,NA
+"MG","Litchi","Madagascar",NA,NA,NA,NA,NA
+"MG","Eriobotrya","Madagascar",NA,NA,NA,NA,NA
+"MG","Harungana madagascariensis","Madagascar",NA,NA,NA,NA,NA
+"MG","Trema orientalis","Madagascar",NA,NA,NA,NA,NA
+"MG","Syzygium","Madagascar",NA,NA,NA,NA,NA
+"MG","Vanilla","Madagascar",NA,NA,NA,NA,NA
+"MG","Piper","Madagascar",NA,NA,NA,NA,NA
+"MG","Prunus","Madagascar",NA,NA,NA,NA,NA
+"PT","Arbutus unedo","Portugal",NA,NA,NA,NA,NA
+"MG","Trachylobium verrucosum","Madagascar",NA,NA,NA,NA,NA
+"MG","Citrus sinensis","Madagascar",NA,NA,NA,NA,NA
+"MG","Persea americana","Madagascar",NA,NA,NA,NA,NA
+"MG","Morus alba","Madagascar",NA,NA,NA,NA,NA
+"MG","Persea","Madagascar",NA,NA,NA,NA,NA
+"MG","Spondias dulcis","Madagascar","baf86ad8-24ad-4603-a723-dcc9647846da",NA,"Global Register of Introduced and Invasive Species - Madagascar","potentially introduced",NA
+"MG","Lichi","Madagascar",NA,NA,NA,NA,NA
+"MG","Cajanus","Madagascar",NA,NA,NA,NA,NA
+"MG","Prunus persica","Madagascar","baf86ad8-24ad-4603-a723-dcc9647846da",NA,"Global Register of Introduced and Invasive Species - Madagascar","potentially introduced",NA
+"MG","Spondias","Madagascar",NA,NA,NA,NA,NA
+"MG","Dombeya","Madagascar",NA,NA,NA,NA,NA
+"MG","Abrahamia ditimena","Madagascar",NA,NA,NA,NA,NA
+"MG","Ficus reflexa","Madagascar",NA,NA,NA,NA,NA
+"MG","Trema orientale","Madagascar",NA,NA,NA,NA,NA
+"MG","Syzygium aromaticum","Madagascar",NA,NA,NA,NA,NA
+"MG","Artocarpus heterophyllus","Madagascar",NA,NA,NA,NA,NA
+"MG","Eriobotrya japonica","Madagascar",NA,NA,NA,NA,NA
+"MG","Pittosporum","Madagascar",NA,NA,NA,NA,NA
+"MG","Albizia gummifera","Madagascar",NA,NA,NA,NA,NA
+"MG","Piper nigrum","Madagascar",NA,NA,NA,NA,NA
+"MG","Tarenna","Madagascar",NA,NA,NA,NA,NA
+"MG","Erythroxylum sphaeranthum","Madagascar",NA,NA,NA,NA,NA
+"MG","Coffea","Madagascar",NA,NA,NA,NA,NA
+"MG","Dracaena reflexa","Madagascar",NA,NA,NA,NA,NA
+"MG","Macaranga obovata","Madagascar",NA,NA,NA,NA,NA
+"MG","Ficus tiliifolia","Madagascar",NA,NA,NA,NA,NA
+"MG","Ficus megapoda","Madagascar",NA,NA,NA,NA,NA
+"MG","Malus","Madagascar",NA,NA,NA,NA,NA
+"MG","Leucaena","Madagascar",NA,NA,NA,NA,NA
+"MG","Dracaena","Madagascar",NA,NA,NA,NA,NA
+"CO","Mfsp 9","Colombia",NA,NA,NA,NA,NA
+"MG","Albizia lebbeck","Madagascar","baf86ad8-24ad-4603-a723-dcc9647846da",NA,"Global Register of Introduced and Invasive Species - Madagascar","potentially introduced",NA
+"MG","Nuxia capitata","Madagascar",NA,NA,NA,NA,NA
+"MG","Brachylaena perrieri","Madagascar",NA,NA,NA,NA,NA
+"MG","Entada chrysostachys","Madagascar",NA,NA,NA,NA,NA
+"MG","Phyllarthron","Madagascar",NA,NA,NA,NA,NA
+"MG","Dodonaea madagascariensis","Madagascar",NA,NA,NA,NA,NA
+"MG","Tabernaemontana","Madagascar",NA,NA,NA,NA,NA
+"MG","Annona squamosa","Madagascar","baf86ad8-24ad-4603-a723-dcc9647846da",NA,"Global Register of Introduced and Invasive Species - Madagascar","potentially introduced",NA
+"MG","Pachytrophe","Madagascar",NA,NA,NA,NA,NA
+"MG","Diospyros","Madagascar",NA,NA,NA,NA,NA
+"MG","Rhus","Madagascar",NA,NA,NA,NA,NA
+"MG","Tambourissa","Madagascar",NA,NA,NA,NA,NA
+"MG","Euphorbia tetraptera","Madagascar",NA,NA,NA,NA,NA
+"MG","Ampalis madagascariensis","Madagascar",NA,NA,NA,NA,NA
+"MG","Dalbergia","Madagascar",NA,NA,NA,NA,NA
+"MG","Ilex mitis","Madagascar",NA,NA,NA,NA,NA
+"BR","Mimosa caesalpiniifolia","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Manilkara bidentata","Brazil",NA,NA,NA,NA,NA
+"BR","Aniba firmula","Brazil",NA,NA,NA,NA,NA
+"BR","Micropholis venulosa","Brazil",NA,NA,NA,NA,NA
+"BR","Cecropia hololeuca","Brazil",NA,NA,NA,NA,NA
+"BR","Maytenus ilicifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Senna","Brazil",NA,NA,NA,NA,NA
+"BR","Alchornea sidifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Cariniana estrellensis","Brazil",NA,NA,NA,NA,NA
+"BR","Guapira opposita","Brazil",NA,NA,NA,NA,NA
+"BR","Lecythis pisonis","Brazil",NA,NA,NA,NA,NA
+"BR","Acnistus arborescens","Brazil",NA,NA,NA,NA,NA
+"GT","Cedar","Guatemala",NA,NA,NA,NA,NA
+"GT","Matilisguate","Guatemala",NA,NA,NA,NA,NA
+"US","Quercus alba","United States",NA,NA,NA,NA,NA
+"US","Liriodendron tulipifera","United States",NA,NA,NA,NA,NA
+"US","Acer saccharum","United States",NA,NA,NA,NA,NA
+"US","Robinia pseudoacacia","United States",NA,NA,NA,NA,NA
+"US","Castanea dentata","United States",NA,NA,NA,NA,NA
+"US","Acer rubrum","United States",NA,NA,NA,NA,NA
+"US","Carya ovata","United States",NA,NA,NA,NA,NA
+"US","Quercus prinus","United States",NA,NA,NA,NA,NA
+"US","Pinus virginiana","United States",NA,NA,NA,NA,NA
+"US","Pinus strobus","United States",NA,NA,NA,NA,NA
+"US","Quercus rubra","United States",NA,NA,NA,NA,NA
+"US","Quercus velutina","United States",NA,NA,NA,NA,NA
+"US","Prunus serotina","United States",NA,NA,NA,NA,NA
+"US","Carya tomentosa","United States",NA,NA,NA,NA,NA
+"US","Diospyros virginiana","United States",NA,NA,NA,NA,NA
+"US","Betula lenta","United States",NA,NA,NA,NA,NA
+"US","Celtis occidentalis","United States",NA,NA,NA,NA,NA
+"US","Morus rubra","United States",NA,NA,NA,NA,NA
+"US","Platanus occidentalis","United States",NA,NA,NA,NA,NA
+"US","Prunus americana","United States",NA,NA,NA,NA,NA
+"US","Malus coronaria","United States",NA,NA,NA,NA,NA
+"US","Corylus avellana","United States",NA,NA,NA,NA,NA
+"US","Cornus racemosa","United States",NA,NA,NA,NA,NA
+"US","Cornus amomum","United States",NA,NA,NA,NA,NA
+"GT","Caoba","Guatemala",NA,NA,NA,NA,NA
+"GT","Cedro","Guatemala",NA,NA,NA,NA,NA
+"GT","pino","Guatemala",NA,NA,NA,NA,NA
+"GT","Santa Maria","Guatemala",NA,NA,NA,NA,NA
+"GT","Pino","Guatemala",NA,NA,NA,NA,NA
+"GT","cedro","Guatemala",NA,NA,NA,NA,NA
+"GT","Puno","Guatemala",NA,NA,NA,NA,NA
+"GT","cipres","Guatemala",NA,NA,NA,NA,NA
+"GT","encino","Guatemala",NA,NA,NA,NA,NA
+"GT","Rosul","Guatemala",NA,NA,NA,NA,NA
+"GT","Cipres","Guatemala",NA,NA,NA,NA,NA
+"GT","Encino","Guatemala",NA,NA,NA,NA,NA
+"GT","Cola","Guatemala",NA,NA,NA,NA,NA
+"GT","Inga","Guatemala",NA,NA,NA,NA,NA
+"GT","Cortez","Guatemala",NA,NA,NA,NA,NA
+"GT","zapote de aqua","Guatemala",NA,NA,NA,NA,NA
+"GT","Zapote de Agua","Guatemala",NA,NA,NA,NA,NA
+"GT","caoba","Guatemala",NA,NA,NA,NA,NA
+"GT","matilisguate","Guatemala",NA,NA,NA,NA,NA
+"GT","santa maria","Guatemala",NA,NA,NA,NA,NA
+"GT","Matilis guate","Guatemala",NA,NA,NA,NA,NA
+"GT","Liquidambar","Guatemala",NA,NA,NA,NA,NA
+"MG","Litchi chinensis","Madagascar",NA,NA,NA,NA,NA
+"BR","Pouteria torta","Brazil",NA,NA,NA,NA,NA
+"BR","Anadenanthera peregrina","Brazil",NA,NA,NA,NA,NA
+"BR","Cedrela odorata","Brazil",NA,NA,NA,NA,NA
+"BR","Euterpe edulis","Brazil",NA,NA,NA,NA,NA
+"BR","Mimosa bimucronata","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Triplaris americana","Brazil",NA,NA,NA,NA,NA
+"BR","Amburana cearensis","Brazil",NA,NA,NA,NA,NA
+"BR","Copaiba","Brazil",NA,NA,NA,NA,NA
+"BR","Handroanthus serratifolius","Brazil",NA,NA,NA,NA,NA
+"BR","Tabebuia heterophylla","Brazil",NA,NA,NA,NA,NA
+"BR","Handroanthus impetiginosus","Brazil",NA,NA,NA,NA,NA
+"BR","Marica","Brazil",NA,NA,NA,NA,NA
+"MG","Cajanus cajan","Madagascar","baf86ad8-24ad-4603-a723-dcc9647846da",NA,"Global Register of Introduced and Invasive Species - Madagascar","potentially introduced",NA
+"BR","Handroanthus heptaphyllus","Brazil",NA,NA,NA,NA,NA
+"BR","Pouteria","Brazil",NA,NA,NA,NA,NA
+"BR","Euterpe precatoria","Brazil",NA,NA,NA,NA,NA
+"BR","Cochlospermum vitifolium","Brazil",NA,NA,NA,NA,NA
+"BR","Protium","Brazil",NA,NA,NA,NA,NA
+"BR","Parahancornia fasciculata","Brazil",NA,NA,NA,NA,NA
+"BR","Hymenolobium petraeum","Brazil",NA,NA,NA,NA,NA
+"BR","Eugenia stipitata","Brazil",NA,NA,NA,NA,NA
+"BR","Macrolobium acaciifolium","Brazil",NA,NA,NA,NA,NA
+"BR","Astronium urundeuva","Brazil",NA,NA,NA,NA,NA
+"BR","Garcinia gardneriana","Brazil",NA,NA,NA,NA,NA
+"BR","Garcinia macrophylla","Brazil",NA,NA,NA,NA,NA
+"BR","Trattinnickia rhoifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Mauritia flexuosa","Brazil",NA,NA,NA,NA,NA
+"BR","Toulicia guianensis","Brazil",NA,NA,NA,NA,NA
+"BR","Myrciaria dubia","Brazil",NA,NA,NA,NA,NA
+"BR","Nectandra megapotamica","Brazil",NA,NA,NA,NA,NA
+"BR","Jacaranda copaia","Brazil",NA,NA,NA,NA,NA
+"BR","Bertholletia excelsa","Brazil",NA,NA,NA,NA,NA
+"BR","Castilla ulei","Brazil",NA,NA,NA,NA,NA
+"BR","Amburana acreana","Brazil",NA,NA,NA,NA,NA
+"BR","Copaifera multijuga","Brazil",NA,NA,NA,NA,NA
+"BR","Copaifera glycycarpa","Brazil",NA,NA,NA,NA,NA
+"BR","Annona","Brazil",NA,NA,NA,NA,NA
+"BR","Parkia","Brazil",NA,NA,NA,NA,NA
+"BR","Parkia gigantocarpa","Brazil",NA,NA,NA,NA,NA
+"BR","Samanea tubulosa","Brazil",NA,NA,NA,NA,NA
+"BR","Apuleia leiocarpa","Brazil",NA,NA,NA,NA,NA
+"BR","Bagassa guianensis","Brazil",NA,NA,NA,NA,NA
+"BR","Cassia leiandra","Brazil",NA,NA,NA,NA,NA
+"BR","Handroanthus","Brazil",NA,NA,NA,NA,NA
+"BR","Hymenaea parvifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Genipa infundibuliformis","Brazil",NA,NA,NA,NA,NA
+"BR","Pourouma guianensis","Brazil",NA,NA,NA,NA,NA
+"BR","Terminalia tetraphylla","Brazil",NA,NA,NA,NA,NA
+"BR","Schefflera morototoni","Brazil",NA,NA,NA,NA,NA
+"BR","Astronium lecointei","Brazil",NA,NA,NA,NA,NA
+"BR","Byrsonima crispa","Brazil",NA,NA,NA,NA,NA
+"BR","Ormosia arborea","Brazil",NA,NA,NA,NA,NA
+"BR","Enterolobium schomburgkii","Brazil",NA,NA,NA,NA,NA
+"BR","Ceiba speciosa","Brazil",NA,NA,NA,NA,NA
+"BR","Pseudobombax munguba","Brazil",NA,NA,NA,NA,NA
+"BR","Pseudolmedia laevis","Brazil",NA,NA,NA,NA,NA
+"BR","Parkia multijuga","Brazil",NA,NA,NA,NA,NA
+"BR","Bauhinia variegata","Brazil",NA,NA,NA,NA,NA
+"BR","Ochroma pyramidale","Brazil",NA,NA,NA,NA,NA
+"BR","Senegalia polyphylla","Brazil",NA,NA,NA,NA,NA
+"BR","Physocalymma scaberrimum","Brazil",NA,NA,NA,NA,NA
+"BR","Socratea exorrhiza","Brazil",NA,NA,NA,NA,NA
+"BR","Poeppigia procera","Brazil",NA,NA,NA,NA,NA
+"BR","Peltogyne","Brazil",NA,NA,NA,NA,NA
+"BR","Croton lechleri","Brazil",NA,NA,NA,NA,NA
+"BR","Pouteria gardneri","Brazil",NA,NA,NA,NA,NA
+"BR","Hevea brasiliensis","Brazil",NA,NA,NA,NA,NA
+"BR","Clitoria fairchildiana","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Diplotropis purpurea","Brazil",NA,NA,NA,NA,NA
+"BR","Himatanthus phagedaenicus","Brazil",NA,NA,NA,NA,NA
+"BR","Tachigali guianensis","Brazil",NA,NA,NA,NA,NA
+"BR","Terminalia","Brazil",NA,NA,NA,NA,NA
+"BR","Couratari guianensis","Brazil",NA,NA,NA,NA,NA
+"BR","Cariniana micrantha","Brazil",NA,NA,NA,NA,NA
+"BR","Virola venosa","Brazil",NA,NA,NA,NA,NA
+"BR","Chorisia","Brazil",NA,NA,NA,NA,NA
+"BR","Sparattanthelium","Brazil",NA,NA,NA,NA,NA
+"BR","xxx","Brazil",NA,NA,NA,NA,NA
+"BR","Croton floribundus","Brazil",NA,NA,NA,NA,NA
+"BR","Senna multijuga","Brazil",NA,NA,NA,NA,NA
+"BR","Apeiba tibourbou","Brazil",NA,NA,NA,NA,NA
+"BR","Senna alata","Brazil",NA,NA,NA,NA,NA
+"BR","Handroanthus chrysotrichus","Brazil",NA,NA,NA,NA,NA
+"BR","Protium aracouchini","Brazil",NA,NA,NA,NA,NA
+"BR","Cecropia pachystachya","Brazil",NA,NA,NA,NA,NA
+"BR","Arapatiella","Brazil",NA,NA,NA,NA,NA
+"BR","Xylopia brasiliensis","Brazil",NA,NA,NA,NA,NA
+"BR","Virola bicuhyba","Brazil",NA,NA,NA,NA,NA
+"BR","Peltophorum dubium dubium","Brazil",NA,NA,NA,NA,NA
+"BR","Parapiptadenia rigida","Brazil",NA,NA,NA,NA,NA
+"BR","Sparattosperma leucanthum","Brazil",NA,NA,NA,NA,NA
+"BR","Spondias venulosa","Brazil",NA,NA,NA,NA,NA
+"BR","Paratecoma peroba","Brazil",NA,NA,NA,NA,NA
+"BR","Pouteria butyrocarpa","Brazil",NA,NA,NA,NA,NA
+"BR","Pradosia lactescens","Brazil",NA,NA,NA,NA,NA
+"BR","Himatanthus bracteatus","Brazil",NA,NA,NA,NA,NA
+"BR","Plathymenia reticulata","Brazil",NA,NA,NA,NA,NA
+"BR","Xylopia sericea","Brazil",NA,NA,NA,NA,NA
+"BR","Dimorphandra jorgei","Brazil",NA,NA,NA,NA,NA
+"BR","Guazuma crinita","Brazil",NA,NA,NA,NA,NA
+"BR","Acacia glomerosa","Brazil",NA,NA,NA,NA,NA
+"BR","Psidium myrtoides","Brazil",NA,NA,NA,NA,NA
+"BR","Myracrodruon urundeuva","Brazil",NA,NA,NA,NA,NA
+"BR","Senna spectabilis","Brazil",NA,NA,NA,NA,NA
+"BR","Psidium guayana","Brazil",NA,NA,NA,NA,NA
+"US","Corylus americana","United States",NA,NA,NA,NA,NA
+"KH","Crateva adansonii","Cambodia",NA,NA,NA,NA,NA
+"MX","Pinus ayacahuite","Mexico",NA,NA,NA,NA,NA
+"MX","Inga micheliana","Mexico",NA,NA,NA,NA,NA
+"MX","Alnus acuminata","Mexico",NA,NA,NA,NA,NA
+"CO","Anacardium","Colombia",NA,NA,NA,NA,NA
+"KE","Guava","Kenya",NA,NA,NA,NA,NA
+"CO","Arecaceae ","Colombia",NA,NA,NA,NA,NA
+"CO","Crescentia cujete","Colombia",NA,NA,NA,NA,NA
+"CO","Xylopia","Colombia",NA,NA,NA,NA,NA
+"CO","Brownea ariza","Colombia",NA,NA,NA,NA,NA
+"KE","guava","Kenya",NA,NA,NA,NA,NA
+"KE","tamarids","Kenya",NA,NA,NA,NA,NA
+"CO","Swietenia","Colombia",NA,NA,NA,NA,NA
+"CO","Cedrela","Colombia",NA,NA,NA,NA,NA
+"CO","Tabebuia","Colombia",NA,NA,NA,NA,NA
+"CO","PLANTING DATA FOR NOVEMBER 2022","Colombia",NA,NA,NA,NA,NA
+"CO","Schizolobium","Colombia",NA,NA,NA,NA,NA
+"CO","MFSP 10","Colombia",NA,NA,NA,NA,NA
+"CO","Ceiba","Colombia",NA,NA,NA,NA,NA
+"CO","Cedrela montana","Colombia",NA,NA,NA,NA,NA
+"CO","Cariniana","Colombia",NA,NA,NA,NA,NA
+"PL","3SC Production 2.3","Poland",NA,NA,NA,NA,NA
+"CG","Schizolobium parahyba","Democratic Republic of Congo","f6e7601b-3457-4a1b-b5a8-01490566a3b8",NA,"Global Register of Introduced and Invasive Species - Democratic Republic of Congo","potentially introduced",NA
+"CG","Cleistopholis glauca","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Pterocarpus soyauxii","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Harungana madagascariensis","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"PH","Syzygium polycephaloides","Philippines",NA,NA,NA,NA,NA
+"BR","Anadenanthera macrocarpa","Brazil",NA,NA,NA,NA,NA
+"BR","Myrsine","Brazil",NA,NA,NA,NA,NA
+"BR","Eriotheca pentaphylla","Brazil",NA,NA,NA,NA,NA
+"BR","Sapotaceae","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Symphonia globulifera","Brazil",NA,NA,NA,NA,NA
+"BR","Sterculia excelsa","Brazil",NA,NA,NA,NA,NA
+"BR","Aegiphila integrifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Iochroma arborescens","Brazil",NA,NA,NA,NA,NA
+"BR","Classificação superior","Brazil",NA,NA,NA,NA,NA
+"BR","Centrolobium","Brazil",NA,NA,NA,NA,NA
+"BR","Pachystachys","Brazil",NA,NA,NA,NA,NA
+"AU","Acacia verniciflua","Australia",NA,NA,NA,NA,NA
+"AU","Dodonaea viscosa angustissima","Australia",NA,NA,NA,NA,NA
+"AU","Casuarina cunninghamiana","Australia",NA,NA,NA,NA,NA
+"KH","Mallotus cochinchinensis","Cambodia",NA,NA,NA,NA,NA
+"KH","Xanthophyllum lanceatum","Cambodia",NA,NA,NA,NA,NA
+"KH","Mallotus cochichinensis","Cambodia",NA,NA,NA,NA,NA
+"KH","Mallotus cochichinensis   ","Cambodia",NA,NA,NA,NA,NA
+"BR","Myrsine coriacea","Brazil",NA,NA,NA,NA,NA
+"BR","Chrysophyllum splendens","Brazil",NA,NA,NA,NA,NA
+"BR","Cinnamomum verum","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"BR","Cinnamomum","Brazil",NA,NA,NA,NA,NA
+"BR","Jacaranda mimosifolia","Brazil",NA,NA,NA,NA,NA
+"BR","Abarema langsdorfii","Brazil",NA,NA,NA,NA,NA
+"BR","Solanum","Brazil",NA,NA,NA,NA,NA
+"BR","Sparattosperma","Brazil",NA,NA,NA,NA,NA
+"BR","Tibouchina granulosa","Brazil",NA,NA,NA,NA,NA
+"BR","Euphorbia heterophylla","Brazil","21cf83b3-fec6-4c42-95bc-b8555a991bc3",NA,"Global Register of Introduced and Invasive Species - Brazil","potentially introduced",NA
+"AU","Acacia falciformis","Australia",NA,NA,NA,NA,NA
+"AU","Acacia terminalis","Australia",NA,NA,NA,NA,NA
+"AU","Daviesia leptophylla","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus globoidea","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus punctata","Australia",NA,NA,NA,NA,NA
+"AU","Dodonaea viscosa spatulata","Australia",NA,NA,NA,NA,NA
+"BR","Mix","Brazil",NA,NA,NA,NA,NA
+"CG","Pterocarpus","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"CG","Maesopsis","Democratic Republic of Congo",NA,NA,NA,NA,NA
+"AU","Acacia genistifolia","Australia",NA,NA,NA,NA,NA
+"AU","Acacia paradoxa","Australia",NA,NA,NA,NA,NA
+"AU","Acacia obtusifolia","Australia",NA,NA,NA,NA,NA
+"AU","Daviesia mimosoides","Australia",NA,NA,NA,NA,NA
+"AU","a","Australia",NA,NA,NA,NA,NA
+"AU","Eucalyptus","Australia",NA,NA,NA,NA,NA
+"AU","Acacia","Australia",NA,NA,NA,NA,NA
+"AU","Allocasuarina","Australia",NA,NA,NA,NA,NA
+"AU","Brachychiton","Australia",NA,NA,NA,NA,NA
+"AU","Dodonaea viscosa subsp. angustissima","Australia",NA,NA,NA,NA,NA
+"AU","Acacia brachybotrya","Australia",NA,NA,NA,NA,NA
+"AU","Acacia oswaldii","Australia",NA,NA,NA,NA,NA
+"AU","Acacia salicina","Australia",NA,NA,NA,NA,NA
+"AU","Atriplex nummularia","Australia",NA,NA,NA,NA,NA
+"AU","Callitris columellaris","Australia",NA,NA,NA,NA,NA
+"AU","Eremophila longifolia","Australia",NA,NA,NA,NA,NA
+"AU","Pittosporum angustifolium","Australia",NA,NA,NA,NA,NA
+"AU","Senna artemisioides","Australia",NA,NA,NA,NA,NA
+"CO","Other species","Colombia",NA,NA,NA,NA,NA
+"MG","Intsia bijuga","Madagascar",NA,NA,NA,NA,NA

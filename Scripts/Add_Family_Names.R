@@ -266,7 +266,11 @@ manually_find_family_names <- function(new_family_names, old_family_names, tree_
     count_processed <- count_processed + 1
     cat(paste("Unable to resolve:", species, "\n"))
     new_name <- readline(prompt = "Please provide the family name (or press Enter to skip): ")
-    if (new_name != "") {
+    
+    if (new_name == "save") {
+      cat("Progress saved. You can resume from where you left off.\n")
+      return(all_family_names)
+    }else if (new_name != "") {
       all_family_names$family[all_family_names$query == species] <- new_name
       all_family_names$db[all_family_names$query == species] <- "Manual validation"
     }
