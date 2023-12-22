@@ -5,8 +5,8 @@
 This repository houses the data processing/analysis scripts for dealing
 with PPC monitoring data. The most important folder here is the
 ‘Scripts’ folder, which contains executable R scripts, each of which
-perform a different essential function. Some of these scripts need to be
-executed in a certain order, because outputs of one will become inputs
+performs a different essential function. Some of these scripts need to be
+executed in a certain order, because outputs from one will become inputs
 to the next. Others can be run as standalone scripts.
 
 The other folders in the repository contain key information that enable

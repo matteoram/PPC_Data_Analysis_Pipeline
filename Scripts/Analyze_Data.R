@@ -219,7 +219,7 @@ extrapolate_to_whole_site <- function(scaled_data, preprocessed_site_size_data, 
   # Produce a dataframe of site information for later calculations
   site_info <- main_data_with_site_size %>%
     group_by(Site_ID) %>%
-    summarise(
+    reframe(
       # Total area monitored is the sum of all monitoring plot areas (labelled above)
       total_area_monitored = sum(plot_size_m_sq),
       # Change character to number
@@ -421,7 +421,8 @@ generate_indicator_reports <- function(extrapolated_data) {
       restored_Y5 = count_Y5 - count_Y0
     )
 
-## BEGIN TEST
+## BEGIN TEST # This was added after hand-over! It breaks the trees restored indicator
+  # report into size class as well. All other outputs are the same. This is additional.
   baseline_trees_sc <- extrapolated_data %>%
     filter(Timeframe == "Y0", Tree_Type %in% c("Present", "naturally_regenerating")) %>%
     filter(!size_class == "<1cm") %>%

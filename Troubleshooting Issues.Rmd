@@ -1,0 +1,72 @@
+---
+title: "Troubleshooting Issues"
+author: "Johannes Nelson"
+date: "2023-12-19"
+output: pdf_document
+---
+
+
+# Overview
+This document will keep track of some common issues and fixes. I will update it 
+as necessary.
+
+## Issues
+### 'robotoolbox' package version
+As mentioned elsewhere, we are using the development version of the package rather
+than the public version, because the public version will not work for our Kobo data.
+Eventually, the developer will push his development version to the public. Until 
+then, the development version will need to be installed. 
+
+BEFORE executing the Extraction scripts for the first time, run the following 
+lines of code:
+
+```{r eval=FALSE}
+
+install.packages("remotes")
+remotes::install_gitlab("dickoa/robotoolbox")
+```
+
+You should only need to run this one time. After that, the extraction script will
+see that a package of that name has been installed and load it normally. If you
+already ran the extraction script and installed the public version, you may be 
+getting this error:
+
+*Error in rbindlist(drop_nulls(survey), fill = TRUE) :*
+*Column 7 of item 3 is length 3 inconsistent with column 1 which is length 5. Only length-1 columns are recycled.*
+
+In this case, you will need to uninstall that package before installing the development
+version:
+
+```{r eval=FALSE}
+remove.packages('robotoolbox')
+install.packages("remotes")
+remotes::install_gitlab("dickoa/robotoolbox")
+```
+
+You can also try manually deleting the package if the above doesn't work.
+
+### Installing packages
+While in most cases, installing packages should run seamlessly without user input,
+there might be some cases where it asks for user input while installing packages.
+
+If ever asked: 
+```{r eval = FALSE}
+"Do you want to install from sources the package which needs compilation? (Yes/no/cancel)"
+```
+Answer: no
+
+
+### Relative vs. Absolute filepaths
+Calling the scripts with source() should always work with relative filepaths
+(filepaths that start with your working directory, beginning with 'Scripts/...').
+
+Be sure that this filepath doesn't start with a '/', as this will tell your 
+computer to begin in the system's root directory. Either copy the whole path by
+right-clicking on the script and copying the path or simply write the relative
+path like this:
+
+```{r eval = FALSE}
+
+source('Scripts/Name_of_script.R')
+```
+###
