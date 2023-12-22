@@ -421,7 +421,48 @@ generate_indicator_reports <- function(extrapolated_data) {
       restored_Y5 = count_Y5 - count_Y0
     )
 
-
+## BEGIN TEST
+  baseline_trees_sc <- extrapolated_data %>%
+    filter(Timeframe == "Y0", Tree_Type %in% c("Present", "naturally_regenerating")) %>%
+    filter(!size_class == "<1cm") %>%
+    group_by(Organization_Name, Site_ID, size_class) %>%
+    summarise(count_Y0 = sum(extrapolated_count))
+  
+  # Calculate trees at Y2.5 and Y5 (Planted and Naturally Regenerating). IGNORING
+  # <1cm!
+  trees_at_timeframe_2_sc <- extrapolated_data %>%
+    filter(
+      Timeframe == "Y2.5",
+      Tree_Type %in% c("planted", "naturally_regenerating")
+    ) %>%
+    filter(!size_class == "<1cm") %>%
+    group_by(Organization_Name,  Site_ID, size_class, Timeframe) %>%
+    summarise(count_Y25 = sum(extrapolated_count)) %>%
+    select(-Timeframe)
+  
+  
+  trees_at_timeframe_5_sc <- extrapolated_data %>%
+    filter(
+      Timeframe == "Y5",
+      Tree_Type %in% c("planted", "naturally_regenerating")
+    ) %>%
+    filter(!size_class == "<1cm") %>%
+    group_by(Organization_Name, Site_ID, size_class, Timeframe) %>%
+    summarise(count_Y5 = sum(extrapolated_count)) %>%
+    select(-Timeframe)
+  
+  
+  trees_combined_sc <- baseline_trees_sc %>%
+    full_join(trees_at_timeframe_2_sc, by = c("Organization_Name", "Site_ID")) %>%
+    full_join(trees_at_timeframe_5_sc, by = c("Organization_Name", "Site_ID"))
+  
+  trees_restored_sc <- trees_combined_sc %>%
+    mutate(
+      restored_Y25 = count_Y25 - count_Y0,
+      restored_Y5 = count_Y5 - count_Y0
+    )
+  
+## END TEST
 
   # Count natregen at timeframe Y2.5 and Y5
   natregen_at_timeframe_2 <- extrapolated_data %>%
@@ -529,7 +570,8 @@ generate_indicator_reports <- function(extrapolated_data) {
     trees_restored = trees_restored,
     trees_restored_species = trees_restored_species,
     trees_natreggen = natregen_combined,
-    trees_natregen_species = natregen_combined_species
+    trees_natregen_species = natregen_combined_species,
+    trees_restored_sizeclass = trees_restored_sc
   ))
 }
 

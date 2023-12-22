@@ -63,6 +63,7 @@ load_data <- function() {
 
   species_data_path <- "Species_Data"
   IMP_data_path <- "IMP_Data"
+  IMP_invasive_path <- "IMP_Data\\Invasives_Data"
 
   IMP_files <- list.files(path = IMP_data_path, pattern = "ppc_export", full.names = TRUE)
   latest_IMP_file <- IMP_files[order(file.info(IMP_files)$mtime,
@@ -72,12 +73,12 @@ load_data <- function() {
 
 
   invasives_files <- list.files(
-    path = IMP_data_path,
+    path = IMP_invasive_path,
     pattern = "Invasive_Species_Data",
     full.names = TRUE
   )
   invasives_report_files <- list.files(
-    path = IMP_data_path,
+    path = IMP_invasive_path,
     pattern = "Invasive_Species_Report",
     full.names = TRUE
   )
