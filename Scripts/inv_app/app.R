@@ -7,19 +7,13 @@
 # package called 'originr' (https://github.com/ropensci-archive/originr)
 # --------------------------------------------------------------------------------
 
+library(jsonlite)
+library(rvest)
+library(dplyr)
+library(tidyr)
+library(stringr)
 
 
-
-# Load in necessary packages
-necessary_packages <- c("jsonlite", "rvest", "dplyr", "tidyr", "stringr")
-
-for (pkg in necessary_packages) {
-  if (!require(pkg, character.only = TRUE)) {
-    cat(pkg, "not found. Installing now...\n")
-    install.packages(pkg)
-    library(pkg, character.only = TRUE)
-  }
-}
 
 # Define primary function that checks invasiveness
 check_invasive_status <- function (file_path, ...) 
@@ -46,17 +40,23 @@ check_invasive_status <- function (file_path, ...)
   }
   # Extract species names from data
   species_to_check <- species_file$species
+  total_species <- length(species_to_check)
   results <- list()
   
   # Loop through names and check for invasiveness
   for (i in seq_along(species_to_check)) {
+    
+    
+
     message(paste("Checking", species_to_check[i]))
     out <- check_GBIF(species_to_check[i], ...)
     # If no match is in GBIF (which has a record of GISD species), return negative
     # result here.
     if (length(out) == 0) {
       results[[i]] <- list(species = species_to_check[i], status = "Not in GISD")
+      spec_status <- "Not in GISD"
     }
+    
     # If there is a record, build URL with taxonID and navigate to corresponding
     # GISD page
     else {
@@ -80,8 +80,10 @@ check_invasive_status <- function (file_path, ...)
       # Store results
       results[[i]] <- list(species = species_to_check[i], alien_range = alien, 
                            native_range = native, summary = summary)
+      spec_status <- "Species exists in GISD!"
       
     }
+    setProgress(message = paste("Checking", species_to_check[i]), value = i / total_species, detail = spec_status)
   }
   # Organize output for legibility
   names(results) <- species_to_check
@@ -123,45 +125,75 @@ check_invasive_status <- function (file_path, ...)
 
 
 ui <- fluidPage(
-  titlePanel("Invasive Species Scanner"),
-  sidebarLayout(
-    sidebarPanel(
-      fileInput("file1", "Choose CSV File",
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv")
-      ),
-      actionButton("scan", "Scan for Invasiveness"),
-      downloadButton("downloadResults", "Download Results")
-    ),
-    mainPanel(
-      tableOutput("results")
-    )
+  # Add custom CSS to style the app
+  tags$head(
+    tags$style(HTML("
+      body {
+        font-family: 'Helvetica', sans-serif;
+        background-color: #FFFFFF;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #DEE3E1;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      .scrollable-table {
+        max-height: 400px;  /* Adjust the height as needed */
+        overflow-y: scroll;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+      }
+    "))
+  ),
+  # Main container
+  div(class = "container",
+      titlePanel("Invasive Species Scanner"),
+      sidebarLayout(
+        sidebarPanel(
+          fileInput("file1", "Choose CSV File",
+                    accept = c(
+                      "text/csv",
+                      "text/comma-separated-values,text/plain",
+                      ".csv")
+          ),
+          actionButton("scan", "Scan for Invasiveness"),
+          downloadButton("downloadResults", "Download Results")
+        ),
+        mainPanel(
+          div(class = "scrollable-table",  # Add scrollable div
+              tableOutput("results")
+          ),
+          # Add this line for status text
+          textOutput("statusText")
+        )
+      )
   )
 )
-
-
-
 server <- function(input, output) {
-  
-  # Reactive value to store the scan results
   results <- reactiveVal()
   
   observeEvent(input$scan, {
     req(input$file1)
     inFile <- input$file1
     
-    # Read the file and store the results in the reactive value
-    results(check_invasive_status(inFile$datapath))
+    withProgress(message = 'Scanning species for invasiveness', value = 0, {
+      results(check_invasive_status(inFile$datapath))
+    })
     
-    # Output the results
     output$results <- renderTable({
       results()
     })
   })
   
-  # Download Handler for the results
   output$downloadResults <- downloadHandler(
     filename = function() {
       paste("invasive-species-report-", Sys.Date(), ".csv", sep = "")
@@ -171,7 +203,11 @@ server <- function(input, output) {
     }
   )
 }
-      
+
 
 shinyApp(ui = ui, server = server)
+
+      
+
+
 
