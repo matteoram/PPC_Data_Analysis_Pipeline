@@ -571,105 +571,37 @@ manual_classification <- function(sp_country_combos, prior_results) {
 
 
   return(sp_country_combos)
+
+
 }
-# Optionally, convert results to a data frame or write to a file for further analysis
 
 
+#-------------------------------------------------------------------------------
+# The above script defines all the functions. The 'main' script below calls them
+# each in turn. By having distinct modules, errors/bugs that might arise in the
+# future will be easier to diagnose. The print() statements output at each step
+# in the console can help locate where things went wrong, and the relevant
+# function above will be a good starting point for debugging.
+#-------------------------------------------------------------------------------
 
-
-
-
-
-
-
+# Load Data
 all_data <- load_data()
+  
+# Get unique species-country combinations
 sp_country_combos <- get_unique_sp_country_combos(all_data$tree_data, all_data$seed_data)
+
+# Auto-scan for introduced species
 scan_results <- scan_for_introduced_species(sp_country_combos,
   all_data$dataset_keys,
   tree_data = all_data$tree_data,
   all_data$seed_data,
   prior_scan_results = all_data$checklist_scan_results
 )
-manual_results <- manual_classification(
-  scan_results$updated_sp_country_combos,
-  all_data$prior_review_results
-)
+
+# Begin manual classification workflow
+manual_results <- manual_classification(scan_results$updated_sp_country_combos,
+                                        all_data$prior_review_results
+                                        )
 
 
 
-
-
-
-
-
-
-# NEXT STEPS:\
-
-
-
-#
-#
-#
-# ONE TIME data creation loop:
-# Main loop
-# unique_sps <- unique(scan_results$updated_sp_country_combos$species)
-#
-# scan_results$updated_sp_country_combos$wiki_info <- NA
-# for (i in 1:nrow(scan_results$updated_sp_country_combos)) {
-#   cat("Processing:", scan_results$updated_sp_country_combos$species[i], '\n')
-#
-#   # Fetch and filter sentences from Wikipedia
-#   sentences <- fetch_species_info_wiki(scan_results$updated_sp_country_combos$species[i])
-#
-#   if (grepl("No Wikipedia entry", sentences[1]) | grepl("No species with", sentences[1])){
-#     sentences <- "No info found."
-#   }
-#
-#   # Record decision
-#   combined_sentences <- paste(sentences, collapse = " ")
-#   scan_results$updated_sp_country_combos$wiki_info[i] <- combined_sentences
-# }
-
-#
-#
-#
-#
-#
-# # Define the base URL for the Wikipedia API
-# base_url <- "https://en.wikipedia.org/w/api.php"
-#
-# # Set up the parameters for the API request
-# params <- list(
-#   action = "query",
-#   prop = "extracts",
-#   titles = "Pinus sylvestris",
-#   format = "json",
-#   # exintro = TRUE,       # Extract only the intro section
-#   explaintext = TRUE    # Return plain text instead of HTML
-# )
-#
-# # Make the API request
-# response <- GET(base_url, query = params)
-#
-# # Parse the response content as JSON
-# content <- content(response, "parsed")
-#
-# # Extract the page content from the parsed response
-# page_content <- content$`query`$`pages`[[1]]$`extract`
-#
-#
-# # Split the result into sentences
-# sentences <- unlist(strsplit(page_content, "(?<=\\.)\\s+", perl = TRUE))
-#
-# # Filter for sentences containing the word "native"
-# native_sentences <- sentences[grepl("\\bnative\\b", sentences, ignore.case = TRUE)]
-# introduced_sentences <- sentences[grepl("\\bintroduced\\b", sentences, ignore.case = TRUE)]
-# cultivated_sentences <- sentences[grepl("\\bcultivated\\b", sentences, ignore.case = TRUE)]
-# invasive_sentences <- sentences[grepl("\\binvasive\\b", sentences, ignore.case = TRUE)]
-#
-# all_sentences <- c(native_sentences, introduced_sentences, cultivated_sentences, invasive_sentences)
-#
-# all_sentences <- c(unique(all_sentences))
-#
-# # Print the result
-# print(all_sentences)

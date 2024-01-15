@@ -169,12 +169,15 @@ ui <- fluidPage(
       }
 
       .shiny-notification {
-              height: 100px;
+              height: 150px;
               width: 800px;
-              position:fixed;
-              top: calc(50% + 50px);;
-              left: calc(50% - 400px);
-              font-size: 20px;;
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              font-size: 20px;
+              background-color: white;
+              opacity: 1;
       }
       .custom-sidebar {
       background-color: rgba(255, 255, 255, .8);

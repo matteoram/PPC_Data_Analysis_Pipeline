@@ -5,6 +5,6 @@ account: re8gg2-johannes-nelson
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10924710
-bundleId: 8143523
+bundleId: 8143555
 url: https://re8gg2-johannes-nelson.shinyapps.io/invasive_species_scanner/
 version: 1
