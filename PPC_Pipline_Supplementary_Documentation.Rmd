@@ -1,7 +1,7 @@
 ---
-title: "PPC Pipline Supplementary Documentation"
-author: "Johannes Nelson"
-date: "2023-12-19"
+title: "PPC Pipline Supplementary Documentation - Version 2"
+author: "Johannes Nelson, Matteo Ramina"
+date: "2025-08-05"
 output: pdf_document
 ---
 
@@ -12,17 +12,15 @@ In addition to the documentation within the scripts in the form of comments,
 this file provides a higher level overview of each script, highlighting key 
 points for functionality, as well as any key assumptions being made.
 
-
 ## Extract_Main_Data.R
 
 ### General
 This scripts purpose is to take the data out of Kobo, process it and clean it, and
 produce organized, easily-legible files for further analysis. 
 
-## Video Link
+### Video Link
 
 [Click here for Extraction Overview Video](https://www.dropbox.com/scl/fi/bmb4lanvf40g1dot1vvpp/Extraction_Video.mp4?rlkey=rsaplvh66dnxplcoocbtgo3jo&dl=0 "Extraction Overview")
-
 
 ### Inputs/Requirements
 Since this is the first stage, there are no local inputs. However, the user will
@@ -35,6 +33,7 @@ and geolocation data. They will be stored in a folder called 'Main_Data'.
 
 ### Assumptions/Notes
 There are some assumptions hard-coded into this script. 
+
 * The script assumes that the name mappings in the 'Kobo_Key' document are accurate.
 * The script assumes naming conventions within Kobo fields does not change with 
 future form versions (e.g. it searches for geolcation data by looking for the
@@ -66,7 +65,6 @@ of these labels are created using logic that considers responses in the forms (e
 If the SiteSize answer is "No" it is a 10x10 plot.) Trees marked as planted at Y0
 are given their own size class of '<10cm planted', since they were ending up in 
 many other tables. 
-
 
 ### Troubleshooting
 * **'robotoolbox' R package issue:** At the time of creation, there was a bug in this package,
@@ -100,6 +98,7 @@ Printed statements are also created at each step of the script, so if an error d
 appear, you can locate which module created the error easily and address the issue.
 
 ## Extract_Brazil_Data.R
+
 ### General
 This does the same thing as the above script, and everything above pertains to this
 one as well. I will talk only about the things that are unique to this script here.
@@ -111,24 +110,266 @@ Since the main data is full of strange tables, I assume that with time, some of
 these peculiarities may appear in the Brazil dataset as well. If this happens, 
 the script will need to be altered to accommodate the changes. 
 
-## Video
+### Video
+
 [Click here for Brazil Extraction Video](https://www.dropbox.com/scl/fi/u9q1ve6p1u29wm7wkq7p3/Extract-Brazil.mp4?rlkey=1l2dl8qi1znfrabkj444iokrr&dl=0 "Brazil Extraction Video")
 
-
-## Assumptions/Notes
+### Assumptions/Notes
 * The Brazil Kobo form was designed differently than the primary form. This was
 to accommodate collection of different data. There are also differences, however, 
 even in the areas that overlap. The video will go into these differences in more
 detail and highlight areas of potential concern. 
 
+## Extract_Colombia_Data.R
+
+### General
+The purpose of this script is to extract the XLSX dataset from the paper form 
+survey conducted in Colombia, and adapt it to a format that facilitates its 
+integration into Kobo's server.
+
+### Inputs/Requirements
+* "26022025 BD Monitoreo Musesi Parcelas Permanentes RV Final.xlsx": the 
+digitized version of the data collected in Colombia. This file contains the 
+data to be pre-processed and uploaded.
+* "Forms_mapping.xlsx": a file that links some columns from the Colombian 
+dataset to the corresponding fields in the main Kobo form. This file is used to 
+facilitate the selection and renaming of relevant variables.
+
+These inputs should be placed in the "Colombia_Data" sub-folder. The digitized dataset is not included in the GitHub repository.
+
+### Outputs
+* "main_colombia_data.json", a JSON file containing the Colombian data, 
+harmonized to match the structure of the main Kobo form for seamless upload.
+
+### Assumptions/Notes
+The Colombia paper form features some differences compared to the main Kobo 
+form:
+
+* Tree-level data (height, diameter at breast height (DBH), and more) is recorded for each tree within the 
+plots, yielding a dataset that is structured in long (vertical) form. Each 
+observation is uniquely identified by keys representing the date of data 
+collection, the plot ID, the tree ID, and the tree type (planted or already 
+present). This structure is in stark contrast to the main Kobo form's dataset, 
+which is implicitly in wide format, with each observation uniquely identified 
+by the date of data collection and plot ID, and tree information (species and 
+counts) reported horizontally. Moreover, in the Colombia data, nested plots are 
+also reported on separate rows from their main plots and follow the same long 
+format.
+* Data for main restoration plot is reported not only from 30x30m plots, as 
+expected, but also from plots of size 10x10m. This departs from the main Kobo 
+form's sampling approach, which requires restoration data from main plots to be 
+collected exclusively from 30x30m plots (or from 3x3m plots if site size is too 
+small not accommodate a 30x30m plot).
+* Information on tree DBH is missing for trees not planted by the project. Due 
+to the Colombia dataset structure and survey logic, this information is 
+critical (DBH data is essential for the fields `Resampling1`, `TreesPresent`, 
+`Resampling2`, and `LittleTreesPresent`). For instance, a tree from a 30x30m 
+plot should be collected in one part of the survey if its DBH is less than 1cm, 
+and in another if its DBH is equal to or greater than 10cm. Without DBH data, 
+it is unclear where that tree's count should be assigned.
+* Resampling was not always conducted according to the instructions in the main 
+Kobo form. For example, some 30x30m plots were not resampled even though the 
+recorded tree data showed no trees with DBH equal to or greater than 10cm. A 
+similar situation occurred for 3x3m nested plots, which were not resampled 
+despite not containing any trees with DBH between 1cm (inclusive) and 10cm 
+(exclusive).
+* Partially related to the above, there are instances where trees were recorded 
+even though they should not have been. For example, in a main plot with no 
+trees having DBH equal to or more than 10cm, but with a nested subplot 
+containing trees between 1cm and 10cm DBH, trees in that DBH range were also 
+recorded for the main plot. According to the survey logic, such trees should 
+only be recorded in 3x3m plots. Another example includes planted trees with DBH 
+<1cm being recorded in nested plots, although they should only be recorded in 
+30x30m plots.
+
+These departures and discrepancies from the main Kobo form required the 
+following assumptions and adjustments:
+
+* The script restructures the data to reflect the implicit wide format 
+required. In doing so, dataframes are created to mimic the spreadsheet obtained 
+when downloading the main Kobo form dataset from Kobo's server. This results in 
+the `tree_monitoring_sheet`, which contains the data in wide format, along with 
+repeat group sheets for tree counts (`PlantedTrees3`, `group_an2yk58`, 
+`group_ka7vj63`, `group_oq8nt56`, `group_ql6qg69`, and `group_wj4lz16`). These 
+dataframes are then joined to form the JSON file used for upload.
+* Main restoration plots measuring 10x10m are treated as if they were 30x30m. 
+Tree counts are adjusted via linear extrapolation as follows:
+$$\text{Extrapolated Count} = \text{10x10m Count} \cdot 9$$ That is, tree 
+counts from 10x10m plots are multiplied by 9. Counts affected by this 
+transformation are flagged in the corresponding note field. The resulting range 
+of extrapolated tree counts is shown in Figure 1. This transformation 
+introduces outliers, as Figure 1 illustrates (e.g., in `group_an2yk58`, the 
+range of extrapolated counts is twice that of 30x30m plots: 35 vs. 14). This 
+needs to be addressed during the analysis stage.
+* Upon confirmation of the CI Colombia Team, the missing DBH values for trees 
+that were not planted have been replaced as follows:
+  + Already present trees in main plots (30x30m or 10x10m) with missing DBH
+  are assigned a `d1` value of 101 (i.e., 10.1 cm).
+  + Already present trees in nested plots with missing DBH are assigned a `d1`
+  value of 50 (i.e., 5 cm).
+* Some values for `Resampling1`, `TreesPresent`, `Resampling2`, and
+`LittleTreesPresent` are adjusted due to the missing DBH data and incorrect 
+resampling recordings described above. Given that `d1` values are recorded in 
+millimeters, the adjustments are as follows:
+  + For main plots with Resampling1 less than 2 but no trees with DBH equal 
+  to or above 10cm:
+    
+    - `Resampling1` is updated to 2.
+    - `TreesPresent` is changed to "No".
+  
+  + For nested plots of control plots:
+    
+    - `Resampling2` is set to 0. This is justified by the fact that, although 
+    DBH measurements are not recorded, it has been confirmed that trees meet
+    the required DBH value, so no resampling is needed.
+  
+  + For nested plots of restoration plots that have `Resampling2` less than 2 
+  and no trees with DBH equal to or above 1cm and less than 10cm:
+    
+    - `Resampling2` is updated to 2.
+    - `LittleTreesPresent` is changed to "No".
+* Trees that should not have been recorded include two types of planted trees:
+  + Planted trees in main plots with DBH in the range $\text{1cm} \leq \text{DBH} < \text{10cm}$, where the corresponding nested plot also contains planted trees within the same DBH range. In such cases, the trees in the main plot should not have been recorded (they should only appear in `group_ql6qg69` if no tree with that DBH range was found in the nested plot). Nevertheless, to avoid losing their counts, these trees are included in the `PlantedTrees3` group. They are flagged in the note field.
+  + Planted trees in nested plots with DBH less than 1cm. Trees with such DBH should only be recorded in the main plots and would typically be included in the `PlantedTrees3` group. Nevertheless, to avoid losing their counts, these trees are included in the `PlantedTrees3` group. They are likewise flagged in the note field.
+
+```{r, echo=FALSE, results='hide', message=FALSE, fig.cap="Comparison of tree count ranges across groups and plot sizes."}
+
+necessary_packages <- c(
+    "here", "cowplot", "magick"
+)
+
+options(
+    repos = c(CRAN = "[https://cran.rstudio.com/](https://cran.rstudio.com/)")
+)
+
+for (pkg in necessary_packages) {
+    if (!require(pkg, character.only = TRUE)) {
+        cat(pkg, "not found. Installing now...\n")
+        install.packages(pkg)
+        library(pkg, character.only = TRUE)
+    } else {
+        library(pkg, character.only = TRUE)
+    }
+}
+
+image_files_1 <- c(
+    "images/histogram_group_an2yk58_30x30.png",
+    "images/histogram_group_an2yk58_10x10_original.png",
+    "images/histogram_group_an2yk58_10x10_extrapolated.png"
+)
+
+image_files_2 <- c(
+    "images/histogram_group_ql6qg69_30x30.png",
+    "images/histogram_group_ql6qg69_10x10_original.png",
+    "images/histogram_group_ql6qg69_10x10_extrapolated.png"
+)
+
+image_files_3 <- c(
+    "images/histogram_PlantedTrees3_30x30.png",
+    "images/histogram_PlantedTrees3_10x10_original.png",
+    "images/histogram_PlantedTrees3_10x10_extrapolated.png"
+)
+
+img1 <- cowplot::ggdraw() + cowplot::draw_image(image_files_1[1])
+img2 <- cowplot::ggdraw() + cowplot::draw_image(image_files_1[2])
+img3 <- cowplot::ggdraw() + cowplot::draw_image(image_files_1[3])
+
+img4 <- cowplot::ggdraw() + cowplot::draw_image(image_files_2[1])
+img5 <- cowplot::ggdraw() + cowplot::draw_image(image_files_2[2])
+img6 <- cowplot::ggdraw() + cowplot::draw_image(image_files_2[3])
+
+img7 <- cowplot::ggdraw() + cowplot::draw_image(image_files_3[1])
+img8 <- cowplot::ggdraw() + cowplot::draw_image(image_files_3[2])
+img9 <- cowplot::ggdraw() + cowplot::draw_image(image_files_3[3])
+
+cowplot::plot_grid(img1, img2, img3, 
+                   img4, img5, img6, 
+                   img7, img8, img9, 
+                   ncol = 3)
+```
+
+## build_payload.R
+
+### General
+This script defines a utility function used within "upload_data.R" to generate the payload required for submitting data to Kobo's server.
+
+### Inputs/Requirements
+None.
+
+### Outputs
+None.
+
+## upload_data.R
+
+### General
+This script handles the automated uploading of the data from the Colombia paper 
+form to KoboToolbox.
+
+### Inputs/Requirements
+* "main_colombia_data.json": a JSON file containing the Colombian data, 
+harmonized to match the structure of the main Kobo form for seamless upload. It 
+can be found in the "Colombia_Data" sub-folder.
+* "build_payload.R": an R script that creates a nested payload formatted for the KoboToolbox API by taking a single data record and a form ID, extracting the UUID, and organizing the submission and metadata into the required structure.
+* ".Renviron", a (hidden) file that is safely stored in your local machine to 
+store your API key. See more details below.
+* Two pieces of information are required to run the script:
+  - The API key: a personal token that authenticate the user when submitting a 
+    POST request.
+  - The form ID: a code that uniquely identifies the form that the user wants to
+    upload data for. The user must have access to the form.
+
+### Outputs
+* "upload_log.txt": a text file logging the upload process. It is used to 
+verify whether all observations were uploaded on the server.
+
+Moreover, As a result of running this script, the data is uploaded on Kobo's 
+server.
+
+### Assumptions/Notes
+The script works in conjunction with build_payload.R, iterating through each 
+observation in the JSON file, generating the corresponding payload, submitting 
+it to the server, and continuing to the next.
+
+#### Creation of .Renviron
+To run the analysis script, you must first securely store your personal 
+KoboToolbox API key by creating a (hidden) file named ".Renviron" that R 
+automatically checks for at the start of a session (for more information, see 
+https://rstats.wtf/r-startup.html#renviron). This is achieved as follows:
+
+1. Create the ".Renviron" file and place it in the project's root folder 
+(PPC_Data_Analysis_Pipeline/). For instructions on creating dotfiles, see this 
+guide for Windows and macOS.
+2. Add your API key by opening ".Renviron" in a text editor and add the 
+following line, using your real key: KOBO_API_TOKEN="paste_your_API_key_here"
+3. Save the file and, if you had an active R session, **restart your R 
+session**. This step is mandatory, as R only reads this file on startup.
+
+The following error could appear when initializing the API key:
+
+*Error: API token not found. Please set the 'KOBO_API_TOKEN' environment 
+variable.*
+
+Solutions to this error are:
+
+* Restart R: This is the most common fix. You must restart your R session after 
+saving the file.
+* Check for Typos: Ensure the variable name is exactly "KOBO_API_TOKEN" and 
+that the syntax of the line is correct.
+* Check File Name and Location: The file must be named ".Renviron" (not ".
+Renviron.txt") and be in the main project folder.
+* Manual Override: If nothing else works, force the script to read the file by 
+adding this line to the very top of your R script, using the full path to your 
+file:
+`readRenviron("/path/to/your/project/PPC_Data_Analysis_Pipeline/.Renviron")`.
 
 ## Correct_Species_Names.R
+
 ### General
 This script uses the 'taxize' package to facilitate connection the the Global Names
 Resolver while attempting to map species names present in the Kobo database with
 accpeted species names in known scientific databases.
 
-## Video Link
+#### Video Link
 
 [Click here for Species Name Correction Video](https://www.dropbox.com/scl/fi/e236nppc94kfjmxdfv87d/Species_Name_Corrections.mp4?rlkey=hzernadyz994rp1nfti5jr5jj&dl=0 "Correct Species Names Video")
 
@@ -169,6 +410,7 @@ no corrections for those names.
 
 
 ## Add_Family_Names.R
+
 ### General
 This script takes the cleaned and corrected species names and attempts to find 
 family names for them. It does this using the 'rgbif' package to interact with 
@@ -179,12 +421,9 @@ an obnoxious step that each user would have to do before running the first time)
 I choose the GBIF route. It there is interest in the other way, I can facilitate 
 that too.
 
-
-## Video Link
+#### Video Link
 
 [Click here for Add Family Names Video](https://www.dropbox.com/scl/fi/6riq005wlfdki6eayhejn/Add_Family_Names.mp4?rlkey=2h378yy65e6a0lwcmucn3ib1p&dl=0 "Add Family Names Video")
-
-
 
 ### Inputs
 * Tree_Data_Corrected_YYYY-MM-DD_HHMM.csv: the output from the previous script with 
@@ -210,13 +449,14 @@ time it is run.
 
 
 ## Analyze_Data.R
+
 ### General
 This script takes the final tree data, with corrected species names and added family names,
 and it uses logic based on table names, size class, and resampling to first scale
 the tree counts to a uniform 30x30m (900m^2) size, and then further scales the counts
 to the size of the total site (if that size information was available.)
 
-## Video Link
+### Video Link
 
 [Click here for Analyze Data Video ](https://www.dropbox.com/scl/fi/fo7yzsjes77kh78dgrtol/Analyze_Data.mp4?rlkey=mziq65kavxomkh3dzxxlyxa19&dl=0 "Analyze Data Video")
 
@@ -254,13 +494,12 @@ of data from various timeframes. The script has been tested with randomly genera
 data for Y25 and Y5, and it runs. Until organizations add data from these timeframes,
 though, the outputs will not be complete. 
 
-
 ## IMP_Invasive_Species_Scanner.R
 
 ### General
 This script scans the IMP planted tree and seed data for potentially invasive species.
 
-## Video Link
+### Video Link
 
 [Click here for IMP Invasive Scanner Video ](https://www.dropbox.com/scl/fi/535xy001g3k9oefc32kjz/IMP_Invasives.mp4?rlkey=oxd1mrk1yg261krijqq0jfd2f&dl=0 "IMP Invasive Scanner Video")
 
@@ -288,8 +527,6 @@ No known issues.
 ## IMP_Native_Alien_Classification.R
 
 ### General
-
-
 This script enables the labeling of species-country pairs as Native, Alien, or 
 Needing further review. If more options are desired, they can  be pretty easily
 coded in. This is a workflow that requires user input, and it can take a long time.
@@ -297,17 +534,15 @@ If you don't want to do them all at once, you can type 'save' into the response,
 and this will break the loop and save what you've done. The subsequent run will 
 then check the manually reviewed file and be able to pick up where you left off. 
 
-## Video Link
+### Video Link
 
 [Click here for IMP Native Alien Classification Video ](https://www.dropbox.com/scl/fi/sqbsqi58obdz466gzqxbt/Native_Classifcation.mp4?rlkey=crcl5f05fms8awydsfdos1dqh&dl=0 "IMP Native Alien Classification Video")
-
 
 ### Inputs
 * IMP_planted_trees_YYYY-MM-DD_HHMM.csv: preprocessed IMP data output by the Invasive Scanner script
 * IMP_planted_seeds_YYYY-MM-DD_HHMM.csv: preprocessed IMP data output by the Invasive Scanner script
 * GBIF_dataset_keys.csv: file with GRIIS datasets and their relevant keys for lookup in the GBIF database
 * Taxonomic_Corrections_YYYY-MM-DD_HHMM.csv: the most recent species corrections.
-
 
 ### Outputs
 * Checklist_Scan_Results_YYYY-MM-DD_HHMM.csv: results of checks against GRIIS databases.
@@ -323,4 +558,3 @@ reviewed and labelled data after manual validation.
 
 ### Troubleshooting
 * Wikipedia is source for relevant info--sometimes the query might grab an irrelevant page
-

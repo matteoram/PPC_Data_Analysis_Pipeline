@@ -53,6 +53,13 @@ repository on your local machine. If the repository is every updated
     -   **Extract\_Brazil\_Data.R:** This script does the same as the
         above, but handles the particularities of the Brazil data
         accordingly.
+    -   **Extract\_Colombia\_Data.R:** a script that extracts the XLSX dataset
+        from the paper form survey conducted in Colombia and adapts it to a
+        format that facilitates its integration into Kobo's server.
+    -   **build\_payload.R:** a utility function used within "upload_data.R"
+        to generate the payload required for submitting data to Kobo's server.
+    -   **upload\_data.R:** a script handles the automated uploading of the
+        data from the Colombia paper form to KoboToolbox.            
     -   **Correct\_Species\_Names.R:** This script automatically
         corrects most species names and provides functionality for the
         user to correct the rest.
@@ -157,6 +164,14 @@ repository on your local machine. If the repository is every updated
         about the PACTO indicators that only Brazil teams collected.
     -   **DBH\_data:** This folder contains the information about DBH
         measurements that only the Brazil team collected.
+-   **Colombia\_Data:** This folder houses the the project data pertaining
+    to all projects within Colombia, since their data collection form is
+    different. While this folder is the destination of key files of the scripts 
+    related to the Colombia data (digitized dataset from paper form, JSON 
+    dataset, etc.), only one file is present on the repository:
+    -   **Forms_mapping.xlsx:** This file links some columns from the Colombian 
+        dataset to the corresponding fields in the main Kobo form. It is used 
+        to facilitate the selection and renaming of relevant variables.
 
 ## How to use the scripts?
 
@@ -216,6 +231,14 @@ to date and relevant. You cannot use this script on raw, uncorrected
 Kobo data (unless you went in and messed with the code, which would be
 simple enough if you wanted to do that.)
 
+### Colombia Data
+
+The Colombia data, currently hosted on Kobo's server, was uploaded using a 
+one-time script as each round of data collection was digitized. This data 
+should be extracted and analyzed using the main data extraction script. For 
+detailed instructions on how to use the scripts related to the Colombia data, 
+please refer to the "PPC Pipeline Supplementary Documentation - Version 2".
+
 ### IMP Data Pipeline
 
 1.) **IMP\_Invasive\_Species\_Scanner:** This MUST be run before the
@@ -228,3 +251,4 @@ as input.
 ## Creator Contact
 
 Johannes Nelson: <johannes.nelson@gmail.com>
+Matteo Ramina (for Colombia data): <matteoramina@me.com>

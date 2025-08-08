@@ -1,0 +1,11 @@
+.venv
+.DS_Store
+.Renviron
+Main_Data/.DS_Store
+Scripts/.DS_Store
+**/~$*
+Colombia_Data/26022025 BD Monitoreo Musesi Parcelas Permanentes RV Final.xlsx
+Scripts/create_histograms.R
+Colombia_Data/test.json
+Colombia_Data/main_colombia_data.json
+Colombia_Data/upload_log.txt
