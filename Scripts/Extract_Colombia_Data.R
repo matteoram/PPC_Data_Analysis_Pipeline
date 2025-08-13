@@ -47,7 +47,7 @@ for (pkg in necessary_packages) {
 # Specify file names
 input_name <- "26022025 BD Monitoreo Musesi Parcelas Permanentes RV Final.xlsx"    # CHANGE HERE
 mapping_name <- "Forms_mapping.xlsx"
-output_name <- "main_colombia_data_copy.json"    # CHANGE HERE
+output_name <- "main_colombia_data.json"    # CHANGE HERE
 
 # Load the main data file
 colombia_data <- read_excel(
