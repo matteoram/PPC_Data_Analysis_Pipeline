@@ -132,7 +132,7 @@ integration into Kobo's server.
 digitized version of the data collected in Colombia. This file contains the 
 data to be pre-processed and uploaded.
 * "Forms_mapping.xlsx": a file that links some columns from the Colombian 
-dataset to the corresponding fields in the main Kobo form. This file is used to 
+dataset to the corresponding fields in the main Kobo form. It is used to 
 facilitate the selection and renaming of relevant variables.
 
 These inputs should be placed in the "Colombia_Data" sub-folder. The digitized dataset is not included in the GitHub repository.
@@ -288,16 +288,18 @@ cowplot::plot_grid(img1, img2, img3,
                    ncol = 3)
 ```
 
+* The script assumes that key column names in the Excel data will remain 
+consistent across different rounds of data collection. This is because the 
+renaming of these columns is hardcoded at the beginning of the script, under 
+the `# Rename columns in colombia_data_mod` section. To make future 
+modifications easier, any elements you might need to change, such as DBH column 
+names or file names, are highlighted with a `# CHANGE HERE` indicator on their 
+respective lines.
+
 ## build_payload.R
 
 ### General
 This script defines a utility function used within "upload_data.R" to generate the payload required for submitting data to Kobo's server.
-
-### Inputs/Requirements
-None.
-
-### Outputs
-None.
 
 ## upload_data.R
 
@@ -329,6 +331,11 @@ server.
 The script works in conjunction with build_payload.R, iterating through each 
 observation in the JSON file, generating the corresponding payload, submitting 
 it to the server, and continuing to the next.
+
+To make future 
+modifications easier, any elements you might need to change, such as DBH column 
+names or file names, are highlighted with a `# CHANGE HERE` indicator on their 
+respective lines.
 
 #### Creation of .Renviron
 To run the analysis script, you must first securely store your personal 

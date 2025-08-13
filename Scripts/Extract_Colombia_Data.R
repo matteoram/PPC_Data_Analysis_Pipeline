@@ -22,6 +22,9 @@
 # For more information on this script, please refer to the document "PPC 
 # Pipline Supplementary Documentation - Version 2".
 
+# Lines that can be changed when using it for a new round are marked with the
+# text "# CHANGE HERE".
+
 # The script uses VS Code minimap's regions.
 # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
 
@@ -41,26 +44,31 @@ for (pkg in necessary_packages) {
     }
 }
 
+# Specify file names
+input_name <- "26022025 BD Monitoreo Musesi Parcelas Permanentes RV Final.xlsx"    # CHANGE HERE
+mapping_name <- "Forms_mapping.xlsx"
+output_name <- "main_colombia_data_copy.json"    # CHANGE HERE
+
 # Load the main data file
 colombia_data <- read_excel(
-    "Colombia_Data/26022025 BD Monitoreo Musesi Parcelas Permanentes RV Final.xlsx",
+    file.path("Colombia_Data/", input_name),
     skip = 1
 )
 
 # Load sheet mapping paper form columns to kobo fields
 paper_to_kobo_map <- read_excel(
-    "Colombia_Data/Forms_mapping.xlsx",
+    file.path("Colombia_Data/", mapping_name),
     sheet = "paper_to_kobo_map"
 )
 
 # Load sheet mapping dataset columns to paper columns
 dataset_to_paper_map <- read_excel(
-    "Colombia_Data/Forms_mapping.xlsx",
+    file.path("Colombia_Data/", mapping_name),
     sheet = "dataset_to_paper_map"
 )
 
 # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
-#region 1. Data exploration
+#region 1. Basic data cleaning and data exploration
 
 # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 1.1. Basic data cleaning
@@ -68,16 +76,16 @@ dataset_to_paper_map <- read_excel(
 # Create a copy of the dataframe
 colombia_data_mod <- colombia_data
 
-# Rename columns in colombia_data
+# Rename columns in colombia_data_mod
 colombia_data_mod <- colombia_data_mod %>%
     rename(
         Plot_Size = `TIPO DE PARCELA`,
         Plot_Type_2 = `TIPO DE CODIFICACIÓN`,
         Plot_ID = `CODIFICACIÓN PARCELA/SUBPARCELA`,
-        d1 = `D1\r\n(MM)`,
-        d2 = `D2\r\n(MM)`,
-        d3 = `D3\r\n(MM)`,
-        d4 = `D4\r\n(MM)`,
+        d1 = `D1\r\n(MM)`,  # CHANGE HERE
+        d2 = `D2\r\n(MM)`,  # CHANGE HERE
+        d3 = `D3\r\n(MM)`,  # CHANGE HERE
+        d4 = `D4\r\n(MM)`,  # CHANGE HERE
         Resampling = `NÚMERO DE REMUESTREOS`,
         Plot_Type = `CATEGORÍA PARCELA (CONTROL/MONITOREO)`,
         Tree_Type = `TIPO DE ÁRBOL2`,
@@ -136,6 +144,24 @@ colombia_data_mod <- colombia_data_mod %>%
 
 # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 # 1.3. Preliminary checks
+
+# Confirm number of plots
+cat("\nNumber of distinct Plot_IDs for PARCELA: ",
+    colombia_data_mod %>%
+        filter(Plot_Type_2 == "PARCELA") %>%
+        distinct(Plot_ID) %>%
+        nrow(),
+    "\n"
+)
+
+# Confirm raw number of trees (not extrapolated)
+cat("Number of non-empty Tree_Species values: ",
+    sum(
+        !is.na(colombia_data_mod$Tree_Species) &
+        colombia_data_mod$Tree_Species != ""
+        ),
+    "\n"
+)
 
 # Confirm that sub-plots always end in S or Sx (where x is a digit)
 subparcelas <- colombia_data_mod[
@@ -341,14 +367,14 @@ tree_monitoring_sheet$TreesPresent <- ifelse(
 )
 
 # Resampling1. Fix issue with Resampling1 being <2 and no trees with DBH≥10
-tree_monitoring_sheet$Resampling1 <- ifelse(
+tree_monitoring_sheet$Resampling1 <- ifelse(    # CHANGE HERE
     tree_monitoring_sheet$Resampling1 < 2 & 
     tree_monitoring_sheet$has_tree == FALSE,
     2, tree_monitoring_sheet$Resampling1
 )
 
 # TreesPresent. Fix issue with Resampling1 being <2 and no trees with DBH≥10
-tree_monitoring_sheet$TreesPresent <- ifelse(
+tree_monitoring_sheet$TreesPresent <- ifelse(    # CHANGE HERE
     tree_monitoring_sheet$Resampling1 == 2 & 
     tree_monitoring_sheet$has_tree == FALSE,
     "No", tree_monitoring_sheet$TreesPresent
@@ -432,16 +458,17 @@ tree_monitoring_sheet$LittleTreesPresent <- ifelse(
 )
 
 # Resampling2 Fix missing Resampling2 info for control plots
-tree_monitoring_sheet$Resampling2 <- ifelse(
+tree_monitoring_sheet$Resampling2 <- ifelse(    # CHANGE HERE
     is.na(tree_monitoring_sheet$Resampling2) &
     tree_monitoring_sheet$Plot_Type == "CONTROL" &
+    tree_monitoring_sheet$ControlSize != "Yes" &
     tree_monitoring_sheet$Plot_Size %in% small_plots,
     0,
     tree_monitoring_sheet$Resampling2
 )
 
 # Resampling2. Fix issue with Resampling2 being <2 and no trees with 1≤DBH<9.9
-tree_monitoring_sheet$Resampling2 <- ifelse(
+tree_monitoring_sheet$Resampling2 <- ifelse(    # CHANGE HERE
     tree_monitoring_sheet$Resampling2 < 2 & 
     tree_monitoring_sheet$has_tree == FALSE &
      tree_monitoring_sheet$Plot_Type != "CONTROL",
@@ -450,7 +477,7 @@ tree_monitoring_sheet$Resampling2 <- ifelse(
 
 # LittleTreesPresent. Fix issue with LittleTreesPresent being <2 and no trees
 # with 1≤DBH<9.9
-tree_monitoring_sheet$LittleTreesPresent <- ifelse(
+tree_monitoring_sheet$LittleTreesPresent <- ifelse(    # CHANGE HERE
     tree_monitoring_sheet$Resampling2 == 2 & 
     tree_monitoring_sheet$has_tree == FALSE & 
     tree_monitoring_sheet$Plot_Type != "CONTROL",
@@ -545,7 +572,7 @@ relevant_plots <- colombia_data_mod %>%
     pull(Plot_ID)
 
 # Aggregate tree values
-PlantedTrees3_1 <- trees_below_1 %>%
+PlantedTrees3_1 <- trees_below_1 %>%    # CHANGE HERE
     filter(
         Plot_ID %in% relevant_plots
     ) %>%
@@ -570,7 +597,7 @@ PlantedTrees3_1 <- trees_below_1 %>%
 
 # Select census plots (monitoring only). Fix issue with Resampling1 being <2
 # and no trees with DBH≥10
-relevant_plots_2 <- tree_monitoring_sheet %>%
+relevant_plots_2 <- tree_monitoring_sheet %>%    # CHANGE HERE
     filter(
         LittleTreesPresent == "No" & # LittleTreesPresent is for 3x3 plots
         Plot_Type == "Restoration"
@@ -585,11 +612,11 @@ relevant_plots_2 <- tree_monitoring_sheet %>%
 relevant_plots_2 <- unique(relevant_plots_2) # Obtain corresponding 30x30 plots
 
 # Select final relevant plots
-relevant_plots_final <- setdiff(relevant_plots, relevant_plots_2)
+relevant_plots_final <- setdiff(relevant_plots, relevant_plots_2) # CHANGE HERE
 
 # Aggregate tree values. Fix issue with Resampling1 being <2 and no trees with 
 # DBH≥10
-PlantedTrees3_2 <- trees_between_1_9 %>%
+PlantedTrees3_2 <- trees_between_1_9 %>%    # CHANGE HERE
     filter(
         Plot_ID %in% relevant_plots_final &
         Tree_Type == "Plantados por el proyecto"
@@ -617,7 +644,7 @@ PlantedTrees3_2 <- trees_between_1_9 %>%
     )
 
 # Combine the two dataframes
-PlantedTrees3_3 <- bind_rows(PlantedTrees3_1, PlantedTrees3_2) %>%
+PlantedTrees3_3 <- bind_rows(PlantedTrees3_1, PlantedTrees3_2) %>%    # CHANGE HERE
     # Regroup by all the non-count columns
     group_by(
         Date,
@@ -636,7 +663,7 @@ PlantedTrees3_3 <- bind_rows(PlantedTrees3_1, PlantedTrees3_2) %>%
 
 # Select <1 trees in 3x3 plots (monitoring only). Fix issue with Resampling1
 # being <2 and no trees with DBH≥10
-relevant_plots_3 <- colombia_data_mod %>%
+relevant_plots_3 <- colombia_data_mod %>%    # CHANGE HERE
     filter(
         Plot_Type == "MONITOREO" &
         Plot_Size %in% small_plots &
@@ -645,7 +672,7 @@ relevant_plots_3 <- colombia_data_mod %>%
     pull(Plot_ID)
 
 # Aggregate tree values for 3x3 plots
-PlantedTrees3_3x3 <- trees_below_1 %>%
+PlantedTrees3_3x3 <- trees_below_1 %>%    # CHANGE HERE
     filter(
         Plot_ID %in% relevant_plots_3
     ) %>%
@@ -665,7 +692,7 @@ PlantedTrees3_3x3 <- trees_below_1 %>%
         "", Plot_ID, perl = TRUE)
     )
 
-PlantedTrees3_final <- bind_rows(PlantedTrees3_3, PlantedTrees3_3x3) %>%
+PlantedTrees3_final <- bind_rows(PlantedTrees3_3, PlantedTrees3_3x3) %>% # CHANGE HERE
     group_by(
         Date,
         Plot_ID,
@@ -680,7 +707,7 @@ PlantedTrees3_final <- bind_rows(PlantedTrees3_3, PlantedTrees3_3x3) %>%
     )
 
 # Clean data
-PlantedTrees3 <- PlantedTrees3_final %>%
+PlantedTrees3 <- PlantedTrees3_final %>%    # CHANGE HERE
     # Rename columns
     rename(
         Tree_Species_Seedlings = Tree_Species,
@@ -1169,7 +1196,7 @@ json_output <- toJSON(
 )
 
 # Save the JSON to a file
-write(json_output, "Colombia_Data/main_colombia_data.json")
+write(json_output, file.path("Colombia_Data", output_name))
 
 # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
 # END

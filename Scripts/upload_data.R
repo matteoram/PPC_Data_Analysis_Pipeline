@@ -26,6 +26,9 @@
 #   - "upload_log.txt", a text file logging the upload process. It is used to 
 #     verify whether all observations were uploaded on the server.
 
+# Lines that can be changed when using it for a new round are marked with the
+# text "# CHANGE HERE".
+
 # For more information on this script, please refer to the document "PPC 
 # Pipline Supplementary Documentation - Version 2".
 
@@ -47,14 +50,17 @@ for (pkg in necessary_packages) {
 # Load the helper function from your other R script
 source(here::here("Scripts/build_payload.R"))
 
+# Define sleep parameter in seconds
+sleep_param <- 2 # CHANGE HERE
+
 # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
 #region 1. Configuration
 
 KOBO_API_TOKEN <- Sys.getenv("KOBO_API_TOKEN")
 KOBO_API_URL   <- "https://kc.kobotoolbox.org/api/v1/submissions.json"
-FORM_ID        <- "axhiGJQ8JzwkTYcgDTroJu"
-DATA_FILEPATH  <- here::here("Colombia_Data/test.json")
-LOG_FILEPATH   <- here::here("Colombia_Data/upload_log.txt")
+FORM_ID        <- ""  # CHANGE HERE
+DATA_FILEPATH  <- here::here("Colombia_Data/main_colombia_data.json") # CHANGE HERE
+LOG_FILEPATH   <- here::here("Colombia_Data/upload_log.txt") # CHANGE HERE
 
 # Check if API Key was found
 if (nchar(KOBO_API_TOKEN) == 0) {
@@ -137,7 +143,7 @@ for (i in 1:record_count) {
     }
 
     # Pause for 2 second to respect API rate limits
-    Sys.sleep(2)
+    Sys.sleep(sleep_param)
 }
 
 # Finalize the process
