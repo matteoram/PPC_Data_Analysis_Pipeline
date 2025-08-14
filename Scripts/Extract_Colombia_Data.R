@@ -309,7 +309,7 @@ tree_monitoring_sheet$Country <- "Colombia"
 tree_monitoring_sheet$Organization_Name <- "CI Colombia"
 
 # Timeframe
-tree_monitoring_sheet$Timeframe <- "Y0 (baseline)"
+tree_monitoring_sheet$Timeframe <- "Y0 (baseline)"  # CHANGE HERE
 
 # SiteSize. 
 tree_monitoring_sheet$SiteSize <- ifelse(
@@ -546,7 +546,7 @@ trees_below_1 <- colombia_data_mod %>%
 trees_between_1_9 <- colombia_data_mod %>%
     filter(
         (d1 >= 10 & d1 < 100) |
-        (Tree_Type == "Ya presentes antes del proyecto" &
+        (Tree_Type == "Ya presentes antes del proyecto" &   # CHANGE HERE
         Plot_Size %in% small_plots)
     )
 
@@ -555,7 +555,7 @@ trees_between_1_9 <- colombia_data_mod %>%
 trees_above_10 <- colombia_data_mod %>%
     filter(
         d1 >= 100 |
-        (Tree_Type == "Ya presentes antes del proyecto" &
+        (Tree_Type == "Ya presentes antes del proyecto" &   # CHANGE HERE
         Plot_Size %in% big_plots)
     )
 
@@ -661,8 +661,8 @@ PlantedTrees3_3 <- bind_rows(PlantedTrees3_1, PlantedTrees3_2) %>%    # CHANGE H
         .groups = "drop"
     )
 
-# Select <1 trees in 3x3 plots (monitoring only). Fix issue with Resampling1
-# being <2 and no trees with DBH≥10
+# Select <1 trees in 3x3 plots (monitoring only). Fix issue 3x3 plots and DBH
+# containing trees <1
 relevant_plots_3 <- colombia_data_mod %>%    # CHANGE HERE
     filter(
         Plot_Type == "MONITOREO" &
