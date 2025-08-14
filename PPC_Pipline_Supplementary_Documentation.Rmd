@@ -127,6 +127,10 @@ The purpose of this script is to extract the XLSX dataset from the paper form
 survey conducted in Colombia, and adapt it to a format that facilitates its 
 integration into Kobo's server.
 
+### Video Link
+
+[Click here for Colombia Extraction and Upload Overview Video](https://conservation.sharepoint.com/:v:/r/sites/PPC-GlobalPortfolioTeam/Monitoring%20%20Evaluations/02.%20Monitoring%20Management/Matteo%20Ramina%202025/Deliverable%201/colombia_data_pipeline_walkthrough.mp4?csf=1&web=1&e=oEEcyd "Colombia Extraction and Upload Overview")
+
 ### Inputs/Requirements
 * "26022025 BD Monitoreo Musesi Parcelas Permanentes RV Final.xlsx": the 
 digitized version of the data collected in Colombia. This file contains the 
@@ -306,6 +310,8 @@ This script defines a utility function used within "upload_data.R" to generate t
 ### General
 This script handles the automated uploading of the data from the Colombia paper 
 form to KoboToolbox.
+
+[Click here for Colombia Extraction and Upload Overview Video](https://conservation.sharepoint.com/:v:/r/sites/PPC-GlobalPortfolioTeam/Monitoring%20%20Evaluations/02.%20Monitoring%20Management/Matteo%20Ramina%202025/Deliverable%201/colombia_data_pipeline_walkthrough.mp4?csf=1&web=1&e=oEEcyd "Colombia Extraction and Upload Overview")
 
 ### Inputs/Requirements
 * "main_colombia_data.json": a JSON file containing the Colombian data, 
