@@ -94,7 +94,11 @@ process_main_table <- function(main_table, mapping_file) {
     "Plot_Info_SEPhoto_001",
     "Plot_Info_NEPhoto_001",
     "Plot_Info_NWPhoto_001",
-    "Plot_Info_SWPhoto_001"
+    "Plot_Info_SWPhoto_001",
+    "Plot_Info_SECorner_001",
+    "Plot_Info_NECorner_001",
+    "Plot_Info_NWCorner_001",
+    "Plot_Info_SWCorner_001"
   )
   correct_cols <- sub("_001$", "", dup_cols)
   for (i in seq_along(dup_cols)) {
@@ -301,8 +305,8 @@ process_main_table <- function(main_table, mapping_file) {
       is_present, "Yes", "No"
       )
 
-  # Create Centroid_of_3m_x_3m_Subplot2 (Centroid_of_3m_x_3m_Subplot and 
-  # Centroid_of_3m_x_3m_Subplot1 are not applicable in Brazil form)
+  ## Create Centroid_of_3m_x_3m_Subplot2 (Centroid_of_3m_x_3m_Subplot and 
+  ## Centroid_of_3m_x_3m_Subplot1 are not applicable in Brazil form)
   main_table <- main_table %>%
     mutate(Centroid_of_3m_x_3m_Subplot2 = ifelse(
       is.na(`_3x3_Subplot_Centroid`) | `_3x3_Subplot_Centroid` == "",
@@ -310,9 +314,9 @@ process_main_table <- function(main_table, mapping_file) {
       `_3x3_Subplot_Centroid`
     )
   ) %>%
-  select(-`_3x3_Subplot_Centroid`, `_3x3_ControlSubplot_Centroid`)
+  select(-`_3x3_Subplot_Centroid`, -`_3x3_ControlSubplot_Centroid`)
 
-  # Create Description_of_subpl_ithin_30m_x_30m_plot2
+  ## Create Description_of_subpl_ithin_30m_x_30m_plot2
   main_table <- main_table %>%
     mutate(Description_of_subpl_ithin_30m_x_30m_plot2 = ifelse(
       is.na(`_3x3_Subplot_Description`) | `_3x3_Subplot_Description` == "",
@@ -320,9 +324,9 @@ process_main_table <- function(main_table, mapping_file) {
       `_3x3_Subplot_Description`
     )
   ) %>%
-  select(-`_3x3_Subplot_Description`, `_3x3_ControlSubplot_Descriptio`)
+  select(-`_3x3_Subplot_Description`, -`_3x3_ControlSubplot_Descriptio`)
 
-  # Create Notes17
+  ## Create Notes17
   main_table <- main_table %>%
     mutate(Notes17 = ifelse(
       is.na(`Notes_002`) | `Notes_002` == "",
@@ -330,72 +334,40 @@ process_main_table <- function(main_table, mapping_file) {
       `Notes_002`
     )
   ) %>%
-  select(-`Notes_002`, `ControlNotes_002`)
+  select(-`Notes_002`, -`ControlNotes_002`)
 
-
-  ## Create Photos and Additional_Photos_Optional3  # VERIFY
-  # Steps:
-  # 1. Identify plots for Photos and plots for Additional_Photos_Optional3
-  # 2. Copy values from _3x3_Subplot_Centroid to the newly created columns
-
-  # Relevant plots for Photos # VERIFY
-  relevant_plots <- main_table %>%
-      filter(
-          (Resampling2 < 2 | (Resampling2 == 2 & LittleTreesPresent == "Yes"))
-      ) %>%
-      pull(Plot_ID)
-
-  # Create Photos # VERIFY
+  ## Create Additional_Photos_Optional3
   main_table <- main_table %>%
-    mutate(
-      Photos = ifelse(
-        Plot_ID %in% relevant_plots,
-        `_3x3_Subplot_Photo`,
-        NA_character_
-      )
+    mutate(Additional_Photos_Optional3 = ifelse(
+      is.na(`_3x3_Subplot_Photo`) | `_3x3_Subplot_Photo` == "",
+      `_3x3_ControlSubplot_Photo`,
+      `_3x3_Subplot_Photo`
     )
+  ) %>%
+  select(-`_3x3_Subplot_Photo`, -`_3x3_ControlSubplot_Photo`)  
 
-  # Relevant plots for Additional_Photos_Optional3   # VERIFY
-  relevant_plots <- main_table %>%
-      filter(
-          (Resampling2 < 2 | (Resampling2 == 2 & LittleTreesPresent == "Yes"))
-      ) %>%
-      pull(Plot_ID)
-
-  # Create Additional_Photos_Optional3  # VERIFY
+  ## Create Notes21
   main_table <- main_table %>%
-    mutate(
-      Additional_Photos_Optional3 = ifelse(
-        Plot_ID %in% relevant_plots,
-        `_3x3_Subplot_Photo`,
-        NA_character_
-      )
+    mutate(Notes21 = ifelse(
+      is.na(`Notes`) | `Notes` == "",
+      `Notes_001`,
+      `Notes`
     )
+  ) %>%
+  select(-`Notes`, -`Notes_001`)
 
-  # Remove _3x3_Subplot_Photo # VERIFY
+  ## Create Note14
   main_table <- main_table %>%
-    select(-`_3x3_Subplot_Photo`)
+    mutate(Note14 = Plot_Info_Notes) %>%
+  select(-`Plot_Info_Notes`)
 
-
-  # Create Additional_Photos_Optional1  # VERIFY
+  ## Create Coordinate_System_Used
   main_table <- main_table %>%
-    mutate(
-      Additional_Photos_Optional1 = ifelse(
-        Plot_ID %in% relevant_plots,
-        `_3x3_ControlSubplot_Photo`,
-        NA_character_
-      )
-    )
+    mutate(Coordinate_System_Used = NA)
 
-# Create Additional_Photos_Optional3 # VERIFY
+  ## Rename General_Info_Organization_Name to Organization_Name
   main_table <- main_table %>%
-    mutate(
-      Additional_Photos_Optional3 = ifelse(
-        Plot_ID %in% relevant_plots,
-        `_3x3_ControlSubplot_Photo`,
-        NA_character_
-      )
-    )
+    rename(Organization_Name = General_Info_Organization_Name)
 
   ## Return processed main table
   return(main_table)
@@ -632,25 +604,25 @@ tree_monitoring_sheet <- process_main_table(
 )
 
 # 3. Prepare Tree Tables
-print("Prepping tree tables.")
-group_an2yk58_30x30 <- process_30x30(df, tree_monitoring_sheet)
-group_an2yk58_30x15 <- process_30x15(df, tree_monitoring_sheet)
-group_an2yk58 <- bind_rows(group_an2yk58_30x30, group_an2yk58_30x15)
-group_an2yk58 <- group_an2yk58 %>%
-  select(-`_parent_index`) %>%
-  distinct()
-group_ka7vj63 <- process_3x3(df, tree_monitoring_sheet)
-PlantedTrees3 <- process_planted(df, tree_monitoring_sheet)
+#print("Prepping tree tables.")
+#group_an2yk58_30x30 <- process_30x30(df, tree_monitoring_sheet)
+#group_an2yk58_30x15 <- process_30x15(df, tree_monitoring_sheet)
+#group_an2yk58 <- bind_rows(group_an2yk58_30x30, group_an2yk58_30x15)
+#group_an2yk58 <- group_an2yk58 %>%
+#  select(-`_parent_index`) %>%
+#  distinct()
+#group_ka7vj63 <- process_3x3(df, tree_monitoring_sheet)
+#PlantedTrees3 <- process_planted(df, tree_monitoring_sheet)
 
 # 4. Create JSON Export
-print("Processing and exporting data to JSON.")
-process_and_export_to_json(
-    main_table_df = tree_monitoring_sheet,
-    planted_trees_df = PlantedTrees3,
-    an2yk58_df = group_an2yk58,
-    ka7vj63_df = group_ka7vj63,
-    output_filename = output_name
-)
+#print("Processing and exporting data to JSON.")
+#process_and_export_to_json(
+#    main_table_df = tree_monitoring_sheet,
+#    planted_trees_df = PlantedTrees3,
+#    an2yk58_df = group_an2yk58,
+#    ka7vj63_df = group_ka7vj63,
+#    output_filename = output_name
+#)
 
 #------------------------------------------------------------------------------
 # END
