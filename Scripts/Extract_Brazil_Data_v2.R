@@ -373,7 +373,7 @@ process_main_table <- function(main_table, mapping_file) {
   return(main_table)
 }
 
-#region 3. Prepare Tree Tables
+#region 3. Create group_an2yk58
 #'
 #' The following functions process the tree tables by extracting relevant
 #' columns, grouping by species, and counting the number of trees of each 
@@ -383,95 +383,156 @@ process_main_table <- function(main_table, mapping_file) {
 #' The functions also handle any necessary adjustments,
 #' such as extrapolating data from 30x15 plots to 30x30 plots.
 
-process_30x30 <- function(df, tree_monitoring_sheet) {
-  df_30x30 <- df[["_30x30_Plot_Repeat"]]
+process_group_an2yk58 <- function(
+  tree_group_30x30, tree_group_30x15, dbh_group_30x30, dbh_group_30x15,
+  tree_monitoring_sheet) {
   
-  if (is.null(df_30x30)) {
-    stop("'_30x30_Plot_Repeat' not found in the master data frame.")
-  }
-  
-  df_30x30_processed <- df_30x30 %>%
-    select(
-      Tree_Species2 = `_30x30_Plot_TreeSpecies`,
-      Tree_Type2 = `_30x30_Plot_TreeType`,
-      Note111 = `_30x30_Plot_RepeatNote_001`,
-      `_parent_index` = `_parent_index`
-    ) %>%
-    # Join to get the date and plot ID
-    left_join(tree_monitoring_sheet, by = c("_parent_index" = "_index")) %>%
-    # Perform the count on the joined data
-    group_by(`_parent_index`, `Tree_Species2`, `Enter_a_date`, `Plot_ID`) %>%
-    add_count(name = "Number_of_Trees_of_this_Species2") %>%
-    ungroup()
-  
-  return(df_30x30_processed)
-}
+  ## Combine dbh_group_30x30 and dbh_group_30x30 into a single dataframe
+  # Steps:
+  # 1. Prepare columns in dbh_group_30x15
+  # 2. Merge dbh data with tree data
+  # 3. Find trees with misplaced DBH measurements
+  # 4. Append the unmatched trees to the merged data
 
-process_30x15 <- function(df, tree_monitoring_sheet) {
-  df_30x15 <- df[["_30x15_Plot_Repeat"]]
-  
-  if (is.null(df_30x15)) {
-    stop("'_30x15_Plot_Repeat' not found in the master data frame.")
-  }
-  
-  df_30x15_processed <- df_30x15 %>%
-    select(
-      Tree_Species2 = `_30x15_Plot_TreeSpecies`,
-      Tree_Type2 = `_30x15_Plot_TreeType`,
-      `_parent_index` = `_parent_index`
-    ) %>%
-    # Join to get the date and plot ID
-    left_join(tree_monitoring_sheet, by = c("_parent_index" = "_index")) %>%
-    # Perform the count on the joined data
-    group_by(`_parent_index`, `Tree_Species2`, `Enter_a_date`, `Plot_ID`) %>%
-    add_count(name = "Number_of_Trees_of_this_Species2") %>%
-    ungroup() %>%
-    mutate(
-      Note111 = "Extrapolated from 30x15 plot.",
-      Number_of_Trees_of_this_Species2 = Number_of_Trees_of_this_Species2 * 2
+  ## 1. Prepare columns in dbh_group_30x15
+
+  # Rename columns in dbh_group_30x30
+  dbh_group_30x30 <- dbh_group_30x30 %>%
+    rename(
+      `_index_dbh` = `_index`,
+      `_parent_index_tree` = `_parent_index`
     )
-  return(df_30x15_processed)
-}
 
-process_3x3 <- function(df, tree_monitoring_sheet) {
-  df_3x3 <- df[["_3x3_Subplot_Repeat"]]
-  
-  if (is.null(df_3x3)) {
-    stop("'_3x3_Subplot_Repeat' not found in the master data frame.")
-  }
-  
-  df_3x3_processed <- df_3x3 %>%
+  # Select columns from tree_group_30x30 for merging
+  tree_info_to_merge <- tree_group_30x30 %>%
     select(
-      Tree_Species_0012 = `_3x3_Subplot_TreeSpecies`,
-      Tree_Type_0012 = `_3x3_Subplot_TreeType`,
-      Number_of_Trees_of_this_Species_0012 = `_3x3_Subplot_TreeCount`,
-      Note22 = `_3x3_Subplot_RepeatNote`,
-      `_parent_index` = `_parent_index` # Retain this column
-    ) %>%
-    # Join to get the date and plot ID
-    left_join(tree_monitoring_sheet, by = c("_parent_index" = "_index"))
-    
-  return(df_3x3_processed)
-}
+      `_30x30_Plot_TreeSpecies`, `_30x30_Plot_TreeType`, 
+      `_30x30_Plot_RepeatNote_001`, `_index`, `_parent_index`
+    )
 
-process_planted <- function(df, tree_monitoring_sheet) {
-  df_planted <- df[["_30x30_Plot_Repeat_Planted_10cm"]]
-  
-  if (is.null(df_planted)) {
-    stop("'_30x30_Plot_Repeat_Planted_10cm' not found in the master data frame.")
-  }
-  
-  df_planted_processed <- df_planted %>%
+  ## 2. Merge dbh data with tree data
+  merged_data <- left_join(
+    dbh_group_30x30,
+    tree_info_to_merge,
+    by = c("_parent_index_tree" = "_index")
+  )
+
+  # Keep only relevant columns
+  merged_data <- merged_data %>%
     select(
-      Tree_Species_Seedlings = `_30x30_Plot_TreeSpecies_Planted_10cm`,
-      Numer_of_This_Species3 = `_30x30_Plot_Count_Planted_10cm`,
-      Note3 = `_30x30_Plot_RepeatNote_Planted_10cm`,
-      `_parent_index` = `_parent_index` # Retain this column
+      `_30x30_Plot_TreeSpecies`, `_30x30_Plot_TreeType`, 
+      `_30x30_Plot_TreeIDNumber`,	`_30X30_Plot_TreeTrunk`, 
+      `_30x30_Plot_RepeatNote_001`, `_index_dbh`, `_parent_index_tree`, 
+      `_parent_index`
+    )
+
+  ## 3. Find trees with misplaced DBH measurements
+  unmatched_trees <- anti_join(
+    tree_group_30x30,
+    dbh_group_30x30,
+    by = c("_index" = "_parent_index_tree")
+  )
+
+  # Rename columns in unmatched_trees to match the merged_data structure
+  unmatched_trees_renamed <- unmatched_trees %>%
+    rename(
+      `_parent_index_tree` = `_index`,
     ) %>%
-    # Join to get the date and plot ID
-    left_join(tree_monitoring_sheet, by = c("_parent_index" = "_index"))
-    
-  return(df_planted_processed)
+    select(
+      `_30x30_Plot_TreeSpecies`, `_30x30_Plot_TreeType`, 
+      `_30x30_Plot_TreeIDNumber`,	`_30X30_Plot_TreeTrunk`, 
+      `_30x30_Plot_RepeatNote_001`, `_parent_index_tree`, `_parent_index`
+    )
+
+  ## 4. Append the unmatched trees to the merged data
+  final_30x30_data <- bind_rows(merged_data, unmatched_trees_renamed)
+
+  ## Combine dbh_group_30x15 and dbh_group_30x15 into a single dataframe
+  # Steps are same as above (steps 3 and 4 not required)
+
+  ## 1. Prepare columns in dbh_group_30x15
+
+  # Rename columns in dbh_group_30x30
+  dbh_group_30x15 <- dbh_group_30x15 %>%
+    rename(
+      `_index_dbh` = `_index`,
+      `_parent_index_tree` = `_parent_index`
+    )
+
+  # Select columns from tree_group_30x15 for merging
+  tree_info_to_merge <- tree_group_30x15 %>%
+    select(
+      `_30x15_Plot_TreeSpecies`, `_30x15_Plot_TreeType`, 
+      `_30x15_Plot_RepeatNote`, `_index`, `_parent_index`
+    )
+
+  ## 2. Merge dbh data with tree data
+  merged_data <- left_join(
+    dbh_group_30x15,
+    tree_info_to_merge,
+    by = c("_parent_index_tree" = "_index")
+  )
+
+  # Keep only relevant columns
+  final_30x15_data <- merged_data %>%
+    select(
+      `_30x15_Plot_TreeSpecies`, `_30x15_Plot_TreeType`, 
+      `_30x15_Plot_TreeIDNumber`,	`_30X15_Plot_TreeTrunk`, 
+      `_30x15_Plot_RepeatNote`, `_index_dbh`, `_parent_index_tree`, 
+      `_parent_index`
+    )
+
+  ## Modify notes for 30x15 data to indicate extrapolation
+  final_30x15_data <- final_30x15_data %>%
+    mutate(`_30x15_Plot_RepeatNote` = ifelse(
+      is.na(`_30x15_Plot_RepeatNote`) | trimws(`_30x15_Plot_RepeatNote`) == "",
+      "Extrapolated from 30x15 plot",
+      paste(
+        `_30x15_Plot_RepeatNote`, "Extrapolated from 30x15 plot", sep = "; "
+      )
+    ))
+
+  ## Combine final_30x30_data and final_30x15_data into a single dataframe
+  # Steps:
+  # 1. Standardize column names
+  # 2. Bind rows
+
+  ## 1. Standardize column names
+  final_30x15_data <- final_30x15_data %>%
+    rename(
+      `_30x30_Plot_TreeSpecies` = `_30x15_Plot_TreeSpecies`,
+      `_30x30_Plot_TreeType` = `_30x15_Plot_TreeType`,
+      `_30x30_Plot_TreeIDNumber` = `_30x15_Plot_TreeIDNumber`,
+      `_30X30_Plot_TreeTrunk` = `_30X15_Plot_TreeTrunk`,
+      `_30x30_Plot_RepeatNote_001` = `_30x15_Plot_RepeatNote`
+    )
+
+  ## 2. Bind rows
+  final_data <- bind_rows(final_30x30_data, final_30x15_data)
+
+  ## Add date and plot ID by joining with tree_monitoring_sheet
+  final_data <- final_data %>%
+    left_join(
+      tree_monitoring_sheet %>%
+        select(`_index`, Enter_a_date, Plot_ID),
+      by = c("_parent_index" = "_index")
+    )
+
+  ## Obtain tree counts by species, type, plot, and date
+  group_an2yk58 <- final_data %>%
+      group_by(
+          Enter_a_date,
+          Plot_ID,
+          `_30x30_Plot_TreeSpecies`,
+          `_30x30_Plot_TreeType`,
+      ) %>%
+      summarise(
+          count = n(),
+          .groups = "drop"
+      )
+
+  ## Return final dataset
+  return(group_an2yk58)
 }
 
 #region 4. Create JSON Export Function
