@@ -2,12 +2,15 @@
 .DS_Store
 .Renviron
 .Rhistory
+.vscode
 Main_Data/.DS_Store
 Scripts/.DS_Store
 **/~$*
 Colombia_Data/26022025 BD Monitoreo Musesi Parcelas Permanentes RV Final.xlsx
+PPCPACTO_Tree_Monitoring_-_Brazil_only_-_all_versions_-_False_-_2025-08-18-22-26-07.xlsx
 Scripts/create_histograms.R
 Scripts/verify_results.R
-Colombia_Data/test.json
-Colombia_Data/main_colombia_data.json
-Colombia_Data/upload_log.txt
+/Colombia_Data/*.json
+/Colombia_Data/*.txt
+/Brazil_Data/*.json
+/Brazil_Data/*.txt
